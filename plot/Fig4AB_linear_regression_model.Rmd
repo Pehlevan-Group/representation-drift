@@ -1,0 +1,92 @@
+---
+title: "linear_regression_drift_model"
+author: "ShanshanQin"
+date: "6/20/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The program fit the scatter plot data generated in the MATLAB code. Make pretty figures for publication. Figures including Figure 4A,B
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+
+## Figure 4 A,B
+
+```{r load data}
+# library to read matlab data formats into R
+library(raveio)
+library(ggplot2)
+library(ggExtra)
+library("ggpubr")
+library(latex2exp)
+library(RColorBrewer) #this package is used for color settings
+
+
+dFile <- "/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/data/ringPlace_N200_online_06202022.mat"
+data <- read_mat(dFile)
+sFolder <-'/Users/shawnqin/Google Drive/olfactoryCoding/figures/'
+
+ave_amp <- data$aveAmp
+Ds_log<- data$Ds_log
+acti_time <- data$tolActiTime
+
+
+
+mycolor <- brewer.pal(9,"Greys")
+
+#  Diffusion constant vs averaged amplitude
+eff_inx <- !is.nan(Ds_log)
+my_data <- data.frame(amp = ave_amp[eff_inx], Ds = log(Ds_log[eff_inx]))
+
+gf1 <- ggscatter(my_data, x = "amp", y = "Ds", size = 2,
+                 add = "reg.line", conf.int = TRUE, color = mycolor[6],
+                 add.params = list(color = mycolor[9],fill = "lightgray"),
+                 xlab = "Mean peak amplitude") + ylab(TeX(r'($\log_{10}(D)$)')) + 
+    #scale_x_continuous(limits = c(-2, 60)) +
+  theme(axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text = element_text(size = 16)) + 
+  stat_cor(method = "pearson", label.x = 0.22, label.y = -2.2)
+gf1
+
+figFile <- paste(sFolder,"ring_Ds_amp_online_06202022.pdf",sep='')
+ggsave(figFile,gf1,width = 3.2,height = 2.7)
+dev.off()
+
+# str(data)
+
+
+# active time vs mean peak amplitude
+data_time_amp <- data.frame(amp = ave_amp[eff_inx], acti = acti_time[eff_inx])
+
+gf2 <- ggscatter(data_time_amp, x = "amp", y = "acti", size = 2,
+                 add = "reg.line", conf.int = TRUE, color = mycolor[6],
+                 add.params = list(color = mycolor[9],fill = "lightgray"),
+                 xlab = "Mean peak amplitude", ylab = "Fraction of active time") + 
+    #scale_x_continuous(limits = c(-2, 60)) +
+  theme(axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text = element_text(size = 16)) + 
+  stat_cor(method = "pearson", label.x = 0.15, label.y = 0.83)
+gf2
+
+figFile <- paste(sFolder,"ring_actiTime_amp_online_06202022.pdf",sep='')
+ggsave(figFile,gf2,width = 3.2,height = 2.7)
+
+dev.off()
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+# ```{r pressure, echo=FALSE}
+# plot(pressure)
+# ```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
