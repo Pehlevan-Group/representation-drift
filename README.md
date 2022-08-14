@@ -1,5 +1,8 @@
 Code for the paper "Coordinated drift of receptive fields during noisy representation learning" to be published in Nature Neuroscience, 2022
 
+## Dependence
+Some of the scripts depend on ITE (information theoretical estimators) which can be downloaded from https://bitbucket.org/szzoli/ite/src/master/
+
 ## Simulations
 
 To run the simulation using the scripts in the folder `simulation`. The resulted data should be stored in the folder `data` 
