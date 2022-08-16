@@ -3,6 +3,8 @@ Code for the paper "Coordinated drift of receptive fields during noisy represent
 ## Dependence
 Some of the scripts depend on ITE (information theoretical estimators) which can be downloaded from https://bitbucket.org/szzoli/ite/src/master/
 
+To plot figures without running the simulations, download the data from https://www.dropbox.com/sh/hgcxraa6kvv7jm3/AACVKWIomrHdyU46iMiQdQl4a?dl=0 and put the `data` folder in the main directory
+
 ## Simulations
 
 To run the simulation using the scripts in the folder `simulation`. The resulted data should be stored in the folder `data` 
