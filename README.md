@@ -1,4 +1,4 @@
-Code for the paper "Coordinated drift of receptive fields during noisy representation learning" to be published in Nature Neuroscience, 2022
+Code for the paper "Coordinated drift of receptive fields during noisy representation learning" to be published in Nature Neuroscience, 2022. See also the priprint https://www.biorxiv.org/content/10.1101/2021.08.30.458264v1.abstract
 
 ## Dependence
 Some of the scripts depend on ITE (information theoretical estimators) which can be downloaded from https://bitbucket.org/szzoli/ite/src/master/
