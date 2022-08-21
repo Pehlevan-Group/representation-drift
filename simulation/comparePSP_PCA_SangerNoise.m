@@ -20,7 +20,7 @@ YlOrRd = brewermap(11,'YlOrRd');
 oranges = brewermap(11,'Oranges');
 
 %% Parameters
-sFolder = './figures';
+sFolder = '../figures';
 type = 'psp';           % 'psp' or 'expansion
 tau = 0.5;              %  scaling of the learning rate for M
 learnType = 'online';   %  online, offline, batch   
@@ -29,7 +29,7 @@ n = 10;
 k = 3;
 eigens = [4.5,3.5,1,ones(1,7)*0.01];
 noiseStd = 1e-2; % 0.005 for expansion, 0.1 for psp
-learnRate = 0.01;
+learnRate = 0.02;
 
 t = 1e4;  % total number of iterations
 
@@ -37,14 +37,14 @@ t = 1e4;  % total number of iterations
 V = orth(randn(n,n));
 U = orth(randn(k,k));       % arbitrary orthogonal matrix to determine the projection
 C = V*diag(eigens)*V'/sqrt(n);    % with normalized length, Aug 6, 2020
-Vnorm = norm(V(:,1:k));
 
 % generate multivariate Gaussian distribution with specified correlation
 % matrix
 X = mvnrnd(zeros(1,n),C,t)';
 Cx = X*X'/t;      % input sample covarian
+Vnorm = norm(V(:,1:k)*V(:,1:k)','fro');
 
-% select one input to track
+% select one input to track, we compre the representations in 3 models
 xsel = X(:,randperm(t,1)); 
 
 %% PSP with M matrix symmetry-breaked
@@ -56,50 +56,44 @@ dt = learnRate;
 W = randn(k,n);
 M = eye(k,k);
 
-% Add a mask to M in each step
+% Add a mask to M in each step to break the symmetry of the recurrent
+% weight
 temp = ones(k);
 mask = tril(temp);
 
-% F = pinv(M)*W; % inital feature map
 noise1 = noiseStd;
 noise2 = noiseStd;
 dt0 = 0.1;          % learning rate for the initial phase, can be larger for faster convergence
-tau0 = 0.5;
-pspErrPre = nan(100,1); % store the psp error during the pre-noise stage
-for i = 1:100
+% tau0 = 0.5;
+% pspErrPre = nan(500,1); % store the psp error during the pre-noise stage
+for i = 1:500
     Y = pinv(M)*W*X; 
-    W = (1-2*dt0)*W + 2*dt0*Y*X'/t + sqrt(2*dt)*noise1*randn(k,n);
-    M = (1-dt0/tau0)*M + dt0/tau0*(Y*Y')/t;
+    W = (1-dt0)*W + dt0*Y*X'/t + sqrt(dt)*noise1*randn(k,n);
+    M = (1-dt0)*M + dt0*(Y*Y')/t;
     M = M.*mask;
     F = pinv(M)*W;
     disp(norm(F*F'-eye(k),'fro'))
-%     pspErrPre(i) = norm(F'*F - V(:,1:k)*V(:,1:k)');
 end
 
 % ========================================================
 % online learning with synaptic noise
 % ========================================================
 
-
 tot_iter = 2e5;     % total number of updates
 step = 20;          % store every 10 updates
 time_points = round(tot_iter/step);
 Yt_sb = zeros(k,time_points);
 pspErr = nan(time_points,1);
-% Ytest = zeros(k,time_points,num_test);  % store the testing stimulus
 
 Ft = zeros(k,n,time_points);        % store the feature maps
 inx = randperm(t);
-% sel_inx = randperm(t,1);    % selct on
 
 for i = 1:tot_iter
     curr_inx = randperm(t,1);  % randm generate one sample
     % generate noise matrices
-    xis = randn(k,n);
-    zetas = randn(k,k);
     Y = pinv(M)*W*X(:,curr_inx); 
-    W = (1-2*dt)*W + 2*dt*Y*X(:,curr_inx)' + sqrt(dt)*noise1*xis;
-    M = (1-dt/tau)*M + dt/tau*Y*Y' +  sqrt(dt)*noise2*zetas; 
+    W = (1-dt)*W + dt*Y*X(:,curr_inx)' + sqrt(dt)*noise1*randn(k,n);
+    M = (1-dt)*M + dt*Y*Y' +  sqrt(dt)*noise2*randn(k,k); 
     M = M.*mask;
 
     if mod(i,step)==0
@@ -108,7 +102,7 @@ for i = 1:tot_iter
 
             % PSP error
         if strcmp(type,'psp')
-            pspErr(round(i/step)) = norm(temp'*temp - V(:,1:k)*V(:,1:k)');
+            pspErr(round(i/step)) = norm(temp'*temp - V(:,1:k)*V(:,1:k)','fro')/Vnorm;
         end
     end  
 end
@@ -146,6 +140,7 @@ saveas(fh_sb,[sFolder,filesep,prefix,'.fig'])
 print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
+% make a data cloud scatter plot
 dotColors = flip(brewermap(size(Yt_sb,2)/pointGap,'Spectral'));
 figure
 hold on
@@ -171,21 +166,18 @@ M_psp = eye(k,k);
 noise1 = noiseStd;
 noise2 = noiseStd;
 dt0 = 0.1;          % learning rate for the initial phase, can be larger for faster convergence
-tau0 = 0.5;
-pspErrPre = nan(100,1); % store the psp error during the pre-noise stage
-for i = 1:100
+% tau0 = 0.5;
+for i = 1:500
     Y = pinv(M_psp)*W_psp*X; 
-    W_psp = (1-2*dt0)*W_psp + 2*dt0*Y*X'/t + sqrt(2*dt)*noise1*randn(k,n);
-    M_psp = (1-dt0/tau0)*M_psp + dt0/tau0*(Y*Y')/t;
+    W_psp = (1-dt0)*W_psp + dt0*Y*X'/t + sqrt(dt)*noise1*randn(k,n);
+    M_psp = (1-dt0)*M_psp + dt0*(Y*Y')/t + sqrt(dt)*noise3*randn(k,k);
     F_psp = pinv(M_psp)*W_psp;
     disp(norm(F_psp*F_psp'-eye(k),'fro'))
-%     pspErrPre(i) = norm(F'*F - V(:,1:k)*V(:,1:k)');
 end
 
 % ========================================================
 % online learning with synaptic noise
 % ========================================================
-
 
 time_points = round(tot_iter/step);
 Yt_psp = zeros(k,time_points);
@@ -195,19 +187,17 @@ pspErr = nan(time_points,1);
 for i = 1:tot_iter
     curr_inx = randperm(t,1);  % randm generate one sample
     % generate noise matrices
-    xis = randn(k,n);
-    zetas = randn(k,k);
     Y = pinv(M_psp)*W_psp*X(:,curr_inx); 
-    W_psp = (1-2*dt)*W_psp + 2*dt*Y*X(:,curr_inx)' + sqrt(dt)*noise1*xis;
-    M_psp = (1-dt/tau)*M_psp + dt/tau*Y*Y' +  sqrt(dt)*noise2*zetas; 
+    W_psp = (1-dt)*W_psp + dt*Y*X(:,curr_inx)' + sqrt(dt)*noise1*randn(k,n);
+    M_psp = (1-dt)*M_psp + dt*Y*Y' +  sqrt(dt)*noise2*randn(k,k);
 
     if mod(i,step)==0
         temp = pinv(M_psp)*W_psp;       % current feature map
         Yt_psp(:,round(i/step)) = temp*xsel;
 
-            % PSP error
+        % PSP error
         if strcmp(type,'psp')
-            pspErr(round(i/step)) = norm(temp'*temp - V(:,1:k)*V(:,1:k)');
+            pspErr(round(i/step)) = norm(temp'*temp - V(:,1:k)*V(:,1:k)','fro')/Vnorm;
         end
     end  
 end
@@ -322,12 +312,13 @@ xlabel('$t$','Interpreter','latex','FontSize',labelFontSize)
 ylabel('$y_i(t)$','Interpreter','latex','FontSize',labelFontSize)
 set(gca,'LineWidth',1,'FontSize',gcaFontSize)
 
-prefix = 'noisy_Sanger';
-saveas(fh_sg,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = 'noisy_Sanger';
+% saveas(fh_sg,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 dotColors = flip(brewermap(size(Yt_sg,2)/pointGap,'Spectral'));
+
 figure
 hold on
 for i = 1:(size(Yt_sg,2)/pointGap)

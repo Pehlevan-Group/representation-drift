@@ -27,6 +27,8 @@ tot_iter = 1e5;
 syn_noise_std = 2e-2;    % 1e-2 for offline
 learnRate = 5e-2;        % 0.05 for offline
 
+rng(100);                % fix the random number generator seed 
+
 % initilize the synaptic weight matrices
 W = randn(output_dim,input_dim);
 M = eye(output_dim,output_dim);
@@ -101,7 +103,7 @@ ylabel('PSP error','FontSize',24)
 xlim([1 2e2])
 
 % prefix = 'psp_learning_curve';
-% saveas(f_learnCurve,[saveFolder,filesep,prefix,'_',date,'.fig'])
+% saveas(f_learnCurve,[saveFolder,filesep,prefix,'_',date,'_3_','.fig'])
 % print('-depsc',[saveFolder,filesep,prefix,'.eps'])
 
 %% now add noise to see how F and output drift
@@ -204,7 +206,7 @@ Fvec = reshape(Ft,output_dim*input_dim,time_points);
 % plot the ensemble representations
 figYens = figure;
 set(figYens,'Units','inches','Position',[0,0,4,3])
-ensem_sel = [6, 11];   % this should depdend on the learning type
+ensem_sel = [8, 11];   % this should depdend on the learning type
 for i = 1:length(ensem_sel)
     scatterHd = plot3(Y_ensemble(1,:,ensem_sel(i)),Y_ensemble(2,:,ensem_sel(i)),...
         Y_ensemble(3,:,ensem_sel(i)),'.','MarkerSize',6);
@@ -220,7 +222,7 @@ zlabel('$y_3$','Interpreter','latex','FontSize',20)
 set(gca,'FontSize',16,'XLim',[-4,4],'YLim',[-4,4],'ZLim',[-3,3])
 
 % save the figure
-% prefix = [type,'_ensemble_orientation_dt5e3_',date,'_2'];
+% prefix = [type,'_ensemble_orientation_dt3e3_',date,'_3'];
 % saveas(figYens,[saveFolder,filesep,prefix,'.fig'])
 % print('-depsc',[saveFolder,filesep,prefix,'.eps'])
 
@@ -314,7 +316,7 @@ plot(xs,pspErr(1:pointGap:time_points),'Color',greys(8,:),'LineWidth',1)
 box on
 xlabel('$t$','Interpreter','latex','FontSize',labelFontSize)
 ylabel('PSP error','FontSize',labelFontSize)
-set(gca,'LineWidth',1,'FontSize',gcaFontSize,'Ylim',[0,0.5])
+set(aAxes,'LineWidth',1,'FontSize',gcaFontSize,'Ylim',[0,1])
 
 % plot the example trajectory
 selYInx = randperm(num_sel,1);
@@ -333,10 +335,10 @@ legend boxoff
 set(bLgh,'FontSize',14)
 xlabel('$t$','Interpreter','latex','FontSize',labelFontSize)
 ylabel('$y_i(t)$','Interpreter','latex','FontSize',labelFontSize)
-set(gca,'LineWidth',1,'FontSize',gcaFontSize)
+set(bAxes,'LineWidth',1,'FontSize',gcaFontSize)
 
 
-% plot the similarity marix at two time
+% plot the similarity marix at two time points
 smSelect = randperm(num_sel,20);
 time1 = 1;
 time2 = 2e3;
@@ -377,13 +379,11 @@ box on
 xlabel('$t$','Interpreter','latex','FontSize',labelFontSize)
 ylabel('$||\rm{SM_{t} - SM_{0}}||_F/||SM_0||_F$','Interpreter','latex',...
     'FontSize',labelFontSize)
-set(gca,'LineWidth',1,'FontSize',16,'YLim',[0,0.1])
+set(dAxes,'LineWidth',1,'FontSize',gcaFontSize,'YLim',[0,0.5])
 
 
 % Plot auto correlation function and an exponential fit
 [acoef,meanAcf,allTau] = SMhelper.fitAucFun(Yt,step);
-% meanAcf = squeeze(mean(mean(acoef,3),2));
-% meanTau = fit(xFit,meanAcf,'exp1');
 % only plot partial of them
 aucSel = randperm(num_sel,10);
 axes(eAxes)
@@ -460,7 +460,7 @@ annotation('textbox', [.52 .5 .03 .03],...
 
 exampleSel = randperm(num_sel,1);  % randomly select a 
 % exampleSel = 110;
-% Yexample = Yt(:,:,exampleSel);
+Yexample = Yt(:,:,exampleSel);
 interSep = 5;   % only select data every 10 time points, to eliminate clutter
 dotColors = flip(brewermap(size(Yexample,2)/interSep,'Spectral'));
 
@@ -525,7 +525,7 @@ hold off
 xlabel('$\Delta t$','Interpreter','latex','FontSize',labelFontSize)
 ylabel('$\langle\varphi^2(\Delta t)\rangle$','Interpreter','latex','FontSize',labelFontSize)
 set(gca,'FontSize',20,'LineWidth',1,'XScale','log','YScale','log',...
- 'XTick',10.^(1:5),'YTick',10.^(-4:2:0))
+ 'XTick',10.^(1:5),'YTick',10.^(-4:2:2))
 set(gca,'FontSize',gcaFontSize,'LineWidth',1.5)
 % phiText = texlabel('D_\varphi \propto t^(0.99)');
 % thdl = text(1e3,0.2,phiText,'FontSize',20);
@@ -623,7 +623,7 @@ set(dAxes,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',.
     'Ylim',[1e-6,1e-3],'YTick',10.^(-6:1:-3),'XTick',10.^([0,1,2]))
 
 prefix = 'psp_fit_rotational_fig2_2';
-saveas(paperFig3,[sFolder,filesep,prefix,'_',date,'_2','.fig'])
+saveas(paperFig3,[sFolder,filesep,prefix,'_',date,'_3','.fig'])
 print('-depsc',[saveFolder,filesep,prefix,'.eps'])
 
 
