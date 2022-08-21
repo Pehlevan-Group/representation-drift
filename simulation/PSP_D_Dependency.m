@@ -5,11 +5,11 @@
 saveFolder = './data';
 type = 'psp';           % 'psp' or 'expansion
 tau = 0.5;              %  scaling of the learning rate for M
-learnType = 'offline';  %  online, offline, batch   
+learnType = 'online';  %  online, offline, batch   
 
 % simulation type
 simType = 'eigenSpectr';     % 'noiseAmp' or 'eigenSpectr'
-totSimul = 2e3;              % total number of sampling
+totSimul = 2e3;              %  total number of sampling
 
 %% Confifguration when running on cluster
 % uncomment this section and modifiy the directory and settings
@@ -52,6 +52,6 @@ elseif strcmp(simType,'eigenSpectr')
     end
 end
 
-% save the data
+% save the data for plot
 dataFile = [simType,'.mat'];
 save(dataFile,'noiseStd','eigens','allDiffConst','learnRate','step')

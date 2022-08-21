@@ -1,6 +1,6 @@
 classdef SMhelper < handle
     % this class put all the helper funcitons togehter when analyzing the
-    % drift presentations
+    % drift presentations for the PSP task
     
    properties
 %       lr
@@ -18,8 +18,8 @@ classdef SMhelper < handle
    
    methods(Static) 
      function randEigs = genRandEigs(k,n,rho, distr)
-        % generate random eigenvalues, with first k explain rho
-        % variability
+        % generate random eigenvalues, with first k explain fraction of rho
+        % variation of the total variation, with different distribution
         if strcmp(distr, 'rand')
             firstK = rand(k,1);
         elseif strcmp(distr, 'lognorm')
@@ -28,8 +28,8 @@ classdef SMhelper < handle
             firstK = exp(rand(k,1));
         end
         
+        % fix the summation of eigenvalues to be 10, for convinience
         rest = rand(n-k,1);
-%         randEigs = [sort(firstK./sum(firstK)*rho,'descend'); rest*(1-rho)./sum(rest)];
         randEigs = [sort(firstK./sum(firstK)*rho,'descend'); rest*(1-rho)./sum(rest)]*10;
      end
      
@@ -84,67 +84,67 @@ classdef SMhelper < handle
          end
      end
      
-     function [diffConst, alphas] = diffConstAngles(angles,stepSize,varargin)
-         % fit a mean square displacement of the angles
-         % angles     a 3 by steps matrix storing the three Euler angles
-         % stepsize   time interval of two adjacent data
-         % fitRange   integer, number of points used to fit msd
-        time_points = size(angles,2);
-        num_sel = size(angles,1);
-        msd = nan(num_sel,floor(time_points/2));
-        for i = 1:floor(time_points/2)
-            diffLag = angles(:,i+1:end) - angles(:,1:end-i);
-            msd(:,i) = mean(diffLag.*diffLag,2);
-        end
-        
-        % fit msd
-        if nargin > 2
-            fitRange = varargin{1}; % number points selected to fit
-        else
-            fitRange = size(msd,2);
-        end
-        % x0 = 1:length(msd)'*stepSize;
-        diffConst = nan(3,1); % diffusion constant of three angles
-        alphas = nan(3,1);  % corresponding exponents
-        for i = 1:3
-            logY = log(msd(i,1:fitRange)');
-            logX = [ones(fitRange,1),log((1:fitRange)'*stepSize)];
-            b = logX\logY;  
-            diffConst(i) = exp(b(1));  % diffusion constant
-            alphas(i) = b(2); % factor
-        end
-        
-        % plot the figure
-        figure
-        plot((1:size(msd,2))'*stepSize,msd')
-        lglables = {['D_{\alpha} = ', num2str(diffConst(1))],['D_{\beta} = ', num2str(diffConst(2))],...
-            ['D_{\gamma} = ', num2str(diffConst(3))]};
-        lg = legend(lglables);
-        set(lg,'FontSize',16)
-%         lg = legend('\alpha','\beta','\gamma','Location','northwest');
-%         set(lg)
-        xlabel('$ \Delta t$','Interpreter','latex','FontSize',28)
-        ylabel('$\langle (\Delta r_{\theta}(t))^2)\rangle$','Interpreter','latex','FontSize',28)
-        set(gca,'FontSize',24,'LineWidth',1.5,'XScale','log','YScale','log')
-        
-        figure
-        plot((1:size(angles,2))'*stepSize,angles')
-        legend('\alpha','\beta','\gamma','Location','northeast');
-        xlabel('$t$','Interpreter','latex','FontSize',28)
-        ylabel('angle (rad)','FontSize',28)
-        set(gca,'FontSize',24,'LineWidth',1.5)
-     end
+%      function [diffConst, alphas] = diffConstAngles(angles,stepSize,varargin)
+%          % fit a mean square displacement of the angles
+%          % angles     a 3 by steps matrix storing the three Euler angles
+%          % stepsize   time interval of two adjacent data
+%          % fitRange   integer, number of points used to fit msd
+%         time_points = size(angles,2);
+%         num_sel = size(angles,1);
+%         msd = nan(num_sel,floor(time_points/2));
+%         for i = 1:floor(time_points/2)
+%             diffLag = angles(:,i+1:end) - angles(:,1:end-i);
+%             msd(:,i) = mean(diffLag.*diffLag,2);
+%         end
+%         
+%         % fit msd
+%         if nargin > 2
+%             fitRange = varargin{1}; % number points selected to fit
+%         else
+%             fitRange = size(msd,2);
+%         end
+%         % x0 = 1:length(msd)'*stepSize;
+%         diffConst = nan(3,1); % diffusion constant of three angles
+%         alphas = nan(3,1);  % corresponding exponents
+%         for i = 1:3
+%             logY = log(msd(i,1:fitRange)');
+%             logX = [ones(fitRange,1),log((1:fitRange)'*stepSize)];
+%             b = logX\logY;  
+%             diffConst(i) = exp(b(1));  % diffusion constant
+%             alphas(i) = b(2); % factor
+%         end
+%         
+%         % plot the figure
+%         figure
+%         plot((1:size(msd,2))'*stepSize,msd')
+%         lglables = {['D_{\alpha} = ', num2str(diffConst(1))],['D_{\beta} = ', num2str(diffConst(2))],...
+%             ['D_{\gamma} = ', num2str(diffConst(3))]};
+%         lg = legend(lglables);
+%         set(lg,'FontSize',16)
+% %         lg = legend('\alpha','\beta','\gamma','Location','northwest');
+% %         set(lg)
+%         xlabel('$ \Delta t$','Interpreter','latex','FontSize',28)
+%         ylabel('$\langle (\Delta r_{\theta}(t))^2)\rangle$','Interpreter','latex','FontSize',28)
+%         set(gca,'FontSize',24,'LineWidth',1.5,'XScale','log','YScale','log')
+%         
+%         figure
+%         plot((1:size(angles,2))'*stepSize,angles')
+%         legend('\alpha','\beta','\gamma','Location','northeast');
+%         xlabel('$t$','Interpreter','latex','FontSize',28)
+%         ylabel('angle (rad)','FontSize',28)
+%         set(gca,'FontSize',24,'LineWidth',1.5)
+%      end
      
      function msd_tot = rotationalMSD(Yt)
          % define the rotational mean square and fit the diffusion
          % constants
          [k,N,samples] = size(Yt);
          drs = Yt(:,2:end,:) - Yt(:,1:(N-1),:);
-         lens = sum(Yt(:,2:end,:).^2,1);  % square of vectors
+         lens = sum(Yt(:,2:end,:).^2,1);      % square of vectors' lengths
          angVel = cross(Yt(:,1:(N-1),:), drs, 1)./lens; % angular velocity
          
          % cumulative angulars
-         cumAngs = cumsum(angVel,2); % cumulated angles
+         cumAngs = cumsum(angVel,2);      % cumulated angles
          time_points = size(cumAngs,2);
 %          num_sel = size(angles,1);
          msd_tot = nan(samples,floor(time_points/2));
@@ -154,58 +154,42 @@ classdef SMhelper < handle
             msd_tot(:,i) = squeeze(mean(sum(diffLag.*diffLag,1),2));
          end
          
-         % decomposition of the roational angles
-%          angProj = nan(size(angVel));
-%          for i = 1:size(angVel,2)
-%              for j = 1:samples
-%                 angProj(:,i,j) = eigVec(:,:,i)'*angVel(:,i,j);
-%              end
-%          end
-         % cumulative angulars
-%         cumAngs_comp = cumsum(angProj,2); % cumulated angles
-%          time_points = size(cumAngs_comp,2);
-%          msd_comp = nan(k,samples,floor(time_points/2));
-%          for i = 1:floor(time_points/2)
-%             diffLag = cumAngs_comp(:,i+1:end,:) - cumAngs_comp(:,1:end-i,:);
-%             msd_comp(:,:,i) = squeeze(mean(diffLag.*diffLag,2));
-%          end
-%          
-%          xlabel('$t$','Interpreter','latex','FontSize',28)
-%          ylabel('angle (rad)','FontSize',28)
-%          set(gca,'FontSize',24,'LineWidth',1.5)
-         
      end
      
-     function [Dphi,exponent] = fitRotationDiff(rmsd, stepSize, fitRange, vargin)
-         % plot and return the diffusion constant of rotationl angles
-         if nargin > 3
-             plotFlag = 1;   % plot or not, default 0
+     function [Dphi,exponent] = fitRotationDiff(rmsd, stepSize, fitRange, fitMethod, vargin)
+         % Fit the rotational diffusion constant based on mean-squared
+         % angular displacement
+         if nargin > 4
+             plotFlag = vargin{1};   % plot or not, default 0
          else
              plotFlag = 0;
          end
          
-%          aveRMSD = mean(rmsd,1);
-%          logY = log(aveRMSD(1:fitRange)');
-%          logX = [ones(fitRange,1),log((1:fitRange)'*stepSize)];
-%          b = logX\logY;  
-%          Dphi = exp(b(1));  % diffusion constant
-%          exponent = b(2); % factor
-         
-         allDs = nan(size(rmsd,1),1);
-         allExpo = nan(size(rmsd,1),1);
-         for i  = 1:size(rmsd,1)
+        
+        allDs = nan(size(rmsd,1),1);
+        allExpo = nan(size(rmsd,1),1);
+        % linear fit
+        if strcmp(fitRange,'linear')
             temp = rmsd(i,:);
-            logY = log(temp(1:fitRange)');
-            logX = [ones(fitRange,1),log((1:fitRange)'*stepSize)];
-            b = logX\logY;  
-%             Dphi = exp(b(1));  % diffusion constant
-%             exponent = b(2); % factor
-            allDs(i) = exp(b(1));
-            allExpo(i) = b(2);
+            ys = temp(1:fitRange)';
+            xs = [ones(fitRange,1),(1:fitRange)'*stepSize];
+            bs = xs\ys;   % linear regression
+            Ds(i) = bs(2)/4;   % notice the factor 4 is from the definition
+
+        % fit in the logscale to reduce error
+         elseif strcmp(fitRange,'log')
+             
+             for i  = 1:size(rmsd,1)
+                temp = rmsd(i,:);
+                logY = log(temp(1:fitRange)');
+                logX = [ones(fitRange,1),log((1:fitRange)'*stepSize)];
+                b = logX\logY;  
+                allDs(i) = exp(b(1))/4;   % notice the scaling factor 4
+                allExpo(i) = b(2);
+             end
+             Dphi = nanmean(allDs);     % population average
+             exponent = nanmean(allExpo);
          end
-        Dphi = nanmean(allDs);
-        exponent = nanmean(allExpo);
-         
          % plot and save
          if plotFlag
              fFolder = './figures';
@@ -225,12 +209,7 @@ classdef SMhelper < handle
              set(gca,'FontSize',24,'LineWidth',1.5,'XScale','log','YScale','log',...
                  'XTick',10.^(1:5),'YTick',10.^(-4:2:0))
              set(gca,'FontSize',24,'LineWidth',1.5)
-%              figPref = 'rmsd_same_eig';
-%              saveas(gcf,[fFolder,filesep,figPref,'.fig'])
-%              print('-depsc',[fFolder,filesep,figPref,'.eps'])
-         end
-         
-         
+         end    
      end
      
      % adpative fitting range
@@ -292,7 +271,7 @@ classdef SMhelper < handle
          end
      end
 
-    function [diffConst, alpha] = fitMsd(msd,stepSize,varargin)
+     function [diffConst, alpha] = fitMsd(msd,stepSize,varargin)
         % fit the time dependent msd by anormalous diffusion
         % y = D*x^a, linear regression in the logscale
         % msd is a vector
@@ -308,9 +287,9 @@ classdef SMhelper < handle
         b = logX\logY;  
         diffConst = exp(b(1));  % diffusion constant
         alpha = b(2); % factor
-    end
+     end
          
-    function plots(Yt, norm_msd,msd_dtheta, step)
+     function plots(Yt, norm_msd,msd_dtheta, step)
     % plot a gif of 3d scattering of two example samples
 
     % first, select two exmaples
@@ -418,30 +397,30 @@ classdef SMhelper < handle
 
     end
 
-    function plot3dScatter(Y, vargin)
-    % plot a 3 D scattering of the matrix Y
-    % Y   a 3-d array, num_dimension, num_samples, num_time points
-    [k, N, S] = size(Y);
-   
-    if nargin > 1
-        % do PCA
-    end
+%     function plot3dScatter(Y, vargin)
+%     % plot a 3 D scattering of the matrix Y
+%     % Y   a 3-d array, num_dimension, num_samples, num_time points
+%     [k, N, S] = size(Y);
+%    
+%     if nargin > 1
+%         % do PCA
+%     end
+% 
+%     figure
+%     for i = 1:S
+%         plot3(Y(1,:,i),Y(2,:,i),Y(3,:,i),'.')
+%         hold on
+%         xlabel('$y_1$','Interpreter','latex','FontSize',24)
+%         ylabel('$y_2$','Interpreter','latex','FontSize',24)
+%         zlabel('$y_3$','Interpreter','latex','FontSize',24)
+%         grid on
+%         set(gca,'FontSize',20)
+%     end
+%     
+%     
+%     end
 
-    figure
-    for i = 1:S
-        plot3(Y(1,:,i),Y(2,:,i),Y(3,:,i),'.')
-        hold on
-        xlabel('$y_1$','Interpreter','latex','FontSize',24)
-        ylabel('$y_2$','Interpreter','latex','FontSize',24)
-        zlabel('$y_3$','Interpreter','latex','FontSize',24)
-        grid on
-        set(gca,'FontSize',20)
-    end
-    
-    
-    end
-
-    function out = hebbianReadout(Y,W,actiFun, vargin)
+%     function out = hebbianReadout(Y,W,actiFun, vargin)
     % this function test the invariance of hebbian readout
     % Y is the representational matrix
     % W is the readout matrix
@@ -468,19 +447,18 @@ classdef SMhelper < handle
 
     end
     end
-    
-    
+       
     % regarded the clouds of input as regid body problem
-    function out = rigidBody(Y)
-        % center of mass
-        centerMass = mean(Y,3); % center of mass
-        residue = Y - centerMass;
-        momentIner = sum(sum(residue.^2,3),1);
-        out = [mean(momentIner), std(momentIner)];  % mean and 
-    end
+%     function out = rigidBody(Y)
+%         % center of mass
+%         centerMass = mean(Y,3); % center of mass
+%         residue = Y - centerMass;
+%         momentIner = sum(sum(residue.^2,3),1);
+%         out = [mean(momentIner), std(momentIner)];  % mean and 
+%     end
       
     % auto correlation funcitons, fit exponential
-    function [acoef,meanAcf,allTau] = fitAucFun(Y,step)
+     function [acoef,meanAcf,allTau] = fitAucFun(Y,step)
         % fit individual components
         [k, timePoint, num] = size(Y);
         
