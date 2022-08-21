@@ -5,6 +5,7 @@ if exist('input_flag','var')
 else
     Flag = true;
 end
+
 % update the synaptic weights and the stored population vectors if required
 time_points = round(total_iter/params.record_step);
 Xsel = X(:,1:4:end);
@@ -33,10 +34,6 @@ num_samp = size(X,2);
         % store every param.step steps
         if mod(i, params.record_step) == 0
             y0 = zeros(params.dim_out,size(Xsel,2));
-%             for j = 1:size(Xsel,2)
-%                 states_fixed = MantHelper.nsmDynBatch(Xsel(:,j),y0, params);
-%                 Yt(:,j,round(i/params.record_step)) = states_fixed.Y;
-%             end
             states_fixed = MantHelper.nsmDynBatch(Xsel,y0, params);
             Yt(:,:,round(i/params.record_step)) = states_fixed.Y;
         end

@@ -15,9 +15,9 @@ set1 = brewermap(9,'Set1');
 
 saveFolder = ['.',filesep,'figures'];
 
-%% Generate sample data
+%% Generate sample data, with small N
 
-params.dim_out = 5;           % number of neurons
+params.dim_out = 5;             % number of neurons
 params.dim_in = 2;              % input dimensionality, 3 for Tmaze and 2 for ring
 total_iter = 1e4;               % total simulation iterations
 
@@ -26,7 +26,6 @@ dataType = 'ring';              % 'Tmaze' or 'ring';
 learnType = 'snsm';             % snsm if using simple non-negative similarity matching
 noiseVar = 'same';              % using different noise or the same noise level for each synpase
 params.batch_size = 1;          % default 1
-% angularVel = 1/80;            % angular velocity
 params.record_step = 1000;
 
 % generate the ring data input, 2D
@@ -44,11 +43,6 @@ Cx = X*X'/size(X,2);            % input covariance matrix
 y0 = zeros(params.dim_out,params.batch_size);
 Wout = zeros(1,params.dim_out); % linear decoder weight vector
 
-
-% estimate error
-% validBatch = 100;               % randomly select 100 to estimate the error
-% Y0val = zeros(params.dim_out,validBatch);
-
 params.W = 0.1*randn(params.dim_out,params.dim_in);
 params.M = eye(params.dim_out); % lateral connection if using simple nsm
 params.lbd1 = 0.0;              % regularization for the simple nsm, 1e-3
@@ -58,11 +52,9 @@ params.alpha = 0;               % should be smaller than 1 if for the ring model
 params.beta = 1;                % 
 params.gy = 0.05;               % update step for y
 params.b = zeros(params.dim_out,1);      % bias
-% params.read_lr = learnRate*10;     % learning rate of readout matrix
 
 params.sigWmax = params.noiseStd;    % the maxium noise level for the forward matrix
 params.sigMmax = params.noiseStd;    % maximum noise level of recurrent matrix
-
 
 % assume uniform distribution at log scale
 if strcmp(noiseVar, 'various')
@@ -77,6 +69,7 @@ else
     params.noiseM =  params.sigMmax*ones(params.dim_out,params.dim_out);   
 end
 
+% initial stage, make sure the weight matrices reach stationary state
 [~, params] = ring_update_weight(X,total_iter,params);
 
 % check the receptive field

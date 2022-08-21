@@ -83,58 +83,7 @@ classdef SMhelper < handle
              angles(3,i) = atan2(norm(cross(V(:,3),refz)), dot(V(:,3),refz));
          end
      end
-     
-%      function [diffConst, alphas] = diffConstAngles(angles,stepSize,varargin)
-%          % fit a mean square displacement of the angles
-%          % angles     a 3 by steps matrix storing the three Euler angles
-%          % stepsize   time interval of two adjacent data
-%          % fitRange   integer, number of points used to fit msd
-%         time_points = size(angles,2);
-%         num_sel = size(angles,1);
-%         msd = nan(num_sel,floor(time_points/2));
-%         for i = 1:floor(time_points/2)
-%             diffLag = angles(:,i+1:end) - angles(:,1:end-i);
-%             msd(:,i) = mean(diffLag.*diffLag,2);
-%         end
-%         
-%         % fit msd
-%         if nargin > 2
-%             fitRange = varargin{1}; % number points selected to fit
-%         else
-%             fitRange = size(msd,2);
-%         end
-%         % x0 = 1:length(msd)'*stepSize;
-%         diffConst = nan(3,1); % diffusion constant of three angles
-%         alphas = nan(3,1);  % corresponding exponents
-%         for i = 1:3
-%             logY = log(msd(i,1:fitRange)');
-%             logX = [ones(fitRange,1),log((1:fitRange)'*stepSize)];
-%             b = logX\logY;  
-%             diffConst(i) = exp(b(1));  % diffusion constant
-%             alphas(i) = b(2); % factor
-%         end
-%         
-%         % plot the figure
-%         figure
-%         plot((1:size(msd,2))'*stepSize,msd')
-%         lglables = {['D_{\alpha} = ', num2str(diffConst(1))],['D_{\beta} = ', num2str(diffConst(2))],...
-%             ['D_{\gamma} = ', num2str(diffConst(3))]};
-%         lg = legend(lglables);
-%         set(lg,'FontSize',16)
-% %         lg = legend('\alpha','\beta','\gamma','Location','northwest');
-% %         set(lg)
-%         xlabel('$ \Delta t$','Interpreter','latex','FontSize',28)
-%         ylabel('$\langle (\Delta r_{\theta}(t))^2)\rangle$','Interpreter','latex','FontSize',28)
-%         set(gca,'FontSize',24,'LineWidth',1.5,'XScale','log','YScale','log')
-%         
-%         figure
-%         plot((1:size(angles,2))'*stepSize,angles')
-%         legend('\alpha','\beta','\gamma','Location','northeast');
-%         xlabel('$t$','Interpreter','latex','FontSize',28)
-%         ylabel('angle (rad)','FontSize',28)
-%         set(gca,'FontSize',24,'LineWidth',1.5)
-%      end
-     
+
      function msd_tot = rotationalMSD(Yt)
          % define the rotational mean square and fit the diffusion
          % constants
@@ -189,7 +138,7 @@ classdef SMhelper < handle
                 allDs(i) = exp(b(1))/4;   % notice the scaling factor 4
                 allExpo(i) = b(2);
              end
-         end
+        end
          % return the average
          Dphi = nanmean(allDs);     % population average
          exponent = nanmean(allExpo);
@@ -264,7 +213,6 @@ classdef SMhelper < handle
          
      end
      
-     
      function V = newEigVec(new,old)
          % change the sigin to match the previous eigen vectors
          V = new;
@@ -292,175 +240,7 @@ classdef SMhelper < handle
         diffConst = exp(b(1));  % diffusion constant
         alpha = b(2); % factor
      end
-         
-%      function plots(Yt, norm_msd,msd_dtheta, step)
-%     % plot a gif of 3d scattering of two example samples
-% 
-%     % first, select two exmaples
-%     inxs = randperm(size(Yt,3),2);
-%     Y1 = Yt(:,:,inxs(1)); Y2 = Yt(:,:,inxs(2));
-% 
-%     % define the colors
-%     set1 = brewermap(7,'Set1');
-%     rdbu = brewermap(11,'RdBu')';
-% 
-%     figure
-%     plot3(Y1(1,:),Y1(2,:),Y1(3,:),'.')
-%     hold on
-%     plot3(Y2(1,:),Y2(2,:),Y2(3,:),'.')
-%     xlabel('$y_1$','Interpreter','latex','FontSize',24)
-%     ylabel('$y_2$','Interpreter','latex','FontSize',24)
-%     zlabel('$y_3$','Interpreter','latex','FontSize',24)
-%     grid on
-%     set(gca,'FontSize',20)
-%     
-%     
-%     % encode the temporal information by colors
-%     colors = brewermap(size(Y1,2),'Spectral');
-%     figure
-%     for i = 1:size(Y1,2)
-%         plot3(Y1(1,i),Y1(2,i),Y1(3,i),'.','Color',colors(i,:))
-%         hold on
-%     end
-%     xlabel('$y_1$','Interpreter','latex','FontSize',24)
-%     ylabel('$y_2$','Interpreter','latex','FontSize',24)
-%     zlabel('$y_3$','Interpreter','latex','FontSize',24)
-%     hold off
-% 
-%     % produce a gif and store it
-%     az = 45;
-%     el = 30;
-%     view([az,el])
-%     degStep = 5;
-%     detlaT = 0.05;
-%     % fCount = 71;
-%     f = getframe(gcf);
-%     [im,map] = rgb2ind(f.cdata,256,'nodither');
-%     % im(1,1,1,fCount) = 0;
-%     k = 1;
-% 
-%     for i = 0:degStep:315
-%       az = i;
-%       view([az,el])
-%       f = getframe(gcf);
-%       im(:,:,1,k) = rgb2ind(f.cdata,map,'nodither');
-%       k = k + 1;
-%     end
-%     imwrite(im,map,'scatter3D.gif','DelayTime',detlaT,'LoopCount',inf)
-% 
-% 
-%     % linear scale for euclidean
-%     X = (1:size(norm_msd,1))'*step;
-%     figure
-%     for i = 1:5
-%         plot(X,norm_msd(:,i),'LineWidth',2,'Color',set1(i,:))
-%         hold on
-%     end
-%     hold off
-%     xlabel('$ t$','Interpreter','latex','FontSize',28)
-%     ylabel('$\langle (\Delta r(t))^2)\rangle$','Interpreter','latex','FontSize',28)
-%     set(gca,'FontSize',24,'LineWidth',1.5)
-%     % log scale
-%     figure
-%     for i = 1:5
-%         plot(X,norm_msd(:,i),'LineWidth',2,'Color',set1(i,:))
-%         hold on
-%     end
-%     hold off
-%     xlabel('$ t$','Interpreter','latex','FontSize',28)
-%     ylabel('$\langle (\Delta r(t))^2)\rangle$','Interpreter','latex','FontSize',28)
-%     set(gca,'FontSize',24,'LineWidth',1.5,'XScale','log','YScale','log')
-% 
-%     X = (1:size(msd_dtheta,1))'*step;
-%     figure
-%     for i = 1:5
-%         plot(X,msd_dtheta(:,i),'LineWidth',2,'Color',set1(i,:))
-%         hold on
-%     end
-%     hold off
-%     xlabel('$ t$','Interpreter','latex','FontSize',28)
-%     ylabel('$\langle (\Delta r_{\theta}(t))^2)\rangle$','Interpreter','latex','FontSize',28)
-%     set(gca,'FontSize',24,'LineWidth',1.5)
-%     % log scale
-%     figure
-%     for i = 1:5
-%         plot(X,msd_dtheta(:,i),'LineWidth',2,'Color',set1(i,:))
-%         hold on
-%     end
-%     hold off
-%     xlabel('$ t$','Interpreter','latex','FontSize',28)
-%     ylabel('$\langle (\Delta r_{\theta}(t))^2)\rangle$','Interpreter','latex','FontSize',28)
-%     set(gca,'FontSize',24,'LineWidth',1.5,'XScale','log','YScale','log')
-% 
-%     % trajectory of the first 3 elements
-%     figure
-%     plot((1:size(Yt,2))'*step,Yt(:,:,inxs(1))')
-%     xlabel('$ t$','Interpreter','latex','FontSize',28)
-%     ylabel('$ y_i$','Interpreter','latex','FontSize',28)
-%     set(gca,'FontSize',24,'LineWidth',1.5)
-% 
-%     end
 
-%     function plot3dScatter(Y, vargin)
-%     % plot a 3 D scattering of the matrix Y
-%     % Y   a 3-d array, num_dimension, num_samples, num_time points
-%     [k, N, S] = size(Y);
-%    
-%     if nargin > 1
-%         % do PCA
-%     end
-% 
-%     figure
-%     for i = 1:S
-%         plot3(Y(1,:,i),Y(2,:,i),Y(3,:,i),'.')
-%         hold on
-%         xlabel('$y_1$','Interpreter','latex','FontSize',24)
-%         ylabel('$y_2$','Interpreter','latex','FontSize',24)
-%         zlabel('$y_3$','Interpreter','latex','FontSize',24)
-%         grid on
-%         set(gca,'FontSize',20)
-%     end
-%     
-%     
-%     end
-
-%     function out = hebbianReadout(Y,W,actiFun, vargin)
-    % this function test the invariance of hebbian readout
-    % Y is the representational matrix
-    % W is the readout matrix
-    % actiFun is the activation function
-
-    % bias term, should have the same length as the second dim of Y
-%     if nargin > 3
-%         b = vargin{1};
-%     end
-%   
-%     % initialize the output
-%     out = zeros(size(W,1),size(Y,2),size(Y,3));
-%     for i = 1:size(Y,3)
-%         out(:,:,i) = W*Y(:,:,i);
-%     end
-%     if strcmp(actiFun,'linear')
-%         out = squeeze(out);
-%     elseif strcmp(actiFun,'relu')
-%         out = squeeze(max(out,0));
-%     elseif strcmp(actiFun,'sigmoidal')
-%         out = squeeze(1./(1+exp(-out + b)));
-%     elseif strcmp(actiFun,'heaviside')
-%         out = squeeze(heaviside(out));
-% 
-%     end
-%     end
-       
-    % regarded the clouds of input as regid body problem
-%     function out = rigidBody(Y)
-%         % center of mass
-%         centerMass = mean(Y,3); % center of mass
-%         residue = Y - centerMass;
-%         momentIner = sum(sum(residue.^2,3),1);
-%         out = [mean(momentIner), std(momentIner)];  % mean and 
-%     end
-      
     % auto correlation funcitons, fit exponential
      function [acoef,meanAcf,allTau] = fitAucFun(Y,step)
         % fit individual components

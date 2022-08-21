@@ -9,7 +9,7 @@
 % Simulation data used for ploting Figure S8
 close all
 clc
-
+rng(100)  % set the default random number generator seed
 %% define some colors
 blues = brewermap(11,'Blues');
 BuGns = brewermap(11,'BuGn');
@@ -135,9 +135,9 @@ xlabel('$t$','Interpreter','latex','FontSize',labelFontSize)
 ylabel('$y_i(t)$','Interpreter','latex','FontSize',labelFontSize)
 set(gca,'LineWidth',1,'FontSize',gcaFontSize)
 
-prefix = 'noisy_PSP_M_symm_break';
-saveas(fh_sb,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = 'noisy_PSP_M_symm_break';
+% saveas(fh_sb,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 % make a data cloud scatter plot
@@ -170,7 +170,7 @@ dt0 = 0.1;          % learning rate for the initial phase, can be larger for fas
 for i = 1:500
     Y = pinv(M_psp)*W_psp*X; 
     W_psp = (1-dt0)*W_psp + dt0*Y*X'/t + sqrt(dt)*noise1*randn(k,n);
-    M_psp = (1-dt0)*M_psp + dt0*(Y*Y')/t + sqrt(dt)*noise3*randn(k,k);
+    M_psp = (1-dt0)*M_psp + dt0*(Y*Y')/t + sqrt(dt)*noise2*randn(k,k);
     F_psp = pinv(M_psp)*W_psp;
     disp(norm(F_psp*F_psp'-eye(k),'fro'))
 end
@@ -230,9 +230,9 @@ xlabel('$t$','Interpreter','latex','FontSize',labelFontSize)
 ylabel('$y_i(t)$','Interpreter','latex','FontSize',labelFontSize)
 set(gca,'LineWidth',1,'FontSize',gcaFontSize)
 
-prefix = 'noisy_PSP_compare';
-saveas(fh_psp,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = 'noisy_PSP_compare';
+% saveas(fh_psp,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 dotColors = flip(brewermap(size(Yt_psp,2)/pointGap,'Spectral'));
 figure
