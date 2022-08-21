@@ -10,7 +10,7 @@
 
 type = 'psp';           % 'psp' or 'expansion
 tau = 0.5;              %  scaling of the learning rate for M
-learnType = 'online';   %  online, offline, batch   
+learnType = 'offline';   %  online, offline, batch   
 
 % plot setting
 %defaultGraphicsSetttings
@@ -27,14 +27,14 @@ input_cov_eigens = [4.5,3.5,1,ones(1,7)*0.01];
 
 assert(length(input_cov_eigens) == input_dim, ...
     'The input convariance matrix does not match input dimension!')
-syn_noise_std = 1e-2;
-learnRate = 0.05;
+syn_noise_std = 0;    % 1e-2 for offline
+learnRate = 1e-3;        % 0.05 for offline
 
 tot_iter = 5e4; 
 
 % generate training and testing data
 [X, Xtest, V] = generate_PSP_input(input_cov_eigens,input_dim,output_dim, tot_iter);
-Vnorm = norm(V(:,1:input_dim));  % used when calculate the normalized PSP error
+Vnorm = norm(V(:,1:input_dim),'fro');  % used when calculate the normalized PSP error
 % ========================================================
 % Use offline learning to find the inital solution
 % this can speed up the initial stage of simulation
@@ -48,18 +48,20 @@ stdM = syn_noise_std;
 dt0 = 0.1;                % learning rate for the initial phase, can be larger for faster convergence
 tau0 = 0.5;
 % PSP_err_no_noise = nan(100,1);   % store the psp error during the pre-noise stage
-
-% for i = 1:100
+% 
+% for i = 1:1000
 %     Y = pinv(M)*W*X; 
 %     W = (1-2*dt0)*W + 2*dt0*Y*X'/tot_iter + sqrt(2*dt)*stdW*randn(output_dim,input_dim);
 %     M = (1-dt0/tau0)*M + dt0/tau0*(Y*Y')/tot_iter;
 %     F = pinv(M)*W;
 %     disp(norm(F*F'-eye(output_dim),'fro'))
+%     disp('psp error:')
+%     disp(norm(F'*F - V(:,1:output_dim)*V(:,1:output_dim)','fro'))
 % end
 
 
-% initial stage, show the decrease of PSP error
-step = 1;
+% initial stage, show the decrease of PSP error with online learning
+step = 10;
 time_points = round(tot_iter/step);
 pspErr = nan(time_points,1);
 F = pinv(M)*W;   % initial feature maps
@@ -70,13 +72,13 @@ for i = 1:1e4
         zetas = randn(output_dim,output_dim);
         Y = pinv(M)*W*X(:,curr_inx); 
         W = (1-2*dt)*W + 2*dt*Y*X(:,curr_inx)' + sqrt(dt)*stdW*xis;
-        M = max((1-dt/tau)*M + dt/tau*Y*Y' +  sqrt(dt)*stdM*zetas,0);  % make sure non-negative 
+        M = max((1-dt/tau)*M + dt/tau*Y*Y' +  sqrt(dt/tau)*stdM*zetas,0);  % make sure non-negative 
   
         if mod(i,step)==0
             temp = pinv(M)*W;  % current feature map
             % PSP error
             if strcmp(type,'psp')
-                pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)');
+                pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)','fro');
             end
         end
 end
@@ -86,6 +88,7 @@ f_learnCurve = figure;
 pos(3)= 4.5; pos(4)= 3.5;
 set(f_learnCurve,'color','w','Units','inches','Position',pos)
 plot(pspErr(1:200),'LineWidth',4)
+% plot(pspErr,'LineWidth',4)
 set(gca,'FontSize',20,'LineWidth',1.5)
 xlabel('$t$','Interpreter','latex','FontSize',24)
 ylabel('PSP error','FontSize',24)
@@ -145,9 +148,9 @@ if strcmp(learnType,'offline')
 
             % PSP error
             if strcmp(type,'psp')
-                pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)');
+                pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)','fro');
             end
-            featurMapErr(round(i/step)) = norm(temp*temp' - eye(output_dim));
+            featurMapErr(round(i/step)) = norm(temp*temp' - eye(output_dim),'fro');
             Ysel = temp*X(:,sel_inx);
             SMerror(round(i/step)) = norm(Ysel'*Ysel - SM0,'fro')/(norm(SM0,'fro') + 1e-10);
             % representation of test stimuli
@@ -179,9 +182,9 @@ elseif strcmp(learnType,'online')
                 
             % PSP error
             if strcmp(type,'psp')
-                pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)');
+                pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)','fro');
             end
-            featurMapErr(round(i/step)) = norm(temp*temp' - eye(output_dim));
+            featurMapErr(round(i/step)) = norm(temp*temp' - eye(output_dim),'fro');
             Ysel = temp*X(:,sel_inx);
             SMerror(round(i/step)) = norm(Ysel'*Ysel - SM0,'fro')/(norm(SM0,'fro') + 1e-10);
             % representation of test stimuli
