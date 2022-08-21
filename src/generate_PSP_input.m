@@ -3,8 +3,8 @@ function [X, Xtest, V] = generate_PSP_input(input_cov_eigens,input_dim,output_di
 % generate input data, first covariance matrix
 V = orth(randn(input_dim,input_dim));
 U = orth(randn(output_dim,output_dim));       % arbitrary orthogonal matrix to determine the projection
-% C = V*diag(input_cov_eigens)*V'/sqrt(input_dim);    % with normalized length
-C = V*diag(input_cov_eigens)*V';    % with normalized length
+C = V*diag(input_cov_eigens)*V'/sqrt(input_dim);    % with normalized length
+% C = V*diag(input_cov_eigens)*V';    % with normalized length
 % Vnorm = norm(V(:,1:output_dim));
 
 % generate multivariate Gaussian distribution with specified correlation

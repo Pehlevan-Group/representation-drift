@@ -169,15 +169,17 @@ classdef SMhelper < handle
         allDs = nan(size(rmsd,1),1);
         allExpo = nan(size(rmsd,1),1);
         % linear fit
-        if strcmp(fitRange,'linear')
-            temp = rmsd(i,:);
-            ys = temp(1:fitRange)';
-            xs = [ones(fitRange,1),(1:fitRange)'*stepSize];
-            bs = xs\ys;   % linear regression
-            Ds(i) = bs(2)/4;   % notice the factor 4 is from the definition
+        if strcmp(fitMethod,'linear')
+            for i  = 1:size(rmsd,1)
+                temp = rmsd(i,:);
+                ys = temp(1:fitRange)';
+                xs = [ones(fitRange,1),(1:fitRange)'*stepSize];
+                bs = xs\ys;   % linear regression
+                allDs(i) = bs(2)/4;   % notice the factor 4 is from the definition
+            end
 
         % fit in the logscale to reduce error
-         elseif strcmp(fitRange,'log')
+         elseif strcmp(fitMethod,'log')
              
              for i  = 1:size(rmsd,1)
                 temp = rmsd(i,:);
@@ -187,9 +189,11 @@ classdef SMhelper < handle
                 allDs(i) = exp(b(1))/4;   % notice the scaling factor 4
                 allExpo(i) = b(2);
              end
-             Dphi = nanmean(allDs);     % population average
-             exponent = nanmean(allExpo);
          end
+         % return the average
+         Dphi = nanmean(allDs);     % population average
+         exponent = nanmean(allExpo);
+         
          % plot and save
          if plotFlag
              fFolder = './figures';

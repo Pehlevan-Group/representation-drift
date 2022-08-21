@@ -2,7 +2,6 @@
 % the noise level and eigen spectrum distribution
 % this code should be ran on a cluster
 
-saveFolder = './data';
 type = 'psp';           % 'psp' or 'expansion
 tau = 0.5;              %  scaling of the learning rate for M
 learnType = 'online';  %  online, offline, batch   
@@ -13,10 +12,10 @@ totSimul = 2e3;              %  total number of sampling
 
 %% Confifguration when running on cluster
 % uncomment this section and modifiy the directory and settings
-% addpath('/n/home09/ssqin/driftRepr')
+addpath('/n/home09/ssqin/driftRepr')
  
 % start the parallel pool with 12 workers
-% parpool('local', str2num(getenv('SLURM_CPUS_PER_TASK')));
+parpool('local', str2num(getenv('SLURM_CPUS_PER_TASK')));
 
 %% learning rate depedent, keep eigen spectrum and noise level, tau the same
 n = 10;
@@ -33,9 +32,9 @@ t = 10000;  % total number of samples
 
 if strcmp(simType,'noiseAmp')
     repeats = 40;   % for statistical robustness
-    noiseStd = ones(repeats,1)*10.^(-3:0.05:-1); 
+    noiseStd = ones(repeats,1)*10.^(-2:0.05:-1); 
     noiseStd = noiseStd(:);
-    eigens = [4.5,3,1.5,ones(1,7)*0.02];
+    eigens = [4.5,3,1.5,ones(1,7)*0.01];
     allDiffConst = nan(length(noiseStd),2);  % store all the diffusion constant and exponents
     parfor i = 1:length(noiseStd)
         [dph,ephi] = rotaDiffConst(n,k, eigens, noiseStd(i),learnRate);
@@ -43,9 +42,9 @@ if strcmp(simType,'noiseAmp')
     end
 elseif strcmp(simType,'eigenSpectr')
     noiseStd = 0.01; 
-    eigens = nan(10,totSimul);  % store all the input eigen values
+    eigens = nan(10,totSimul);    % store all the input eigen values
     allDiffConst = nan(totSimul,2) ; %store all the diffusion constant and exponents
-    for i= 1:totSimul
+    parfor i= 1:totSimul
         eigens(:,i) = SMhelper.genRandEigs(k,n,rho,'lognorm');
         [dph,ephi] = rotaDiffConst(n,k, eigens(:,i), noiseStd,learnRate);
         allDiffConst(i,:) = [dph,ephi];

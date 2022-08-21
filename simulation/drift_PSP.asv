@@ -8,9 +8,12 @@
 % the script aslo plots all the figures related to Figure 2 and
 % corresponding SI figures in the manuscript
 
+% Notice, we have set learning rate for M and W to be the same,
+% corresponding to the case tau = 0.5
+
 type = 'psp';           % 'psp' or 'expansion
 tau = 0.5;              %  scaling of the learning rate for M
-learnType = 'offline';   %  online, offline, batch   
+learnType = 'online';   %  online, offline, batch   
 
 saveFolder = '../figures';
 
@@ -18,17 +21,19 @@ saveFolder = '../figures';
 input_dim = 10;      
 output_dim = 3;
 
-num_sample = 2e3;        % total number of samples generated
-tot_iter = 1e4; 
+num_sample = 1e4;        % total number of samples generated
+tot_iter = 1e5; 
+
+syn_noise_std = 1e-2;    % 1e-2 for offline
+learnRate = 5e-2;        % 0.05 for offline
+
+% initilize the synaptic weight matrices
+W = randn(output_dim,input_dim);
+M = eye(output_dim,output_dim);
 
 input_cov_eigens = [4.5,3.5,1,ones(1,7)*0.01];
-% input_cov_eigens = [sqrt(3*num_sample),sqrt(2*num_sample), sqrt(num_sample),rand(1,7)*0.1*sqrt(num_sample)];
-
 assert(length(input_cov_eigens) == input_dim, ...
     'The input convariance matrix does not match input dimension!')
-syn_noise_std = 0;    % 1e-2 for offline
-learnRate = 1e-3;        % 0.05 for offline
-
 
 % generate training and testing data
 [X, Xtest, ~] = generate_PSP_input(input_cov_eigens,input_dim,output_dim, num_sample);
@@ -39,9 +44,8 @@ Vnorm = norm(V(:,1:output_dim)*V(:,1:output_dim)','fro');  % used when calculate
 % Use offline learning to find the inital solution
 % this can speed up the initial stage of simulation
 % ========================================================
+
 dt = learnRate;
-W = randn(output_dim,input_dim);
-M = eye(output_dim,output_dim);
 stdW = syn_noise_std;   
 stdM = syn_noise_std;  
 
@@ -52,8 +56,8 @@ stdM = syn_noise_std;
 % for i = 1:2000
 %     dt0 = 1/(1e3+i);
 %     Y = pinv(M)*W*X; 
-%     W = (1-2*dt0)*W + 2*dt0*Y*X'/num_sample + sqrt(2*dt)*stdW*randn(output_dim,input_dim);
-%     M = (1-dt0/tau0)*M + dt0/tau0*(Y*Y')/num_sample + sqrt(dt0/tau0)*stdM*randn(output_dim,output_dim);
+%     W = (1-dt0)*W + dt0*Y*X'/num_sample + sqrt(dt)*stdW*randn(output_dim,input_dim);
+%     M = (1-dt0)*M + dt0*(Y*Y')/num_sample + sqrt(dt0)*stdM*randn(output_dim,output_dim);
 %     F = pinv(M)*W;
 % %     disp(norm(F*F'-eye(output_dim),'fro'))
 %     disp('psp error:')
@@ -62,18 +66,18 @@ stdM = syn_noise_std;
 
 
 % initial stage, show the decrease of PSP error with online learning
-step = 10;
-time_points = round(tot_iter/step);
+tot_inital = 2e3;
+step = 1;
+time_points = round(tot_inital/step);
 pspErr = nan(time_points,1);
-F = pinv(M)*W;   % initial feature maps
-for i = 1:tot_iter
+for i = 1:tot_inital
         curr_inx = randperm(num_sample,1);  % randm generate one sample
         % generate noise matrices
         xis = randn(output_dim,input_dim);
         zetas = randn(output_dim,output_dim);
         Y = pinv(M)*W*X(:,curr_inx); 
-        W = (1-2*dt)*W + 2*dt*Y*X(:,curr_inx)' + sqrt(2*dt)*stdW*xis;
-        M = (1-dt/tau)*M + dt/tau*Y*Y' +  sqrt(dt/tau)*stdM*zetas; 
+        W = (1-dt)*W + dt*Y*X(:,curr_inx)' + sqrt(dt)*stdW*xis;
+        M = (1-dt)*M + dt*Y*Y' +  sqrt(dt)*stdM*zetas; 
   
         if mod(i,step)==0
             temp = pinv(M)*W;  % current feature map
@@ -83,6 +87,7 @@ for i = 1:tot_iter
             end
         end
 end
+F = pinv(M)*W;     % initial feature maps
 
 % show the learning curve
 f_learnCurve = figure;
@@ -93,10 +98,10 @@ plot(((1:length(pspErr))*step)',pspErr,'LineWidth',4)
 set(gca,'FontSize',20,'LineWidth',1.5)
 xlabel('$t$','Interpreter','latex','FontSize',24)
 ylabel('PSP error','FontSize',24)
-xlim([1 1e4])
+xlim([1 2e2])
 
 % prefix = 'psp_learning_curve';
-% saveas(f_learnCurve,[saveFolder,filesep,prefix,'.fig'])
+% saveas(f_learnCurve,[saveFolder,filesep,prefix,'_',date,'.fig'])
 % print('-depsc',[saveFolder,filesep,prefix,'.eps'])
 
 %% now add noise to see how F and output drift
@@ -109,7 +114,7 @@ Yt = zeros(output_dim,time_points,num_sel);
 Ytest = zeros(output_dim,time_points,size(Xtest,2));     % store the testing stimulus
 
 Ft = zeros(output_dim,input_dim,time_points);        % store the feature maps
-sel_inx = randperm(num_s,num_sel);    % samples indices
+sel_inx = randperm(num_sample,num_sel);    % samples indices
 Wout = randn(1,output_dim);       % readout vector
 readError = nan(tot_iter,1);      % store the average instantaneous readout error
 
@@ -120,7 +125,7 @@ outEigVecs = nan(output_dim,output_dim,time_points);   % eigenvectors of output
 % store all the representations at three time points
 subpopulation = 1000;             % number of subpopulation chosen
 ensemble_step = 1e4;           
-partial_index = randperm(tot_iter,subpopulation);   
+partial_index = randperm(num_sample,subpopulation);   
 Y_ensemble = zeros(output_dim,subpopulation,round(tot_iter/ensemble_step) + 1);    %store a subpopulation
 pspErr = nan(time_points,1);
 featurMapErr = nan(time_points,1);
@@ -134,23 +139,14 @@ if strcmp(learnType,'offline')
         xis = randn(output_dim,input_dim);
         zetas = randn(output_dim,output_dim);
         Y = pinv(M)*W*X;
-        W = (1-2*dt)*W + 2*dt*Y*X'/tot_iter + sqrt(2*dt)*stdW*xis;
-        M = (1-dt/tau)*M + dt/tau*Y*Y'/tot_iter +  sqrt(dt/tau)*stdM*zetas;
-        
-        % readout matrix and error
-        Wout = Wout + dt*(labels - Wout*Y)*Y'/tot_iter;
-        readError(i) = mean((labels - Wout*Y).^2);      
-        
-        if mod(i,step)==0
-            temp = pinv(M)*W;       % current feature map
-            Yt(:,round(i/step),:) = temp*X(:,sel_inx);
-            Ft(:,:,round(i/step)) = temp; % store
-            Wout_store(round(i/step),:) = Wout;
-            
+        W = (1-dt)*W + dt*Y*X'/tot_iter + sqrt(dt)*stdW*xis;
+        M = (1-dt)*M + dt*Y*Y'/tot_iter +  sqrt(dt)*stdM*zetas;
 
+        if mod(i,step)==0
+            
             % PSP error
             if strcmp(type,'psp')
-                pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)','fro');
+                pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)','fro')/Vnorm;
             end
             featurMapErr(round(i/step)) = norm(temp*temp' - eye(output_dim),'fro');
             Ysel = temp*X(:,sel_inx);
@@ -169,13 +165,13 @@ if strcmp(learnType,'offline')
     end
 elseif strcmp(learnType,'online')
     for i = 1:tot_iter
-        curr_inx = randperm(tot_iter,1);  % randm generate one sample
+        curr_inx = randperm(num_sample,1);  % randm generate one sample
         % generate noise matrices
         xis = randn(output_dim,input_dim);
         zetas = randn(output_dim,output_dim);
         Y = pinv(M)*W*X(:,curr_inx); 
-        W = (1-2*dt)*W + 2*dt*Y*X(:,curr_inx)' + sqrt(2*dt)*stdW*xis;
-        M = (1-dt/tau)*M + dt/tau*Y*Y' +  sqrt(dt/tau)*stdM*zetas; 
+        W = (1-dt)*W + dt*Y*X(:,curr_inx)' + sqrt(dt)*stdW*xis;
+        M = (1-dt)*M + dt*Y*Y' +  sqrt(dt)*stdM*zetas; 
   
         if mod(i,step)==0
             temp = pinv(M)*W;  % current feature map
@@ -184,7 +180,7 @@ elseif strcmp(learnType,'online')
                 
             % PSP error
             if strcmp(type,'psp')
-                pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)','fro');
+                pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)','fro')/Vnorm;
             end
             featurMapErr(round(i/step)) = norm(temp*temp' - eye(output_dim),'fro');
             Ysel = temp*X(:,sel_inx);
@@ -208,7 +204,7 @@ Fvec = reshape(Ft,output_dim*input_dim,time_points);
 % plot the ensemble representations
 figYens = figure;
 set(figYens,'Units','inches','Position',[0,0,4,3])
-ensem_sel = [2, 4];   % this should depdend on the learning type
+ensem_sel = [6, 11];   % this should depdend on the learning type
 for i = 1:length(ensem_sel)
     scatterHd = plot3(Y_ensemble(1,:,ensem_sel(i)),Y_ensemble(2,:,ensem_sel(i)),...
         Y_ensemble(3,:,ensem_sel(i)),'.','MarkerSize',6);
@@ -217,20 +213,21 @@ for i = 1:length(ensem_sel)
     scatterHd.MarkerEdgeColor(4) = 0.2;
     grid on
 end
+lg = legend('$t = 0$,'$t= 5\times )
 xlabel('$y_1$','Interpreter','latex','FontSize',20)
 ylabel('$y_2$','Interpreter','latex','FontSize',20)
 zlabel('$y_3$','Interpreter','latex','FontSize',20)
-set(gca,'FontSize',16)
+set(gca,'FontSize',16,'XLim',[-4,4],'YLim',[-4,4],'ZLim',[-3,3])
 
 % save the figure
-% prefix = [type,'_ensemble_orientation'];
-% saveas(figYens,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[sFolder,filesep,prefix,'.eps'])
+prefix = [type,'_ensemble_orientation_Dt5e3_'];
+saveas(figYens,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 
 rmsd = SMhelper.rotationalMSD(Yt);
-[dph,ephi] = SMhelper.fitRotationDiff(rmsd,step,2000);
+[dph,ephi] = SMhelper.fitRotationDiff(rmsd,step,2000,'log');
 
 
 % prefix = 'oja_readout_fig2';
@@ -354,16 +351,13 @@ leafOrder = optimalleaforder(tree,D);
 
 
 axes(cAxesi)
-imagesc(Y1sel(:,leafOrder)'*Y1sel(:,leafOrder),[-4,4])
+imagesc(Y1sel(:,leafOrder)'*Y1sel(:,leafOrder),[-6,6])
 colormap(RdBuMap)
 set(gca,'XTick','','YTick',[1,10,20])
 ylabel('Stimuli','FontSize',labelFontSize)
-% annotation('textbox', [.69 .85 .1 .03],...
-%     'String', ['t = ', num2str(time1)],'BackgroundColor','none','Color','k',...
-%     'LineStyle','none','fontsize',labelFontSize,'VerticalAlignment','middle')
 
 axes(cAxesii)
-imagesc(Y2sel(:,leafOrder)'*Y2sel(:,leafOrder),[-4,4])
+imagesc(Y2sel(:,leafOrder)'*Y2sel(:,leafOrder),[-6,6])
 colormap(RdBuMap)
 % annotation('textbox', [.69 .68 .1 .03],...
 %     'String', ['t = ', num2str(time2)],'BackgroundColor','none','Color','k',...
@@ -419,9 +413,9 @@ c.Position = [0.955,0.12,0.01,0.35];
 
 % save the figure
 
-% prefix = 'psp_summary_fig2';
-% saveas(paperFig2,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[saveFolder,filesep,prefix,'.eps'])
+prefix = 'psp_summary_fig2';
+saveas(paperFig2,[sFolder,filesep,prefix,'_',date,'_2','.fig'])
+print('-depsc',[saveFolder,filesep,prefix,'.eps'])
 
 %% ==================== Figure 3 ==================
 
@@ -464,7 +458,8 @@ annotation('textbox', [.52 .5 .03 .03],...
 % 3-d scattering showing the representational drift, color indicates time
 % ====================================================
 
-exampleSel = randperm(num_sel,1);  % randomly select a stimulus
+exampleSel = randperm(num_sel,1);  % randomly select a 
+% exampleSel = 128;
 Yexample = Yt(:,:,exampleSel);
 interSep = 5;   % only select data every 10 time points, to eliminate clutter
 dotColors = flip(brewermap(size(Yexample,2)/interSep,'Spectral'));
@@ -494,6 +489,11 @@ colormap(dotColors)
 c2 = colorbar;
 c2.Position = [0.42,0.75,0.015,0.2];
 
+% enhance visualization
+radius_new = ridus;   % this should be modified based on the effect
+set(aAxes,'XLim',[-radius_new,radius_new],'YLim',[-radius_new,radius_new],...
+    'ZLim',[-radius_new,radius_new])
+
 view([45,30])
 xlabel('$y_1$','Interpreter','latex','FontSize',labelFontSize)
 ylabel('$y_2$','Interpreter','latex','FontSize',labelFontSize)
@@ -516,7 +516,7 @@ pInx = randperm(size(rmsd,1),20);
 axes(bAxes)
 plot((1:size(rmsd,2))'*step, rmsd(pInx,:)','Color',greys(5,:),'LineWidth',1.5)
 hold on
-plot((1:size(rmsd,2))*step,mean(rmsd,1),'LineWidth',4,'Color',PuRd(7,:))
+% plot((1:size(rmsd,2))*step,mean(rmsd,1),'LineWidth',4,'Color',PuRd(7,:))
 
 % overlap fitted line
 yFit = exp(logX*b);
@@ -535,8 +535,8 @@ set(gca,'FontSize',gcaFontSize,'LineWidth',1.5)
 % Scaling of the diffusion constant and the noise amplitude
 % =========================================================
 % first, load the data
-noiseData = load('./data/noiseAmp0808.mat');
-spectrumData = load('./data/eigenSpectr0821.mat');  % new data
+noiseData = load('../data/noiseAmp0808.mat');
+spectrumData = load('../data/eigenSpectr0821.mat');  % new data
 % spectrumData = load('./data/eigenSpectr0301.mat');
 
 
@@ -624,7 +624,7 @@ set(dAxes,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',.
 
 
 %% A closer look at the eigenspectrum and the diffusion constants
-
+%{
 nBins = 20;
 % spRange = [30,2000];
 spRange = 10.^[-0.5,2];
@@ -672,3 +672,4 @@ hold on
 plot(10.^(-1:0.1:2),theoPre*10.^(-1:0.1:2))
 plot(10.^aveCenter,theoPre*10.^aveCenter)
 plot(10.^aveCenter,aveSpDs(:,1))
+%}

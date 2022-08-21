@@ -29,7 +29,7 @@ end
 % basic parameters
 n = dimIn;              % default 10
 k = dimOut;             % default 3
-t = 10000;              % total number of samples
+t = 1e4;              % total number of samples
 
 
 % generate input data
@@ -40,30 +40,24 @@ C = V*diag(eigs)*V';
 % matrix
 X = mvnrnd(zeros(1,n),C,t)';
 
-% store the perturbations
-% record_step = 200;
-% perturbs = zeros(k,n,round(t/record_step));  %store the perturbation part of F
-
-
 % Use offline learning to find the inital solution
 dt = learnRate; 
 W = randn(k,n);
 M = eye(k,k);
 noise1 = noiseStd;
 noise2 = noiseStd;
-dt0 = 0.1;         % learning rate for the initial phase
-tau0 = 0.5;
+dt0 = 0.1;            % learning rate for the initial phase
 
 % A transient offline learning to ensure starting point is stationary
-for i = 1:500
+for i = 1:1e3
     Y = pinv(M)*W*X; 
-    W = (1-2*dt0)*W + 2*dt0*Y*X'/t;
-    M = (1-dt0/tau0)*M + dt0/tau0*(Y*Y')/t;
+    W = (1-dt0)*W + dt0*Y*X'/t;
+    M = (1-dt0)*M + dt0*(Y*Y')/t;
 end
 
 
 % now add noise to see how representation drift
-tot_iter = 5e4;     % total iteration time, longer for better estimation
+tot_iter = 1e5;     % total iteration time, longer for better estimation
 num_sel = 500;      % only select part of the samples to estimate diffusion costant
 step = 10;          % store every 10 step to reduce data size
 time_points = round(tot_iter/step);
@@ -75,8 +69,8 @@ if strcmp(learnType,'offline')
     for i = 1:tot_iter
         % sample noise matrices
         Y = pinv(M)*W*X; 
-        W = (1-2*dt)*W + 2*dt*Y*X'/t + sqrt(2*dt)*noise1*randn(k,n);
-        M = (1-dt/tau)*M + dt/tau*Y*Y'/t +  sqrt(dt/tau)*noise2*randn(k,k);
+        W = (1-dt)*W + dt*Y*X'/t + sqrt(dt)*noise1*randn(k,n);
+        M = (1-dt)*M + dt*Y*Y'/t +  sqrt(dt)*noise2*randn(k,k);
 
         if mod(i,step)==0
             Yt(:,round(i/step),:) = pinv(M)*W*X(:,sel_inx);
@@ -86,8 +80,8 @@ elseif strcmp(learnType,'online')
     for i = 1:tot_iter
         inx = randperm(t,1); % randomly select one input data
         Y = pinv(M)*W*X(:,inx); % 
-        W = (1-2*dt)*W + 2*dt*Y*X(:,inx)' + sqrt(2*dt)*noise1*randn(k,n);
-        M = (1-dt/tau)*M + dt/tau*Y*Y' +  sqrt(dt/tau)*noise2*randn(k,n); 
+        W = (1-dt)*W + dt*Y*X(:,inx)' + sqrt(dt)*noise1*randn(k,n);
+        M = (1-dt)*M + dt*Y*Y' +  sqrt(dt)*noise2*randn(k,k); 
         
         % store every "step" step
         if mod(i,step)==0
