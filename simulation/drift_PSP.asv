@@ -10,7 +10,7 @@
 
 type = 'psp';           % 'psp' or 'expansion
 tau = 0.5;              %  scaling of the learning rate for M
-learnType = 'online';   %  online, offline, batch   
+learnType = 'offline';   %  online, offline, batch   
 
 saveFolder = '../figures';
 
@@ -19,15 +19,15 @@ input_dim = 10;
 output_dim = 3;
 
 num_sample = 2e3;        % total number of samples generated
-tot_iter = 5e4; 
+tot_iter = 1e4; 
 
 input_cov_eigens = [4.5,3.5,1,ones(1,7)*0.01];
 % input_cov_eigens = [sqrt(3*num_sample),sqrt(2*num_sample), sqrt(num_sample),rand(1,7)*0.1*sqrt(num_sample)];
 
 assert(length(input_cov_eigens) == input_dim, ...
     'The input convariance matrix does not match input dimension!')
-syn_noise_std = 1e-2;    % 1e-2 for offline
-learnRate = 2e-3;        % 0.05 for offline
+syn_noise_std = 0;    % 1e-2 for offline
+learnRate = 1e-3;        % 0.05 for offline
 
 
 % generate training and testing data
@@ -62,12 +62,11 @@ stdM = syn_noise_std;
 
 
 % initial stage, show the decrease of PSP error with online learning
-tot_inital = 1e4;
 step = 10;
-time_points = round(tot_inital/step);
+time_points = round(tot_iter/step);
 pspErr = nan(time_points,1);
 F = pinv(M)*W;   % initial feature maps
-for i = 1:tot_inital
+for i = 1:tot_iter
         curr_inx = randperm(num_sample,1);  % randm generate one sample
         % generate noise matrices
         xis = randn(output_dim,input_dim);
@@ -110,7 +109,7 @@ Yt = zeros(output_dim,time_points,num_sel);
 Ytest = zeros(output_dim,time_points,size(Xtest,2));     % store the testing stimulus
 
 Ft = zeros(output_dim,input_dim,time_points);        % store the feature maps
-sel_inx = randperm(num_sample,num_sel);    % samples indices
+sel_inx = randperm(num_s,num_sel);    % samples indices
 Wout = randn(1,output_dim);       % readout vector
 readError = nan(tot_iter,1);      % store the average instantaneous readout error
 
@@ -121,7 +120,7 @@ outEigVecs = nan(output_dim,output_dim,time_points);   % eigenvectors of output
 % store all the representations at three time points
 subpopulation = 1000;             % number of subpopulation chosen
 ensemble_step = 1e4;           
-partial_index = randperm(num_sample,subpopulation);   
+partial_index = randperm(tot_iter,subpopulation);   
 Y_ensemble = zeros(output_dim,subpopulation,round(tot_iter/ensemble_step) + 1);    %store a subpopulation
 pspErr = nan(time_points,1);
 featurMapErr = nan(time_points,1);
@@ -137,9 +136,18 @@ if strcmp(learnType,'offline')
         Y = pinv(M)*W*X;
         W = (1-2*dt)*W + 2*dt*Y*X'/tot_iter + sqrt(2*dt)*stdW*xis;
         M = (1-dt/tau)*M + dt/tau*Y*Y'/tot_iter +  sqrt(dt/tau)*stdM*zetas;
-
+        
+        % readout matrix and error
+        Wout = Wout + dt*(labels - Wout*Y)*Y'/tot_iter;
+        readError(i) = mean((labels - Wout*Y).^2);      
+        
         if mod(i,step)==0
+            temp = pinv(M)*W;       % current feature map
+            Yt(:,round(i/step),:) = temp*X(:,sel_inx);
+            Ft(:,:,round(i/step)) = temp; % store
+            Wout_store(round(i/step),:) = Wout;
             
+
             % PSP error
             if strcmp(type,'psp')
                 pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)','fro');
@@ -161,7 +169,7 @@ if strcmp(learnType,'offline')
     end
 elseif strcmp(learnType,'online')
     for i = 1:tot_iter
-        curr_inx = randperm(num_sample,1);  % randm generate one sample
+        curr_inx = randperm(tot_iter,1);  % randm generate one sample
         % generate noise matrices
         xis = randn(output_dim,input_dim);
         zetas = randn(output_dim,output_dim);
@@ -200,7 +208,7 @@ Fvec = reshape(Ft,output_dim*input_dim,time_points);
 % plot the ensemble representations
 figYens = figure;
 set(figYens,'Units','inches','Position',[0,0,4,3])
-ensem_sel = [1, 2];   % this should depdend on the learning type
+ensem_sel = [2, 4];   % this should depdend on the learning type
 for i = 1:length(ensem_sel)
     scatterHd = plot3(Y_ensemble(1,:,ensem_sel(i)),Y_ensemble(2,:,ensem_sel(i)),...
         Y_ensemble(3,:,ensem_sel(i)),'.','MarkerSize',6);
@@ -222,7 +230,7 @@ set(gca,'FontSize',16)
 
 
 rmsd = SMhelper.rotationalMSD(Yt);
-[dph,ephi] = SMhelper.fitRotationDiff(rmsd,step,'log',2000);
+[dph,ephi] = SMhelper.fitRotationDiff(rmsd,step,2000);
 
 
 % prefix = 'oja_readout_fig2';
