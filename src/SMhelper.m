@@ -289,113 +289,113 @@ classdef SMhelper < handle
         alpha = b(2); % factor
      end
          
-     function plots(Yt, norm_msd,msd_dtheta, step)
-    % plot a gif of 3d scattering of two example samples
-
-    % first, select two exmaples
-    inxs = randperm(size(Yt,3),2);
-    Y1 = Yt(:,:,inxs(1)); Y2 = Yt(:,:,inxs(2));
-
-    % define the colors
-    set1 = brewermap(7,'Set1');
-    rdbu = brewermap(11,'RdBu')';
-
-    figure
-    plot3(Y1(1,:),Y1(2,:),Y1(3,:),'.')
-    hold on
-    plot3(Y2(1,:),Y2(2,:),Y2(3,:),'.')
-    xlabel('$y_1$','Interpreter','latex','FontSize',24)
-    ylabel('$y_2$','Interpreter','latex','FontSize',24)
-    zlabel('$y_3$','Interpreter','latex','FontSize',24)
-    grid on
-    set(gca,'FontSize',20)
-    
-    
-    % encode the temporal information by colors
-    colors = brewermap(size(Y1,2),'Spectral');
-    figure
-    for i = 1:size(Y1,2)
-        plot3(Y1(1,i),Y1(2,i),Y1(3,i),'.','Color',colors(i,:))
-        hold on
-    end
-    xlabel('$y_1$','Interpreter','latex','FontSize',24)
-    ylabel('$y_2$','Interpreter','latex','FontSize',24)
-    zlabel('$y_3$','Interpreter','latex','FontSize',24)
-    hold off
-
-    % produce a gif and store it
-    az = 45;
-    el = 30;
-    view([az,el])
-    degStep = 5;
-    detlaT = 0.05;
-    % fCount = 71;
-    f = getframe(gcf);
-    [im,map] = rgb2ind(f.cdata,256,'nodither');
-    % im(1,1,1,fCount) = 0;
-    k = 1;
-
-    for i = 0:degStep:315
-      az = i;
-      view([az,el])
-      f = getframe(gcf);
-      im(:,:,1,k) = rgb2ind(f.cdata,map,'nodither');
-      k = k + 1;
-    end
-    imwrite(im,map,'scatter3D.gif','DelayTime',detlaT,'LoopCount',inf)
-
-
-    % linear scale for euclidean
-    X = (1:size(norm_msd,1))'*step;
-    figure
-    for i = 1:5
-        plot(X,norm_msd(:,i),'LineWidth',2,'Color',set1(i,:))
-        hold on
-    end
-    hold off
-    xlabel('$ t$','Interpreter','latex','FontSize',28)
-    ylabel('$\langle (\Delta r(t))^2)\rangle$','Interpreter','latex','FontSize',28)
-    set(gca,'FontSize',24,'LineWidth',1.5)
-    % log scale
-    figure
-    for i = 1:5
-        plot(X,norm_msd(:,i),'LineWidth',2,'Color',set1(i,:))
-        hold on
-    end
-    hold off
-    xlabel('$ t$','Interpreter','latex','FontSize',28)
-    ylabel('$\langle (\Delta r(t))^2)\rangle$','Interpreter','latex','FontSize',28)
-    set(gca,'FontSize',24,'LineWidth',1.5,'XScale','log','YScale','log')
-
-    X = (1:size(msd_dtheta,1))'*step;
-    figure
-    for i = 1:5
-        plot(X,msd_dtheta(:,i),'LineWidth',2,'Color',set1(i,:))
-        hold on
-    end
-    hold off
-    xlabel('$ t$','Interpreter','latex','FontSize',28)
-    ylabel('$\langle (\Delta r_{\theta}(t))^2)\rangle$','Interpreter','latex','FontSize',28)
-    set(gca,'FontSize',24,'LineWidth',1.5)
-    % log scale
-    figure
-    for i = 1:5
-        plot(X,msd_dtheta(:,i),'LineWidth',2,'Color',set1(i,:))
-        hold on
-    end
-    hold off
-    xlabel('$ t$','Interpreter','latex','FontSize',28)
-    ylabel('$\langle (\Delta r_{\theta}(t))^2)\rangle$','Interpreter','latex','FontSize',28)
-    set(gca,'FontSize',24,'LineWidth',1.5,'XScale','log','YScale','log')
-
-    % trajectory of the first 3 elements
-    figure
-    plot((1:size(Yt,2))'*step,Yt(:,:,inxs(1))')
-    xlabel('$ t$','Interpreter','latex','FontSize',28)
-    ylabel('$ y_i$','Interpreter','latex','FontSize',28)
-    set(gca,'FontSize',24,'LineWidth',1.5)
-
-    end
+%      function plots(Yt, norm_msd,msd_dtheta, step)
+%     % plot a gif of 3d scattering of two example samples
+% 
+%     % first, select two exmaples
+%     inxs = randperm(size(Yt,3),2);
+%     Y1 = Yt(:,:,inxs(1)); Y2 = Yt(:,:,inxs(2));
+% 
+%     % define the colors
+%     set1 = brewermap(7,'Set1');
+%     rdbu = brewermap(11,'RdBu')';
+% 
+%     figure
+%     plot3(Y1(1,:),Y1(2,:),Y1(3,:),'.')
+%     hold on
+%     plot3(Y2(1,:),Y2(2,:),Y2(3,:),'.')
+%     xlabel('$y_1$','Interpreter','latex','FontSize',24)
+%     ylabel('$y_2$','Interpreter','latex','FontSize',24)
+%     zlabel('$y_3$','Interpreter','latex','FontSize',24)
+%     grid on
+%     set(gca,'FontSize',20)
+%     
+%     
+%     % encode the temporal information by colors
+%     colors = brewermap(size(Y1,2),'Spectral');
+%     figure
+%     for i = 1:size(Y1,2)
+%         plot3(Y1(1,i),Y1(2,i),Y1(3,i),'.','Color',colors(i,:))
+%         hold on
+%     end
+%     xlabel('$y_1$','Interpreter','latex','FontSize',24)
+%     ylabel('$y_2$','Interpreter','latex','FontSize',24)
+%     zlabel('$y_3$','Interpreter','latex','FontSize',24)
+%     hold off
+% 
+%     % produce a gif and store it
+%     az = 45;
+%     el = 30;
+%     view([az,el])
+%     degStep = 5;
+%     detlaT = 0.05;
+%     % fCount = 71;
+%     f = getframe(gcf);
+%     [im,map] = rgb2ind(f.cdata,256,'nodither');
+%     % im(1,1,1,fCount) = 0;
+%     k = 1;
+% 
+%     for i = 0:degStep:315
+%       az = i;
+%       view([az,el])
+%       f = getframe(gcf);
+%       im(:,:,1,k) = rgb2ind(f.cdata,map,'nodither');
+%       k = k + 1;
+%     end
+%     imwrite(im,map,'scatter3D.gif','DelayTime',detlaT,'LoopCount',inf)
+% 
+% 
+%     % linear scale for euclidean
+%     X = (1:size(norm_msd,1))'*step;
+%     figure
+%     for i = 1:5
+%         plot(X,norm_msd(:,i),'LineWidth',2,'Color',set1(i,:))
+%         hold on
+%     end
+%     hold off
+%     xlabel('$ t$','Interpreter','latex','FontSize',28)
+%     ylabel('$\langle (\Delta r(t))^2)\rangle$','Interpreter','latex','FontSize',28)
+%     set(gca,'FontSize',24,'LineWidth',1.5)
+%     % log scale
+%     figure
+%     for i = 1:5
+%         plot(X,norm_msd(:,i),'LineWidth',2,'Color',set1(i,:))
+%         hold on
+%     end
+%     hold off
+%     xlabel('$ t$','Interpreter','latex','FontSize',28)
+%     ylabel('$\langle (\Delta r(t))^2)\rangle$','Interpreter','latex','FontSize',28)
+%     set(gca,'FontSize',24,'LineWidth',1.5,'XScale','log','YScale','log')
+% 
+%     X = (1:size(msd_dtheta,1))'*step;
+%     figure
+%     for i = 1:5
+%         plot(X,msd_dtheta(:,i),'LineWidth',2,'Color',set1(i,:))
+%         hold on
+%     end
+%     hold off
+%     xlabel('$ t$','Interpreter','latex','FontSize',28)
+%     ylabel('$\langle (\Delta r_{\theta}(t))^2)\rangle$','Interpreter','latex','FontSize',28)
+%     set(gca,'FontSize',24,'LineWidth',1.5)
+%     % log scale
+%     figure
+%     for i = 1:5
+%         plot(X,msd_dtheta(:,i),'LineWidth',2,'Color',set1(i,:))
+%         hold on
+%     end
+%     hold off
+%     xlabel('$ t$','Interpreter','latex','FontSize',28)
+%     ylabel('$\langle (\Delta r_{\theta}(t))^2)\rangle$','Interpreter','latex','FontSize',28)
+%     set(gca,'FontSize',24,'LineWidth',1.5,'XScale','log','YScale','log')
+% 
+%     % trajectory of the first 3 elements
+%     figure
+%     plot((1:size(Yt,2))'*step,Yt(:,:,inxs(1))')
+%     xlabel('$ t$','Interpreter','latex','FontSize',28)
+%     ylabel('$ y_i$','Interpreter','latex','FontSize',28)
+%     set(gca,'FontSize',24,'LineWidth',1.5)
+% 
+%     end
 
 %     function plot3dScatter(Y, vargin)
 %     % plot a 3 D scattering of the matrix Y
@@ -427,26 +427,26 @@ classdef SMhelper < handle
     % actiFun is the activation function
 
     % bias term, should have the same length as the second dim of Y
-    if nargin > 3
-        b = vargin{1};
-    end
-  
-    % initialize the output
-    out = zeros(size(W,1),size(Y,2),size(Y,3));
-    for i = 1:size(Y,3)
-        out(:,:,i) = W*Y(:,:,i);
-    end
-    if strcmp(actiFun,'linear')
-        out = squeeze(out);
-    elseif strcmp(actiFun,'relu')
-        out = squeeze(max(out,0));
-    elseif strcmp(actiFun,'sigmoidal')
-        out = squeeze(1./(1+exp(-out + b)));
-    elseif strcmp(actiFun,'heaviside')
-        out = squeeze(heaviside(out));
-
-    end
-    end
+%     if nargin > 3
+%         b = vargin{1};
+%     end
+%   
+%     % initialize the output
+%     out = zeros(size(W,1),size(Y,2),size(Y,3));
+%     for i = 1:size(Y,3)
+%         out(:,:,i) = W*Y(:,:,i);
+%     end
+%     if strcmp(actiFun,'linear')
+%         out = squeeze(out);
+%     elseif strcmp(actiFun,'relu')
+%         out = squeeze(max(out,0));
+%     elseif strcmp(actiFun,'sigmoidal')
+%         out = squeeze(1./(1+exp(-out + b)));
+%     elseif strcmp(actiFun,'heaviside')
+%         out = squeeze(heaviside(out));
+% 
+%     end
+%     end
        
     % regarded the clouds of input as regid body problem
 %     function out = rigidBody(Y)

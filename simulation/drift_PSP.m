@@ -1,11 +1,11 @@
 % function drift_PSP()
 
-% this script simulate the drift in a linear Hebbian/anti-Hebbian network
+% this script simulates the drift in a linear Hebbian/anti-Hebbian network
 % performing principal subspace projection task
 % the variable names follow Pehlevan and Chklovskii's "why do similarity
 % matching objective functions ..."
 
-% the script aslo make all the figures related to Figure 2 and
+% the script aslo plots all the figures related to Figure 2 and
 % corresponding SI figures in the manuscript
 
 type = 'psp';           % 'psp' or 'expansion
@@ -14,11 +14,11 @@ learnType = 'online';   %  online, offline, batch
 
 % plot setting
 %defaultGraphicsSetttings
-blues = brewermap(11,'Blues');
-rb = brewermap(11,'RdBu');
-set1 = brewermap(9,'Set1');
+% blues = brewermap(11,'Blues');
+% rb = brewermap(11,'RdBu');
+% set1 = brewermap(9,'Set1');
 
-saveFolder = './figures';
+saveFolder = '../figures';
 
 %% learning rate dependent, keep eigen spectrum and noise level, tau the same
 input_dim = 10;      
@@ -255,7 +255,7 @@ set1 = brewermap(11,'Set1');
 
 
 %% ================= Figure 2 =========================
-sFolder = './figures';
+sFolder = '../figures';
 paperFig2 = figure; 
 set(gcf,'color','w','Units','inches')
 pos(3)=14;  %17.4; %8.5;%pos(3)*1.5;
