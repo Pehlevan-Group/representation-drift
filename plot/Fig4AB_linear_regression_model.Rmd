@@ -26,9 +26,9 @@ library(latex2exp)
 library(RColorBrewer) #this package is used for color settings
 
 
-dFile <- "/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/data/ringPlace_N200_online_06202022.mat"
+dFile <- "/Users/shawnqin/OneDrive - Harvard University/MATLAB/drift_code/data/ringPlace_N200_online_06202022.mat"
 data <- read_mat(dFile)
-sFolder <-'/Users/shawnqin/Google Drive/olfactoryCoding/figures/'
+sFolder <-'/Users/shawnqin/OneDrive - Harvard University/MATLAB/drift_code/figures/'
 
 ave_amp <- data$aveAmp
 Ds_log<- data$Ds_log
@@ -40,21 +40,21 @@ mycolor <- brewer.pal(9,"Greys")
 
 #  Diffusion constant vs averaged amplitude
 eff_inx <- !is.nan(Ds_log)
-my_data <- data.frame(amp = ave_amp[eff_inx], Ds = log(Ds_log[eff_inx]))
+my_data <- data.frame(amp = ave_amp[eff_inx], Ds = log10(Ds_log[eff_inx]))
 
 gf1 <- ggscatter(my_data, x = "amp", y = "Ds", size = 2,
-                 add = "reg.line", conf.int = TRUE, color = mycolor[6],
+                 add = "reg.line", conf.int = TRUE, color = mycolor[7],
                  add.params = list(color = mycolor[9],fill = "lightgray"),
                  xlab = "Mean peak amplitude") + ylab(TeX(r'($\log_{10}(D)$)')) + 
     #scale_x_continuous(limits = c(-2, 60)) +
   theme(axis.title.x = element_text(size = 20),
         axis.title.y = element_text(size = 20),
         axis.text = element_text(size = 16)) + 
-  stat_cor(method = "pearson", label.x = 0.22, label.y = -2.2)
+  stat_cor(method = "pearson", label.x = 0.22, label.y = -1) + ylim(-2.7, -0.8)
 gf1
 
 figFile <- paste(sFolder,"ring_Ds_amp_online_06202022.pdf",sep='')
-ggsave(figFile,gf1,width = 3.2,height = 2.7)
+ggsave(figFile,gf1,width = 3.4,height = 2.7)
 dev.off()
 
 # str(data)
