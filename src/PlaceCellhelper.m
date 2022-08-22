@@ -3,17 +3,7 @@ classdef PlaceCellhelper < handle
     % drift presentations
     
    properties
-%       lr
-%       t      
-%       k
-%       d
-%       tau
-%       Minv
-%       W
-%       outer_W
-%       outer_Minv
-%       y
-      
+
    end
    
    methods(Static) 
@@ -53,13 +43,7 @@ classdef PlaceCellhelper < handle
              r = [1;tan(ori)]*i/ps;
              R = (r-r0)*ones(1,3);
              gridFields(i) = (mean(cos(4*pi/sqrt(3)/lbd*sum(U.*R,1))) + 1/2)*2/3;
-                
-%             for j = 1:ps
-%                 r = [i/ps; j/ps];
-%                 R = (r-r0)*ones(1,3);
-% %                 r0 = [param.x0(1);param.y0(1)];
-%                 gridFields(i,j) = (mean(cos(4*pi/sqrt(3)/lbd*sum(U.*R,1))) + 1/2)*2/3;
-%             end
+
          end
 %          gr = gridFields(:,1);  % vectorize before sending back
      end
@@ -90,20 +74,7 @@ classdef PlaceCellhelper < handle
 %          gr = abs(sin((1:ps)/ps/lbd*pi + theta));
          gr = gr';  % vectorize before sending back
      end
-     
-     % generate weakly-tuned MEC cells
-     function gridFields = weakMEC(ps, ng, sig)
-         % ps linear dimension, an integer
-         % ng   number of grid cells
-         % sig  standard deviation of smooth kernel
-         gridFields = nan(ps*ps,ng);
-         for i = 1:ng
-             Iblur = imgaussfilt(rand(ps,ps),sig);
-             normVec = (Iblur - min(Iblur(:)))/(max(Iblur(:)) - min(Iblur(:)));
-             gridFields(:,i) = normVec(:);
-             
-         end
-     end
+
      % simple non-negative similarity matching
      function states = nsmDynBatch(X,Y, param)
             MaxIter = 1e4;   % maximum iterations
@@ -215,10 +186,10 @@ classdef PlaceCellhelper < handle
             cumErr = inf;
             uyold = zeros(size(Y));
             Yold = Y;
-            T = size(X,2);  % number of samples
+%             T = size(X,2);  % number of samples
             errTrack = rand(5,1); % store the lated 5 error
             cumErrTol = 1e-8;
-            dt = param.gy;
+%             dt = param.gy;
             
             h_fwd = (param.W + param.Wslow)*X/2;
             Mhat = (param.M - diag(diag(param.M)) + param.Mslow - diag(diag(param.Mslow)))/2;
@@ -235,7 +206,6 @@ classdef PlaceCellhelper < handle
             end
             states.Y = Y;
      end
-     
      
      % bath dynamics for multiple maps
      function states = multipleMapDynBatch(X, param)
@@ -267,7 +237,7 @@ classdef PlaceCellhelper < handle
      
      % using quadratic programing to find the fixed point
      % only works when l1 = 0
-    function ys = quadprogamYfixed(x,param)
+     function ys = quadprogamYfixed(x,param)
         
         dimOut = size(param.M,1);
         Mbar = (1+param.lbd2)*param.M;
@@ -316,7 +286,6 @@ classdef PlaceCellhelper < handle
          
      end
      
-     
      % generate next step input from a random walk, 1D
      function xold = nextPosi1D(xold,param)
          % return a next step position index, assuming periodic boundary
@@ -337,8 +306,8 @@ classdef PlaceCellhelper < handle
          
      end
      
-     % offline neural dynamics
-    function [states, params] = neuralDynBatch(X,Y,Z,V, params)
+     % offline neural dynamics, with z dynamics
+     function [states, params] = neuralDynBatch(X,Y,Z,V, params)
         MaxIter = 1e4; % maximum iterations
         ErrTol = 1e-4; % error tolerance
         count = 0;
@@ -359,10 +328,10 @@ classdef PlaceCellhelper < handle
         states.Y = Y;
         states.Z = Z;
         states.V = V;
-    end
+     end
      
-    % center of mass of place field 2D
-    function [cmxy, pkMass] = centerMassPks(Ys,param, thd)
+     % center of mass of place field 2D
+     function [cmxy, pkMass] = centerMassPks(Ys,param, thd)
         % Ys    a array of response to all input
         % thd   the threshold to identify a response to be active
         cmxy = nan(size(Ys,1),2);    % x and y cooridnate
@@ -378,10 +347,10 @@ classdef PlaceCellhelper < handle
             pkMass(flag(i0)) = sum(vals);
             cmxy(flag(i0),:) = mean([ix.*vals,iy.*vals]/mean(vals),1);
         end
-    end
+     end
     
-    % center of mass of place field
-    function [cmxy, pkMass] = centerMassPks1D(Ys, thd)
+     % center of mass of place field
+     function [cmxy, pkMass] = centerMassPks1D(Ys, thd)
         % Ys    a array of response to all input
         % thd   the threshold to identify a response to be active
         cmxy = nan(size(Ys,1),1);       %cooridnate of center of mass
@@ -395,26 +364,8 @@ classdef PlaceCellhelper < handle
             pkMass(flag(i0)) = sum(vals);
             cmxy(flag(i0)) = mean(ix.*vals/mean(vals));
         end
-    end
-    
-    % position information calculation
-    function posiInfo = posiInformation(Yt,pkFlags)
-        % Yt   Np by N_posi by Time, a 3D arrary
-        % param
-        posiInfo = zeros(size(pkFlags,1),size(pkFlags,2));
-        for i = 1:size(pkFlags,2)
-%             actiInx = find(pkFlags(:,i)==1);
-            Ysel = Yt(pkFlags(:,i),:,i);
-            aveRate = mean(Ysel,2);
-            posiInfo(pkFlags(:,i),i) = nansum(Ysel.*log2(Ysel./aveRate),2)/size(Yt,2);
-        end
-       
-    end
-    
-     % place field peak position
-     function pkPosi = placePeakPosi(Y, params)
-         % Y is the response of all the 
      end
+      
      function diffs = meanSquareDisp(seq,lr_range)
         % return the mean square displacement
         % depending on the dimension of seq, output could be a vector or a matrix
@@ -447,7 +398,7 @@ classdef PlaceCellhelper < handle
             diffs(i) = x0\msd(1:length(x0),i);
         end
 
-     end
+      end
                
      function msd_tot = rotationalMSD(Yt)
          % define the rotational mean square and fit the diffusion
@@ -468,27 +419,7 @@ classdef PlaceCellhelper < handle
             msd_tot(:,i) = squeeze(mean(sum(diffLag.*diffLag,1),2));
          end
          
-         % decomposition of the roational angles
-%          angProj = nan(size(angVel));
-%          for i = 1:size(angVel,2)
-%              for j = 1:samples
-%                 angProj(:,i,j) = eigVec(:,:,i)'*angVel(:,i,j);
-%              end
-%          end
-         % cumulative angulars
-%         cumAngs_comp = cumsum(angProj,2); % cumulated angles
-%          time_points = size(cumAngs_comp,2);
-%          msd_comp = nan(k,samples,floor(time_points/2));
-%          for i = 1:floor(time_points/2)
-%             diffLag = cumAngs_comp(:,i+1:end,:) - cumAngs_comp(:,1:end-i,:);
-%             msd_comp(:,:,i) = squeeze(mean(diffLag.*diffLag,2));
-%          end
-%          
-%          xlabel('$t$','Interpreter','latex','FontSize',28)
-%          ylabel('angle (rad)','FontSize',28)
-%          set(gca,'FontSize',24,'LineWidth',1.5)
-         
-     end
+      end
      
      % fit linear diffusion constant for each neuron
      function [Ds,epns] = fitLinearDiffusion(msds,stepSize,fitMethod)
@@ -545,12 +476,12 @@ classdef PlaceCellhelper < handle
              end
          end
          
-     end
+      end
      
      function [Dphi,exponent] = fitRotationDiff(rmsd, stepSize, fitRange, vargin)
          % plot and return the diffusion constant of rotationl angles
          if nargin > 3
-             plotFlag = 1;   % plot or not, default 0
+             plotFlag = vargin{1};   % plot or not, default 0
          else
              plotFlag = 0;
          end
@@ -562,9 +493,8 @@ classdef PlaceCellhelper < handle
          Dphi = exp(b(1));  % diffusion constant
          exponent = b(2); % factor
          
-         % plot and save
+         % plot and examing the fit
          if plotFlag
-             fFolder = './figures';
              grs = brewermap(11,'Greys');
              blues = brewermap(11,'Blues');
              figure
@@ -581,13 +511,10 @@ classdef PlaceCellhelper < handle
              set(gca,'FontSize',24,'LineWidth',1.5,'XScale','log','YScale','log',...
                  'XTick',10.^(1:5),'YTick',10.^(-4:2:0))
              set(gca,'FontSize',24,'LineWidth',1.5)
-%              figPref = 'rmsd_same_eig';
-%              saveas(gcf,[fFolder,filesep,figPref,'.fig'])
-%              print('-depsc',[fFolder,filesep,figPref,'.eps'])
          end
          
          
-     end
+      end
      
      function V = newEigVec(new,old)
          % change the sigin to match the previous eigen vectors
@@ -597,9 +524,9 @@ classdef PlaceCellhelper < handle
                 V(:,i) = -1*V(:,i);
              end
          end
-     end
+      end
 
-    function [diffConst, alpha] = fitMsd(msd,stepSize,varargin)
+     function [diffConst, alpha] = fitMsd(msd,stepSize,varargin)
         % fit the time dependent msd by anormalous diffusion
         % y = D*x^a, linear regression in the logscale
         % msd is a vector
@@ -615,41 +542,16 @@ classdef PlaceCellhelper < handle
         b = logX\logY;  
         diffConst = exp(b(1));  % diffusion constant
         alpha = b(2); % factor
-    end
+      end
          
-    function plot3dScatter(Y, vargin)
-    % plot a 3 D scattering of the matrix Y
-    % Y   a 3-d array, num_dimension, num_samples, num_time points
-    [k, N, S] = size(Y);
-   
-    if nargin > 1
-        % do PCA
-    end
-
-    figure
-    for i = 1:S
-        plot3(Y(1,:,i),Y(2,:,i),Y(3,:,i),'.')
-        hold on
-        xlabel('$y_1$','Interpreter','latex','FontSize',24)
-        ylabel('$y_2$','Interpreter','latex','FontSize',24)
-        zlabel('$y_3$','Interpreter','latex','FontSize',24)
-        grid on
-        set(gca,'FontSize',20)
-    end
-    
-    
-    end
-      
-    % auto correlation funcitons, fit exponential
-    function [acoef,meanAcf,allTau] = fitAucFun(Y,step)
+     % auto correlation funcitons, fit exponential
+     function [acoef,meanAcf,allTau] = fitAucFun(Y,step)
         % fit individual components
         [k, timePoint, num] = size(Y);
         
         timeLags = 500;
         acoef = nan(timeLags+1,3,num);
         allTau = nan(k,num);  % store all the timescale
-%         refY = Yt(:,:,100);  % reference
-%         vecRef = refY(:);
         xFit = (1:(timeLags +1))'*step;
         modelfun = @(b,x)(exp(-b*x));  % define the exponential function to fit
         opts = statset('nlinfit');
@@ -664,14 +566,6 @@ classdef PlaceCellhelper < handle
         
         % mean time scale
         meanAcf = squeeze(mean(mean(acoef,3),2));
-%         meanTau = fit(xFit,meanAcf,'exp1');
-        % fit an exponential decaying curve
-        
-%         yFit = acfSM(xFit);
-%         fexp1 = fit(xFit,yFit,'exp1');
-%         fexp2 = fit(xFit,acfCoef(xFit),'exp1');  
-        
-%         beta2 = nlinfit(xFit,acfCoef(xFit),modelfun,[0,1,1e-2],opts);
 
     end
     

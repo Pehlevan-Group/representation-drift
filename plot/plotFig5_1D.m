@@ -91,31 +91,6 @@ annotation('textbox', [.1 .8,.85  .1],...
 % print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 % ************************************************************
-% peak position, using time point 1
-% ************************************************************
-temp = [ceil(pks(:,1)/param.ps),mod(pks(:,1),param.ps)]/param.ps;
-pkVec = temp(~isnan(temp(:,1)),:);
-
-% define figure size
-f_pkPosi = figure;
-set(f_pkPosi,'color','w','Units','inches')
-pos(3)=3.2;  %17.4; %8.5;%pos(3)*1.5;
-pos(4)=2.8;  % pos(4)*1.5;
-set(f_pkPosi,'Position',pos)
-% histogram(activeInter(:))
-% xlim([0,100])
-plot(pkVec(:,1),pkVec(:,2),'o','MarkerSize',4,'MarkerFaceColor',greys(9,:),...
-    'MarkerEdgeColor',greys(9,:))
-xlabel('X position','FontSize',16)
-ylabel('Y position','FontSize',16)
-set(gca,'LineWidth',1,'FontSize',16)
-
-% prefix = [figPre, 'pkPosi'];
-% saveas(f_pkPosi,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[sFolder,filesep,prefix,'.eps'])
-
-
-% ************************************************************
 % peak amplitude of example neuron
 % ************************************************************
 inx = 34;  % select one neuron to plot

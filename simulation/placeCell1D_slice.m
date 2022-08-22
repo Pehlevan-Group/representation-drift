@@ -38,7 +38,6 @@ param.gv = 0.2;          % update step for V
 param.b = zeros(param.Np,1);  % biase
 param.learnRate = learnRate;  % learning rate for W and b
 param.noise =  noiseStd; % stanard deivation of noise 
-% param.rwSpeed = 10;      % steps each update, default 1
 param.step = 20;         % store every 20 step
 param.ampThd = 0.1;      % amplitude threshold, depending on the parameters
 
@@ -94,6 +93,8 @@ for i = 1:numProb
     ys(:,i) = states.Y;
 end
 
+%% 
+%{
 % estimate the peak positions of the place field
 [~, pkInx] = sort(ys,2,'descend');
 
@@ -193,7 +194,7 @@ histogram(Mhat(Mhat>0.005))
 xlabel('$M_{ij}$','Interpreter','latex','FontSize',24)
 ylabel('Count','FontSize',24)
 set(gca,'LineWidth',1.5,'FontSize',24)
-
+%}
 %% Continuous Nosiy update
 % 
 total_iter = 2e4;
@@ -241,7 +242,6 @@ loglog(tot_noise_var(eff_acti_inx),Ds(eff_acti_inx),'o','MarkerSize',8)
 xlabel('$\sigma_W^2 + \sigma_M^2$','Interpreter','latex','FontSize',24)
 ylabel('$D$','Interpreter','latex','FontSize',24)
 set(gca,'FontSize',24)
-
 
 %% Peak amplitdues
 
