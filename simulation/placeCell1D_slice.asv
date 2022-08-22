@@ -119,24 +119,42 @@ end
 Ds = PlaceCellhelper.fitLinearDiffusion(msds,param.step,'linear');
 
 % fit a linear regression model
-% tot_noise_var = param.noiseW(:,1).^2 + param.noiseM(:,1).^2;
-% eff_acti_inx = ~isnan(Ds);
-% mdl = fitlm(tot_noise_var(eff_acti_inx),Ds(eff_acti_inx));
-% fit_stat = anova(mdl,'summary');
-% fh = plot(mdl);
-% ah = fh.Parent;
-% fh(1).Marker = 'o';
-% fh(1).Color = 'k';
-% title('1D place cell model')
-% xlabel('$\sigma_W^2 + \sigma_M^2$','Interpreter','latex','FontSize',24)
-% ylabel('$D$','Interpreter','latex','FontSize',24)
-% set(gca,'YScale','linear','XScale','linear','FontSize',24)
+tot_noise_var = param.noiseW(:,1).^2 + param.noiseM(:,1).^2;
+eff_acti_inx = ~isnan(Ds);
+mdl = fitlm(tot_noise_var(eff_acti_inx),Ds(eff_acti_inx));
+fit_stat = anova(mdl,'summary');
+fh = plot(mdl);
+ah = fh.Parent;
+fh(1).Marker = 'o';
+fh(1).Color = 'k';
+title('1D place cell model')
+xlabel('$\sigma_W^2 + \sigma_M^2$','Interpreter','latex','FontSize',24)
+ylabel('$D$','Interpreter','latex','FontSize',24)
+set(gca,'YScale','linear','XScale','linear','FontSize',24)
 
+
+% loglog plot
+figure
+loglog(tot_noise_var(eff_acti_inx),Ds(eff_acti_inx),'o','MarkerSize',8)
+xlabel('$\sigma_W^2 + \sigma_M^2$','Interpreter','latex','FontSize',24)
+ylabel('$D$','Interpreter','latex','FontSize',24)
+set(gca,'FontSize',24)
+
+%% Peak amplitdues
+
+% time period that a neuron has active place field
+temp = output.pkAmp > param.ampThd;
+tolActiTime = sum(temp,2)/size(output.pkAmp,2);
+% avePks = nan(size(output.pkAmp));
+avePks(temp) = output.pkAmp(temp);
+meanPks = nanmean(avePks,2);
 
 %% Diffusion constant, active time
-temp = output.pkAmp > param.ampThd;
-actiFrac = sum(temp,2)/size(output.pkAmp,2);
-
+figure
+plot(tolActiTime(eff_acti_inx),Ds(eff_acti_inx),'o','MarkerSize',10)
+xlabel('active time fraction','FontSize',24)
+ylabel('$D$','Interpreter','latex','FontSize',24)
+set(gca,'YScale','linear','FontSize',20,'LineWidth',1)
 
 %% interval of active, silent, shift of RF
 
@@ -165,6 +183,46 @@ end
 % tabulate the results
 randActTab = tabulate(randActiInter);
 actTab = tabulate(activeInter);
+
+figure
+hold on
+plot(actTab(:,1),actTab(:,3)/actTab(1,3),'LineWidth',3)
+plot(randActTab(:,1),randActTab(:,3)/randActTab(1,3),'LineWidth',3)
+hold off
+box on
+legend('Model','Random')
+xlim([1,20])
+xlabel('$\Delta t$','Interpreter','latex','FontSize',28)
+ylabel('Fraction','FontSize',28)
+set(gca,'FontSize',24,'LineWidth',1,'XScale','log')
+
+% histogram of all the silent interval
+silentIt = figure;
+set(silentIt,'color','w','Units','inches')
+pos(3)=3.8;  %17.4; %8.5;%pos(3)*1.5;
+pos(4)=2.8;%pos(4)*1.5;
+set(silentIt,'Position',pos)
+
+histogram(silentInter(:))
+xlabel('Silent interval','FontSize',16)
+ylabel('Count','FontSize',16)
+set(gca,'LineWidth',1,'FontSize',16)
+
+% prefix = 'Ring_Silent_Interval';
+% saveas(LtoR,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[saveFolder,filesep,prefix,'.eps'])
+
+% histogram of the active period
+activeIt = figure;
+set(activeIt,'color','w','Units','inches')
+pos(3)=3.8;  %17.4; %8.5;%pos(3)*1.5;
+pos(4)=2.8;%pos(4)*1.5;
+set(activeIt,'Position',pos)
+histogram(activeInter(:))
+xlim([0,100])
+xlabel('Active interval','FontSize',16)
+ylabel('Count','FontSize',16)
+set(gca,'LineWidth',1,'FontSize',16)
 
 %% Correlation of shift of centroids
 
@@ -216,6 +274,20 @@ for rp = 1:repeats
     end
 end
 finalAveRho = nanmean(aveRho,2);
+% plot the figure
+figure
+hold on
+plot(centroid_sep(2:end)'/trackL,aveRho,'Color',greys(7,:), 'LineWidth',2)
+plot(centroid_sep(2:end)'/trackL,finalAveRho,'Color',blues(7,:), 'LineWidth',4)
+hold off
+box on
+xlabel('Distance (L)')
+ylabel('$\langle \Delta r_A \Delta r_B\rangle$','Interpreter','latex')
+title(['$\Delta t = ',num2str(deltaTau),'$'],'Interpreter','latex')
+%save the figures
+figPref = [sFolder,filesep,['1D_place_shift_corr_raw_rm',num2str(deltaTau)]];
+saveas(gcf,[figPref,'.fig'])
+print('-depsc',[figPref,'.eps'])
 
 
 % Model centroid shift distribution
@@ -229,6 +301,16 @@ for rp = 1:repeats
         modelShift = [modelShift;ds];
     end
 end 
+
+figure
+histogram(modelShift/trackL,'Normalization','pdf')
+xlabel('Centroid shift (L)')
+ylabel('pdf')
+
+figPref = [sFolder,filesep,['1D_place_shift_hist_',num2str(deltaTau)]];
+saveas(gcf,[figPref,'.fig'])
+print('-depsc',[figPref,'.eps'])
+
 
 %% compared with pure random walk
 % the agregated data is save for further use
@@ -291,8 +373,41 @@ for rp = 1:repeats
     end
 end
 
-%% SAVE THE DATA
+figure
+hold on
+fh = shadedErrorBar((1:size(aveShift,1))',aveShift',{@mean,@std});
+box on
+set(fh.edge,'Visible','off')
+fh.mainLine.LineWidth = 4;
+fh.mainLine.Color = blues(10,:);
+fh.patch.FaceColor = blues(7,:);
 
+fh2 = shadedErrorBar((1:size(aveShiftM,1))',aveShiftM',{@mean,@std});
+box on
+set(fh2.edge,'Visible','off')
+fh2.mainLine.LineWidth = 3;
+fh2.mainLine.Color = greys(7,:);
+fh2.patch.FaceColor = greys(5,:);
+hold off
+% plot(centroid_sep(2:end)',aveShift,'Color',greys(7,:),'LineWidth',2)
+% plot(centroid_sep(2:end)',nanmean(aveShift,2),'Color',blues(7,:),'LineWidth',4)
+% hold off
+% box on
+legend('Model','Random walk')
+set(gca,'XTick',0:5:10,'XTickLabel',{'0','0.25','0.5'})
+title(['$\Delta t = ',num2str(deltaTau),'$'],'Interpreter','latex')
+xlabel('Distance (L)')
+ylabel('$\rho$','Interpreter','latex')
+
+figPref = [sFolder,filesep,['1Dslice_corr_rm',num2str(deltaTau)]];
+saveas(gcf,[figPref,'.fig'])
+print('-depsc',[figPref,'.eps'])
+
+
+% save the average correlations for plot in "hippo_Gonzalez_figures.m'
+% save('./data/1D_slice_centroidCorr_0708.mat','aveShift','aveShiftM')
+
+%% SAVE THE DATA OR NOT
 if save_data_flag
     save_folder = fullfile(pwd,'data', filesep,'revision');
     save_data_name = fullfile(save_folder, ['pc_1D_various_noise_',date,'.mat']);
@@ -303,7 +418,7 @@ end
 
 % this part polish some of the figures and make them publication ready
 % define all the colors
-sFolder = ['..',filesep,'figures'];
+sFolder = ['.',filesep,'figures'];
 figPre = ['placeCell_1D_slice_N200_',date];
 
 nc = 256;   % number of colors
@@ -331,6 +446,7 @@ plotLineWd = 2;    %line width of plot
 axisLineWd = 1;    % axis line width
 labelFont = 20;    % font size of labels
 axisFont = 16;     % axis font size
+
 
 % ************************************************************
 % Diffusion constant vs the synaptic noise level
@@ -376,17 +492,72 @@ if strcmp(noiseVar, 'various')
     'String', ['R^2 =',R2,'; p-value =',pvalue],'BackgroundColor','none','Color','k',...
     'LineStyle','none','fontsize',10,'HorizontalAlignment','Center');
 
-%     prefix = [figPre, 'D_sigmas_linearRegr'];
-%     saveas(f_D_sig_linear,[sFolder,filesep,prefix,'.fig'])
-%     print('-depsc',[sFolder,filesep,prefix,'.eps'])
+    prefix = [figPre, 'D_sigmas_linearRegr'];
+    saveas(f_D_sig_linear,[sFolder,filesep,prefix,'.fig'])
+    print('-depsc',[sFolder,filesep,prefix,'.eps'])
     
 end
+
+
+% ************************************************************
+% Diffusion constant vs active time
+% ************************************************************
+% fit a linear regression model
+mdl_D_acti = fitlm(tolActiTime(eff_acti_inx),Ds(eff_acti_inx));
+D_pred = predict(mdl_D_acti,(0:0.1:1)');
+fit_stat_D = anova(mdl_D_acti,'summary');
+DiffuAmpFig = figure;
+pos(3)=3.5;  pos(4)=2.8;
+set(DiffuAmpFig,'color','w','Units','inches','Position',pos)
+plot(tolActiTime(eff_acti_inx),Ds(eff_acti_inx),'o','MarkerSize',4,...
+    'MarkerEdgeColor',greys(9,:),'LineWidth',1)
+hold on
+plot((0:0.1:1)',D_pred,'LineWidth',1.5,'Color',blues(9,:))
+xlabel('Fraction of active time','FontSize',16)
+ylabel('$D$','Interpreter','latex','FontSize',16)
+set(gca,'FontSize',16,'LineWidth',1)
+
+R2 = num2str(round(mdl_D_acti.Rsquared.Ordinary*100)/100);
+pvalue = num2str(fit_stat_D.pValue(2));
+annotation('textbox', [.1 .8,.85  .1],...
+'String', ['R^2 =',R2,'; p-value =',pvalue],'BackgroundColor','none','Color','k',...
+'LineStyle','none','fontsize',10,'HorizontalAlignment','Center');
+
+prefix = [figPre, 'D_active_time'];
+saveas(DiffuAmpFig,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
+% ************************************************************
+% peak position, using time point 1
+% ************************************************************
+temp = [ceil(pks(:,1)/param.ps),mod(pks(:,1),param.ps)]/param.ps;
+pkVec = temp(~isnan(temp(:,1)),:);
+
+% define figure size
+f_pkPosi = figure;
+set(f_pkPosi,'color','w','Units','inches')
+pos(3)=3.2;  %17.4; %8.5;%pos(3)*1.5;
+pos(4)=2.8;  % pos(4)*1.5;
+set(f_pkPosi,'Position',pos)
+% histogram(activeInter(:))
+% xlim([0,100])
+plot(pkVec(:,1),pkVec(:,2),'o','MarkerSize',4,'MarkerFaceColor',greys(9,:),...
+    'MarkerEdgeColor',greys(9,:))
+xlabel('X position','FontSize',16)
+ylabel('Y position','FontSize',16)
+set(gca,'LineWidth',1,'FontSize',16)
+
+prefix = [figPre, 'pkPosi'];
+saveas(f_pkPosi,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
+
 
 % ************************************************************
 % peak amplitude of example neuron
 % ************************************************************
 inx = 34;  % select one neuron to plot
-temp = output.pkAmp(inx,:);
+temp = pkAmp(inx,:);
 temp(isnan(temp)) = 0;
 times = (1:length(temp))*step;   % iterations
 
@@ -401,9 +572,25 @@ xlabel('Time','FontSize',16)
 ylabel('Peak Amplitude','FontSize',16)
 set(gca,'LineWidth',1,'FontSize',16)
 
-% prefix = [figPre, 'pkAmp'];
-% saveas(f_pkAmpTraj,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[sFolder,filesep,prefix,'.eps'])
+prefix = [figPre, 'pkAmp'];
+saveas(f_pkAmpTraj,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
+% ************************************************************
+% peak amplitude of all neurons across all time
+% ************************************************************
+f_pkAmpall = figure;
+set(f_pkAmpall,'color','w','Units','inches')
+pos(3)=3.2;  %17.4; %8.5;%pos(3)*1.5;
+pos(4)=2.8;%pos(4)*1.5;
+set(f_pkAmpall,'Position',pos)
+
+pkAllData = pkAmp(~isnan(pkAmp));
+histogram(pkAllData,'Normalization','pdf')
+xlim([0,8])
+xlabel('peak amplitude','FontSize',16)
+ylabel('pdf','FontSize',16)
+set(gca,'LineWidth',1,'FontSize',16)
 
 
 % ************************************************************
@@ -414,7 +601,7 @@ set(f_acti,'color','w','Units','inches')
 pos(3)=3.3;  
 pos(4)=2.8;
 set(f_acti,'Position',pos)
-% actiFrac = mean(pks > 0,1);
+actiFrac = mean(pks > 0,1);
 
 plot(times',actiFrac,'LineWidth',1.5)
 xlabel('Time','FontSize',16)
@@ -422,19 +609,61 @@ ylabel('Active fraction','FontSize',16)
 ylim([0,1])
 set(gca,'LineWidth',1,'FontSize',16)
 
-% prefix = [figPre, 'fracActive'];
-% saveas(f_acti,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[sFolder,filesep,prefix,'.eps'])
+prefix = [figPre, 'fracActive'];
+saveas(f_acti,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
+
+% ************************************************************
+% distribution of active time
+% ************************************************************
+f_actiTime = figure;
+set(f_actiTime,'color','w','Units','inches')
+pos(3)=3.5;  
+pos(4)=2.8;
+set(f_actiTime,'Position',pos)
+actiTime = mean(pks > 0,2);
+
+histogram(actiTime,20);
+xlabel('Active time','FontSize',16)
+ylabel('Count','FontSize',16)
+set(gca,'LineWidth',1,'FontSize',16)
+
+
+% ************************************************************
+% peak position of example neuron
+% ************************************************************
+epInx = randperm(param.Np,1);  % randomly slect
+epPosi = [floor(pks(inx,:)/param.ps);mod(pks(inx,:),param.ps)]+randn(2,size(pks,2))*0.1;
+
+specColors = brewermap(size(epPosi,2), 'Spectral');
+
+% colors indicate time
+f_pkPosi = figure;
+set(f_pkPosi,'color','w','Units','inches')
+pos(3)=3.2;  
+pos(4)=2.8;
+set(f_pkPosi,'Position',pos)
+hold on
+
+for i=1:size(pks,2)
+    plot(epPosi(1,i),epPosi(2,i),'o','MarkerSize',4,'MarkerEdgeColor',...
+        specColors(i,:),'LineWidth',1.5)
+end
+hold off
+box on
+xlabel('x position','FontSize',16)
+ylabel('y position','FontSize',16)
+set(gca,'FontSize',16,'LineWidth',1)
 
 % ************************************************************
 % average peak amplitude vs time of active
 % ************************************************************
 
-temp = output.pkAmp > ampThd;
-tolActiTime = sum(temp,2)/size(output.pkAmp,2);
-avePks = nan(size(output.pkAmp));
-avePks(temp) = output.pkAmp(temp);
+temp = pkAmp > ampThd;
+tolActiTime = sum(temp,2)/size(pkAmp,2);
+avePks = nan(size(pkAmp));
+avePks(temp) = pkAmp(temp);
 meanPks = nanmean(avePks,2);
 
 f_ampActiTime= figure;
@@ -449,14 +678,100 @@ xlabel('Mean peak amplitude','FontSize',labelFont)
 ylabel(['faction of ', 'active time'],'FontSize',labelFont)
 set(gca,'FontSize',axisFont,'LineWidth',axisLineWd)
 
-% prefix = [figPre, 'pkAmp_actiTime'];
-% saveas(f_ampActiTime,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[sFolder,filesep,prefix,'.eps'])
+prefix = [figPre, 'pkAmp_actiTime'];
+saveas(f_ampActiTime,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
+% ************************************************************
+% distribution of peak shift
+% ************************************************************
+% prepare the data
+shiftStat = nan(param.Np,2);  %store the mean and std of peak shift
+allShiftDist = [];
+for i = 1:param.Np
+    flag = find(pks(i,:) > 0);
+    temp = pks(i,flag);
+%     tsq = zeros(1,size(pks,2));
+%     tsq(flag) = flag;
+%     jumpFlag = find(diff(tsq) > 1) + 1;
+    jumpFlag = find(diff(flag)>1);
+    
+    
+    xs = floor(temp/param.ps);
+    ys = mod(temp,param.ps);
+    shiftFlag = find(diff(temp) ~= 0); % whether shift or not
+    
+    jointFlag = union(shiftFlag,jumpFlag);
+    
+    dxs = xs(jointFlag + 1) - xs(jointFlag);
+    dys = ys(jointFlag + 1) - ys(jointFlag);
+    shiftEcul = sqrt(dxs.^2 + dys.^2)/param.ps;
+    shiftStat(i,:) = [mean(shiftEcul),std(shiftEcul)]; 
+    allShiftDist = [allShiftDist,shiftEcul];
+end
+
+% active peak amplitude and peak shift
+f_pkShift = figure;
+set(f_pkShift,'color','w','Units','inches')
+pos(3)=3.5;  
+pos(4)=2.8;
+set(f_pkShift,'Position',pos)
+plot(meanPks,shiftStat(:,1),'o','MarkerSize',4,...
+    'MarkerEdgeColor',greys(9,:),'LineWidth',1.5)
+xlabel('Average peak amplitude','FontSize',16)
+ylabel('$\langle \Delta r \rangle$','Interpreter','latex','FontSize',16)
+set(gca,'FontSize',16,'LineWidth',1)
+ylim([0,0.1])
+
+prefix = [figPre, 'pkShit_actiTime'];
+saveas(f_pkShift,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
-% ***************************************************************
-% Change of population vectors, measured by Pearson's correlation
-% ***************************************************************
+% active peak amplitude and 
+% meanCM = nanmean(pkCenterMass,2);
+
+diffContFig = figure;
+pos(3)=3.5;  
+pos(4)=2.8;
+set(diffContFig,'color','w','Units','inches','Position',pos)
+plot(meanPks,Ds(:,1),'o','MarkerSize',4,...
+    'MarkerEdgeColor',greys(9,:),'LineWidth',1.5)
+xlabel('Mean peak amplitude','FontSize',labelFont)
+ylabel('$D$','Interpreter','latex','FontSize',labelFont)
+set(gca,'FontSize',axisFont,'LineWidth',axisLineWd)
+ylim([0,2.5])
+
+prefix = [figPre, 'amp_diffCont_'];
+saveas(diffContFig,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
+
+% Diffusion constant and active period
+DiffuAmpFig = figure;
+pos(3)=3.5;  
+pos(4)=2.8;
+set(DiffuAmpFig,'color','w','Units','inches','Position',pos)
+plot(tolActiTime,Ds(:,1),'o','MarkerSize',4,...
+    'MarkerEdgeColor',greys(9,:),'LineWidth',1.5)
+xlabel('Fraction of active time','FontSize',labelFont)
+ylabel('$D$','Interpreter','latex','FontSize',labelFont)
+set(gca,'FontSize',axisFont,'LineWidth',axisLineWd)
+ylim([0,2.5])
+
+prefix = [figPre, 'active_diffCont_'];
+saveas(DiffuAmpFig,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
+
+figure
+ecdf(allShiftDist)
+histogram(allShiftDist(allShiftDist>0.1))
+
+% ************************************************************
+% Change of population vectors, measured by correlation
+% ************************************************************
+
 % fmSel = randperm(size(Yt,2),1); % randomly slect three frames to consider
 pvCorr = zeros(size(Yt,3),size(Yt,2)); 
 % [~,neuroInx] = sort(peakInx(:,inxSel(1)));
@@ -486,9 +801,12 @@ xlabel('Time','FontSize',16)
 ylabel('PV correlation','FontSize',16)
 set(gca,'FontSize',16,'LineWidth',1)
 
-% prefix = [figPre, 'pvCorrCoef'];
-% saveas(f_pvCorr,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[sFolder,filesep,prefix,'.eps'])
+prefix = [figPre, 'pvCorrCoef'];
+saveas(f_pvCorr,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
+
+
 
 % ************************************************************
 % Representational similarity across time
@@ -503,8 +821,11 @@ selInx = find(~isnan(pks(:,1)));
 Y1= Yt(:,:,1000);
 Y2 = Yt(:,:,1300);
 
+
 SM1 = Y1'*Y1;
 SM2 = Y2'*Y2;
+% SM1 = Y1(:,selInx)'*Y1(:,selInx);
+% SM2 = Y2(:,selInx)'*Y2(:,selInx);
 
 f_sm1 = figure;
 set(f_sm1,'color','w','Units','inches')
@@ -529,30 +850,37 @@ pos(4)=3;
 set(f_sm2,'Position',pos)
 
 imagesc(SM2,[0,15]);
+% colormap(GreyMap)
+% cb = colorbar;
+% set(cb,'FontSize',12)
 set(gca,'XTick','','YTick','','LineWidth',0.5,'Visible','off')
+prefix = [figPre, 'sm2'];
+saveas(f_sm2,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
-% prefix = [figPre, 'sm2'];
-% saveas(f_sm2,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
-% ****************************************************************
 % heatmap of population vector odered by Y1
-% ****************************************************************
 [pkSorted,sortedInx] = sort(Y1,2,'descend');
-actiTime1Inx = find(pkSorted(:,1)>0.05); % significant nonzeor at time 1
+% significant nonzeor at time 1
+actiTime1Inx = find(pkSorted(:,1)>0.05);
+
+% [~,neurOrder] = sort(sortedInx(:,1));
 [~,neurOrder] = sort(sortedInx(actiTime1Inx,1));
+
 
 
 pv1Fig = figure;
 pos(3)=3;  
 pos(4)=3;
 set(pv1Fig,'color','w','Units','inches','Position',pos)
+% imagesc(Y1(neurOrder(250:end),:),[0,2])
 imagesc(Y1(actiTime1Inx(neurOrder),:),[0,3])
 set(gca,'Visible','off')
 % colorbar
-% prefix = [figPre, 'pvHeatMap1'];
-% saveas(pv1Fig,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[sFolder,filesep,prefix,'.eps'])
+prefix = [figPre, 'pvHeatMap1'];
+saveas(pv1Fig,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
 
 pv2Fig = figure;
 pos(3)=3;  
@@ -562,12 +890,70 @@ imagesc(Y2(actiTime1Inx(neurOrder),:),[0,3])
 % imagesc(Y2(neurOrder(250:end),:),[0,2])
 set(gca,'Visible','off')
 
-% prefix = [figPre, 'pvHeatMap2_'];
-% saveas(pv2Fig,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[sFolder,filesep,prefix,'.eps'])
+prefix = [figPre, 'pvHeatMap2_'];
+saveas(pv2Fig,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
+
+
+% Example mean square displacement vs time
+timeInterval = size(msds,1);
+figure
+plot((1:timeInterval)'*sep,msds(:,randperm(param.Np,3)))
+xlabel('Time')
+ylabel('$\langle \Delta r\rangle^2$','Interpreter','latex')
+
+% histogram of effective diffusion constants
+figure
+histogram(Ds)
+xlabel('$D_r$','Interpreter','latex')
+ylabel('Count')
+title('Diffusion constants')
+
+% ********************************************************
+% Diffusion constant versus average peak amplitude
+% ********************************************************
+
+
+%% Probability of shift of peak positions
+
+psRange = param.ps;   % the range of ring positions
+pks0 = pkCenterMass;
+tps = [50,100,200,400,500,800];
+quantiles = (1:3)/4*psRange;
+probs = nan(length(tps),length(quantiles));
+for i = 1:length(tps)
+    diffLag = abs(pks0(:,tps(i)+1:end,:) - pks0(:,1:end-tps(i),:));
+    for j = 1:length(quantiles)
+        probs(i,j) = sum(diffLag(:)>quantiles(j))/length(diffLag(:));
+    end
+end
+
+
+probShift = figure; 
+set(probShift,'color','w','Units','inches')
+pos(3)=3.8;  %17.4; %8.5;%pos(3)*1.5;
+pos(4)=2.8;%pos(4)*1.5;
+set(probShift,'Position',pos)
+hold on
+for i = 1:length(quantiles)
+    plot(tps'*step,probs(:,i),'o-','MarkerSize',8,'Color',blues(1+3*i,:),...
+        'MarkerFaceColor',blues(1+3*i,:),'MarkerEdgeColor',blues(1+3*i,:),'LineWidth',1.5)
+end
+hold off
+box on
+
+lg = legend('\Delta s >1/4 L','\Delta s>1/2 L','\Delta s >3/4 L');
+set(lg,'FontSize',14)
+xlabel('$\Delta t$','Interpreter','latex','FontSize',20)
+ylabel('Probability','FontSize',20)
+set(gca,'LineWidth',1,'FontSize',16)
+
+% prefix = 'Tmaze_prob_shift_dist';
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[saveFolder,filesep,prefix,'.eps'])
 
 %% Statistics of shift of RF, Compare with experiment
-
 % This part is intended to compare with ﻿Gonzalez et al Science 2019 paper
 % based on unsorted data
 
@@ -643,9 +1029,8 @@ xlabel('$\Delta s$','Interpreter','latex','FontSize',24)
 ylabel('pdf','FontSize',24)
 set(gca,'LineWidth',1,'FontSize',20)
 
-% *****************************************************
-% Histount of the probability, compared with experiment
-% *****************************************************
+
+% Histount of the probability
 histFig = figure;
 pos(3)=figWidth; 
 pos(4)=figHeight;
@@ -671,4 +1056,59 @@ set(gca,'FontSize',axisFont)
 % save the figure
 % prefix = [figPre, 'shiftDistrFrac'];
 % saveas(histFig,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
+
+
+% Plot of cumulative shift
+probShift = figure; 
+set(probShift,'color','w','Units','inches')
+pos(3)=3.8;  %17.4; %8.5;%pos(3)*1.5;
+pos(4)=2.8;%pos(4)*1.5;
+set(probShift,'Position',pos)
+hold on
+for i = 1:length(quantiles)
+    plot(tps'*step,probs(:,i),'o-','MarkerSize',8,'Color',blues(1+3*i,:),...
+        'MarkerFaceColor',blues(1+3*i,:),'MarkerEdgeColor',blues(1+3*i,:),'LineWidth',1.5)
+end
+hold off
+box on
+
+lg = legend('\Delta s >1/4 L','\Delta s>1/2 L','\Delta s >3/4 L');
+set(lg,'FontSize',14)
+xlabel('$\Delta t$','Interpreter','latex','FontSize',20)
+ylabel('Probability','FontSize',20)
+set(gca,'LineWidth',1,'FontSize',16)
+
+%%
+% probabilty of shift interval that are less than 10%
+tps = 1:10:1500;
+probs10 = nan(length(tps),1);
+for i = 1:length(tps)
+    temp = pkCenterMass(:,tps(i)+1:end,:) - pkCenterMass(:,1:end-tps(i),:);
+    diffLag = abs(temp(~isnan(temp)));
+    probs10(i) = sum(diffLag(:)<0.1*psRange)/length(diffLag(:));
+end
+
+% random
+probRnd = sum(diffLagRnd(:)<0.1*psRange)/length(diffLagRnd(:));
+
+% probability of > 10% of the length
+frac10Fig = figure;
+pos(3)=figWidth; 
+pos(4)=figHeight;
+set(frac10Fig,'color','w','Units','inches','Position',pos)
+
+hold on
+plot(tps',probs10,'LineWidth',3)
+plot([0;tps(end)],[probRnd;probRnd],'k--','LineWidth',2)
+hold off
+box on
+legend('Model','Random')
+xlabel('Time','FontSize',labelFont)
+ylabel({'Fraction shift','< 10% change'},'FontSize',labelFont)
+set(gca,'LineWidth',axisLineWd,'FontSize',axisFont)
+
+% prefix = [figPre, 'shift10percent_'];
+% saveas(frac10Fig,[sFolder,filesep,prefix,'.fig'])
 % print('-depsc',[sFolder,filesep,prefix,'.eps'])
