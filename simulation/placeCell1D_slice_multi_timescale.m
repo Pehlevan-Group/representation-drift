@@ -6,12 +6,12 @@
 % we demonstrate that such slow timescale can be used to maintain memories
 % even without the constant access of sensory input
 
-%
 
 clear
 close all
 
 %% model parameters
+
 param.ps =  200;        % number of positions along each dimension
 param.Nlbd = 5;         % number of different scales/spacing
 param.Nthe = 6;         % number of rotations
@@ -45,8 +45,7 @@ param.b = zeros(param.Np,1);  % biase
 param.learnRate = learnRate;  % learning rate for W and b
 param.forgetRate = 1e-6;   % forgetting timescale
 param.learnSlow = 1e-3;  % learning rate of the slow timescale
-% param.forgetFast = 0;
-% param.forgetSlow = 0;
+
 param.noise =  noiseStd; % stanard deivation of noise 
 param.rwSpeed = 10;      % steps each update, default 1
 param.step = 20;         % store every 20 step
@@ -60,19 +59,20 @@ param.sigMmax = noiseStd;
 param.noiseW =  param.sigWmax*ones(param.Np,param.Ng);    % stanard deivation of noise, same for all
 param.noiseM =  param.sigMmax*ones(param.Np,param.Np);   
 
-param.ori = 1/6*pi;     % slicing orientation
+param.ori = 1/6*pi;       % slicing orientation
 
-param.BatchSize = 1;      % minibatch used to to learn
-param.learnType = 'snsm';  % snsm, batch, online, randwalk, direction, inputNoise
+param.BatchSize = 1;      % minibatch used to to learn, default 1
+param.learnType = 'snsm'; % snsm, batch, online, randwalk, direction, inputNoise
 
-gridQuality = 'slice';  % regular, weak or slice
+gridQuality = 'slice';    % regular, weak or slice
 
-makeAnimation = 0;    % whether make a animation or not
+makeAnimation = 0;        % whether make a animation or not
 
 gridFields = slice2Dgrid(param.ps,param.Nlbd,param.Nthe,param.Nx,param.Ny,param.ori);
 
 
 %% learning and forgetting sessions
+
 % this part mimics the experimental sessions with training and forgetting
 param.learnTime = 1e2;
 param.forgetTime = 5e2;
@@ -107,28 +107,9 @@ Ys0_m = output_m(:,:,round(param.learnTime/param.step)+0*iter_in_session);
 Ys0_s = output_s(:,:,round(param.learnTime/param.step)+0*iter_in_session);
 Ys0_f = output_f(:,:,round(param.learnTime/param.step)+0*iter_in_session);
 
-
-% SM0 = Ys0_learn'*Ys0_learn;
-
-% D0 = squareform(1 - pdist(Ys0_learn','cosine'));
-
 sm_norm_ratio_s = zeros(size(output_s, 3),1);
 sm_norm_ratio_m = zeros(size(output_m, 3),1);
 sm_norm_ratio_f = zeros(size(output_f, 3),1);
-
-% for i = 1:size(output,3)
-%     Ys = output(:,:,i);
-%     Ys2 = output2(:,:,i);
-% %     SM = Ys'*Ys;
-% %     sm_norm_ratio(i) = norm(SM-SM0)/norm(SM0);
-%     D = squareform(1 - pdist(Ys','cosine'));
-%     sm_norm_ratio(i) = norm(D-D0)/norm(D0);
-%     
-%     % cosine similarity for the same time scale
-%     D2 = squareform(1 - pdist(Ys2','cosine'));
-%     sm_norm_ratio2(i) = norm(D2-D0)/norm(D0);
-%     
-% end
 
 % another way to show the metric
 start_session = 0;
@@ -174,18 +155,14 @@ box on
 lg = legend('\eta_{forget} = 0.05','\eta_{forget} = 10^{-3}','\eta_{forget} = 10^{-6}');
 set(lg,'FontSize',12)
 xlabel('Time','FontSize',16)
-% ylabel('Change of cosine similartiy',...
-%     'Interpreter', 'latex','FontSize',16)
-% ylabel('$|| \mathbf{Y}_0^{\top}\mathbf{Y}_t||_F/(||\mathbf{Y}_0||_F||\mathbf{Y}_t||_F)$',...
-%     'Interpreter', 'latex','FontSize',16)
 ylabel('Similarity Alignment','FontSize',16)
 ylim([0.4, 1.1])
 xlim([0,5e3])
 set(gca,'YScale','linear','FontSize',14)
 
-prefix = ['changeSM_place1D_slow_timescale_learn_forget_', date];
-saveas(gcf,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = ['changeSM_place1D_slow_timescale_learn_forget_', date];
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 % save the data
 
 % end of the learning period representations
@@ -202,12 +179,13 @@ for i = 1:3
     set(gca,'Visible','off')
     title(['$\eta = ',num2str(etas(i)),'$'])
 end
-prefix = 'heatmap_Ys_place1D_slow_timescale_learn';
-saveas(gcf,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = 'heatmap_Ys_place1D_slow_timescale_learn';
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 % ***************************************************************************
-% Concantenate all the response in the learning period of every session
+% Concantenate all the response in the learning period of every session,
+% Fig S6C
 % ***************************************************************************
 % start from session 10 to remove the transient period
 start_session = 1;
@@ -226,11 +204,6 @@ pvCorr = cell(3,1);
 for i = 1:3
     pvCorr{i} = zeros(size(Yt_all_learn_f,3),size(Yt_all_learn_f,2));
 end
-
-% pvCorr_f = zeros(size(Yt_all_learn_f,3),size(Yt_all_learn_f,2));
-% pvCorr_m = zeros(size(Yt_all_learn_m,3),size(Yt_all_learn_m,2)); 
-% pvCorr_s = zeros(size(Yt_all_learn_s,3),size(Yt_all_learn_s,2)); 
-
 
 for type = 1:3
     for i = 1:size(Yt_all_learn{type},3)
@@ -265,13 +238,13 @@ ylabel('PV correlation','FontSize',16)
 set(gca,'FontSize',16,'LineWidth',1)
 
 
-prefix = 'PV_corr_place1D_slow_timescale_learn_sessions';
-saveas(gcf,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
-% 
+% prefix = 'PV_corr_place1D_slow_timescale_learn_sessions';
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
 
 % **********************************************************
-% Drift of single RF over time
+% Drift of single RF over time, Fig S6B
 % **********************************************************
 greys = brewermap(11,'Greys');
 neuron_example = randperm(param.Np, 3);
@@ -300,28 +273,11 @@ end
 
 
 % save the figure
-prefix = ['place1D_multitimescale_example_RFs_',date];
-saveas(gcf,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
-%% Debug 
-start_session = 0;
-% Ys0_s = output_s(:,:,round(param.learnTime/param.step)+0*iter_in_session);
+% prefix = ['place1D_multitimescale_example_RFs_',date];
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
-start_point = round(param.learnTime/param.step)+start_session*iter_in_session;  % get rid of the transient
-for i = 1:size(output_s,3)
-    Ys_s = output_s(:,:,i);
-   
-    
-    sm_norm_ratio_s(i) = kernelAlignment(Ys_s,Ys0_s);
-  
-end
-figure
-plot(sm_norm_ratio_s)
-ylim([0,1.05])
-
-
-
-%% using non-negative similarity matching to learn place fields
+%% using non-negative similarity matching to learn place fields, Fig S6A
 % generate input from grid filds
 
 total_iter = 2e4;   % total interation, default 2e3
@@ -347,9 +303,9 @@ ylabel('Neuron sorted','FontSize',16)
 set(gca,'XTick',[], 'YTick',[])
 title('$t = 0$','Interpreter','latex','FontSize',16)
 
-prefix = [figPre, 'hetmap_place1D_slow_timescale_t0'];
-saveas(gcf,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'hetmap_place1D_slow_timescale_t0'];
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 % heatmap of the ordered receptive fields
 f_pv = figure;
@@ -363,12 +319,12 @@ ylabel('Peuron sorted')
 set(gca,'XTick',[], 'YTick',[])
 title('$t = 0$','Interpreter','latex')
 
-prefix = [figPre, 'heatmap_sorted_place1D_slow_timescale_t0'];
-saveas(gcf,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'heatmap_sorted_place1D_slow_timescale_t0'];
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 % ******************************************************************
-% representation after 1000 steps on online learning
+% representation after 1000 steps in online learning
 % ******************************************************************
 Ys1st = Yt.Yt(:,:,10);
 [pkVal, peakPosi] = sort(Ys1st,2,'descend');
@@ -385,9 +341,9 @@ ylabel('Neuron','FontSize',16)
 set(gca,'XTick',[], 'YTick',[])
 % title('$t = 0$','Interpreter','latex','FontSize',16)
 
-prefix = [figPre, 'hetmap_timescale_learn_t1'];
-saveas(gcf,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'hetmap_timescale_learn_t1'];
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 f_pv = figure;
@@ -401,157 +357,25 @@ ylabel('Neuron sorted','FontSize',16)
 set(gca,'XTick',[], 'YTick',[])
 % title('$t = 0$','Interpreter','latex','FontSize',16)
 
-prefix = [figPre, 'hetmap_sorted_timescale_learn_t1'];
-saveas(gcf,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'hetmap_sorted_timescale_learn_t1'];
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
-%{
-% estimate the place field of place cells
-numProb = param.ps;    % number of positions used to estimate the RF
-
-ys_prob = zeros(param.Np,1);
-% ys_prob = zeros(param.Np,numProb);
-ys = zeros(param.Np, numProb);
-for i = 1:numProb
-    states= PlaceCellhelper.nsmDynBatch(gdInput(:,i),ys_prob, param);
-%     states= PlaceCellhelper.nsmDynBatch(gdInput(:,i),ys_prob, param);
-    ys(:,i) = states.Y;
-end
-
-% estimate the peak positions of the place field
-[~, pkInx] = sort(ys,2,'descend');
-
-
-pkMat = zeros(1,param.ps);
-pkMat(pkInx(:,1)) = 1;
-
-figure
-imagesc(pkMat)
-
-[~,nnx] = sort(pkInx(:,1),'ascend');
-figure
-imagesc(ys(nnx,:))
-colormap(viridis)
-ylim([150,200])
-
-% amplitude of place fields
-z = max(ys,[],2);
-figure
-histogram(z(z>0))
-% xlim([2,6])
-xlabel('Amplitude','FontSize',24)
-ylabel('count','FontSize',24)
-set(gca,'LineWidth',1.5, 'FontSize',24)
-
-
-% ================= visualize the input ===========================
-
-% input similarity
-figure
-imagesc(gdInput'*gdInput)
-colorbar
-xlabel('position index','FontSize',24)
-ylabel('position index','FontSize',24)
-set(gca,'LineWidth',1.5, 'FontSize',20)
-% title('Input similarity matrix','FontSize',24)
-
-
-% output matrix and similarity matrix
-figure
-imagesc(ys)
-colorbar
-xlabel('position index ','FontSize',24)
-ylabel('place cell index','FontSize',24)
-set(gca,'LineWidth',1, 'FontSize',20)
-title('Output','FontSize',24)
-
-
-figure
-imagesc(ys'*ys)
-colorbar
-xlabel('position index ','FontSize',24)
-ylabel('position index ','FontSize',24)
-set(gca,'LineWidth',1, 'FontSize',20)
-title('Output Similarity','FontSize',24)
-
-% ============== visualize the learned matrix =======================
-% feedforward connection
-figure
-imagesc(param.W)
-colorbar
-xlabel('grid cell','FontSize',24)
-ylabel('place cell','FontSize',24)
-set(gca,'LineWidth',1.5,'FontSize',24)
-
-% histogram of W
-figure
-histogram(param.W(param.W<0.5))
-xlabel('$W_{ij}$','Interpreter','latex','FontSize',24)
-ylabel('Count','FontSize',24)
-set(gca,'LineWidth',1.5,'FontSize',24)
-
-% in term of individual palce cells
-figure
-plot(param.W(randperm(param.Np,3),:)')
-
-
-% heatmap of feedforward matrix
-figure
-imagesc(param.W)
-colorbar
-xlabel('grid cell index','FontSize',24)
-xlabel('place cell index','FontSize',24)
-set(gca,'LineWidth',1.5, 'FontSize',20)
-title('forward connection matrix','FontSize',24)
-
-
-% ============== lateral connection matrix ===================
-Mhat = param.M - diag(diag(param.M));
-figure
-imagesc(Mhat)
-colorbar
-xlabel('place cell index','FontSize',24)
-xlabel('place cell index','FontSize',24)
-set(gca,'LineWidth',1.5, 'FontSize',20)
-title('Lateral connection matrix','FontSize',24)
-
-figure
-histogram(Mhat(Mhat>0.005))
-xlabel('$M_{ij}$','Interpreter','latex','FontSize',24)
-ylabel('Count','FontSize',24)
-set(gca,'LineWidth',1.5,'FontSize',24)
-
-% compare the two matrices
-% forward matrix
-figure
-plot(param.W(:), param.Wslow(:),'o')
-xlabel('$W_{ij}$','Interpreter','latex','FontSize',24)
-ylabel('$W^s_{ij}$','Interpreter','latex','FontSize',24)
-set(gca,'LineWidth',1.5,'FontSize',24)
-
-% recurrent matrix
-
-figure
-plot(param.M(:), param.Mslow(:),'o')
-xlabel('$M_{ij}$','Interpreter','latex','FontSize',24)
-ylabel('$M^s_{ij}$','Interpreter','latex','FontSize',24)
-set(gca,'LineWidth',1.5,'FontSize',24)
-%}
-% reference SM
-% Ys = Yt.Yt(:,:,end);
-SM0 = Ys'*Ys;
+% SM0 = Ys'*Ys;
 
 % old matrix after learning
-Wold = param.W; Mold = param.M; bold = param.b;
-%% decay of representation if having the slow synapses
+% Wold = param.W; Mold = param.M; bold = param.b;
+%% decay of representation if only having the slow synapses
+%{
 total_iter = 2e4;
 time_points = round(total_iter/param.step);
 
 [output, param] = place_cell_stochastic_update_forget(gdInput,total_iter,...
     param,true, false);
-
+%}
 %% Analysis and plot
+%{
 sFolder = ['.',filesep,'figures'];
 figPre = ['placeCell_1D_slice_slow_timescale',date];
 % showing the tiling of RFs over time
@@ -607,14 +431,6 @@ for i = 1:length(time_sel)
     xlabel('Position','FontSize',16)
     ylabel('Position','FontSize',16)
     set(gca,'XTick',[], 'YTick',[])    
-    % multidimensional scaling
-%     Dist = squareform(pdist(Ys','euclidean'));
-%     
-%     [Ymds,~] = cmdscale(Dist);
-%     figure
-%     plot(Ymds(:,1),Ymds(:,2),'.')
-%     xlabel('MDS 1')
-%     ylabel('MDS 2')
 end
 
 % change of the similarity norm
@@ -638,32 +454,14 @@ ylabel('$|| \mathbf{Y}^{\top}_t\mathbf{Y}_t - \mathbf{Y}^{\top}_0\mathbf{Y}_0||_
 set(gca,'YScale','linear','FontSize',14)
 
 
-prefix = [figPre, 'SM_change_place1D_slow_timescale'];
-saveas(gcf,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
-
+% prefix = [figPre, 'SM_change_place1D_slow_timescale'];
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
+%}
 %% check if the systems have drift
-% based on the initial stage
-% z1 = Yt.Yt(:,:,10);
-% z2 = Yt.Yt(:,:,end);
-% figure
-% imagesc(z1)
-% colormap(viridis)
-% colorbar
-% xlabel('Position')
-% ylabel('neuron')
-% title('$t=10^4$', 'Interpreter','latex')
-% 
-% figure
-% imagesc(z2)
-% colormap(viridis)
-% colorbar
-% xlabel('Position')
-% ylabel('neuron')
-% title('$t=2\times 10^4$', 'Interpreter','latex')
-
+%{
 % **********************************************************
-% The average correlation coeffient of population vector
+% The average correlation coeffient of population vector, Fig S6C
 % **********************************************************
 rawY = Yt.Yt(:,:,101:end);  % the range shoud be case specific
 % rawY = output.Yt;
@@ -696,13 +494,13 @@ ylabel('PV correlation','FontSize',16)
 % set(gca,'FontSize',16,'LineWidth',1, 'XTick',0:10:20,'XTickLabel',{'0','10^4','2\times 10^4'})
 set(gca,'FontSize',16,'LineWidth',1)
 
-prefix = [figPre, 'PV_corr_place1D_slow_timescale_learn'];
-saveas(gcf,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'PV_corr_place1D_slow_timescale_learn'];
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 % **********************************************************
-% Drift of single RF over time
+% Drift of single RF over time, Fig S6B
 % **********************************************************
 greys = brewermap(11,'Greys');
 spectrals = brewermap(20,'Spectral');
@@ -731,6 +529,7 @@ for i = 1:3
     title(['Neuron ',num2str(i)], 'FontSize', 14)
 end
 
-prefix = [figPre, 'RF_drift_slow_timescale'];
-saveas(gcf,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'RF_drift_slow_timescale'];
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
+%}

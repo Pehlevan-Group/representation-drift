@@ -3,7 +3,6 @@ function [output, param] = place_cell_stochastic_update_forget(X,total_iter,...
 % runing the population codes, centroid position and noisy weight update and return 
 % the learned representations
 
-
 if exist('storage_flag','var')
     Flag_store = storage_flag;
 else
@@ -33,10 +32,6 @@ for i = 1:total_iter
         states = PlaceCellhelper.nsmDynBatch(positions,ystart, param);
         y = states.Y;
     else
-        % use background noise
-%         positions =  gridFields_bg(randperm(num_bg,1),:)';
-%         states = PlaceCellhelper.nsmDynBatch(positions,ystart, param);
-%         y = states.Y;
          y = zeros(param.Np,param.BatchSize);
     end
 
@@ -69,7 +64,6 @@ for i = 1:total_iter
 end
 % put all the required output into a structure
 output.Yt = Yt;
-% output.aveMass = pkCM;
 output.pkMas = pkMas;
 output.pkAmp = pkAmp;
 output.pks = pks;
