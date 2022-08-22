@@ -279,7 +279,7 @@ end
 
 %% using non-negative similarity matching to learn place fields, Fig S6A
 % generate input from grid filds
-
+%{
 total_iter = 2e4;   % total interation, default 2e3
 
 posiGram = eye(param.ps);
@@ -366,6 +366,7 @@ set(gca,'XTick',[], 'YTick',[])
 
 % old matrix after learning
 % Wold = param.W; Mold = param.M; bold = param.b;
+%}
 %% decay of representation if only having the slow synapses
 %{
 total_iter = 2e4;
