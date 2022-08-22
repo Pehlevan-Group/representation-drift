@@ -21,12 +21,17 @@ params.record_step = 20;
 num_angle = 628;        % total number of angles
 X = generate_ring_input(num_angle);
 
-params.noiseStd = 1e4 ;      % 0.005 for ring, 1e-3 for Tmaze
+params.noiseStd = 1e4 ;     % 0.005 for ring, 1e-3 for Tmaze
 params.learnRate = 0.05;     % default 0.05
 params.record_step = 100;    % only keep track of the information every 100 iteration
 
 % initialize the states
 y0 = zeros(params.dim_out,params.batch_size);
+
+
+% estimate error
+validBatch = 100;          % randomly select 100 to estimate the error
+Y0val = zeros(params.dim_out,validBatch);
 
 % Use offline learning to find the inital solution
 params.W = 0.1*randn(params.dim_out,params.dim_in);
@@ -56,7 +61,7 @@ end
 [~, params] = ring_update_weight(X,total_iter,params);
 
 
-% check the receptive field after the initial stage
+% check the receptive field
 Xsel = X(:,1:10:end);     % only use 10% of the data
 Y0 = 0.1*rand(params.dim_out,size(Xsel,2));
 Ys = nan(params.dim_out,size(Xsel,2));
@@ -129,11 +134,11 @@ set(gca,'FontSize',16,'LineWidth',1)
 
 
 % save the figure
-% figPref = ['../figures',filesep,['ring_model_different_noise_N',num2str(params.dim_out), '_',date]];
-% saveas(gcf,[figPref,'.fig'])
-% print('-depsc',[figPref,'.eps'])
+figPref = ['./figures',filesep,['ring_model_different_noise_N',num2str(params.dim_out), '_',date]];
+saveas(gcf,[figPref,'.fig'])
+print('-depsc',[figPref,'.eps'])
 
 % save the data
 close all
-dataFile = ['../data',filesep,'ring_model_different_noise.mat'];
+dataFile = ['./data/revision',filesep,'ring_model_different_noise.mat'];
 save(dataFile)
