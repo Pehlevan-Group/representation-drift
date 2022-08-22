@@ -187,8 +187,6 @@ xlabel('Centroid shift')
 ylabel('Fraction')
 set(gca,'FontSize',20)
 
-
-
 %% shift of centroid, use more data
 
 daysep = 50;                   % total interval of day seperation
@@ -519,7 +517,6 @@ for rp = 1:repeats
         % merge
         shiftCentroid{bin,rp} = firstCen.*secondCen;
         C = corrcoef(firstCen,secondCen);  % correlation
-%         C2 = cov(firstCen,secondCen);     % covariance
         aveShiftRW(bin,rp) = C(1,2);
     end
 end
@@ -778,30 +775,6 @@ sFolder = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDr
 figWidth = 3.5;      % width of figure
 figHeight = 2.8;   % height of figure
 
-% ****************************************************
-% Fraction of active neurons, based on defined sessions
-% ****************************************************
-% barFig = figure;
-% pos(3)=figWidth;  
-% pos(4)=figHeight;
-% set(gcf,'color','w','Units','inches','Position',pos)
-% 
-% % bh = bar(actiFracSess,0.7,'FaceColor',blues(5,:),'EdgeColor',greys(7,:),'LineWidth',1.5);
-% bh = bar(actiFracSess,0.7,'EdgeColor',greys(7,:),'LineWidth',1.5);
-% bh.FaceColor = 'flat';
-% for i = 1:4
-%     bh.CData(i,:) = blues(2+2*i,:);
-% end
-% ylim([0,0.3])
-% set(gca,'xticklabel',{'learning','consolidation','recall','reconsolidation'},'FontSize',16)
-% xtickangle(40)
-% ylabel({'fraction of','place cells'},'FontSize',20)
-
-%save the figures
-% figPref = [sFolder,filesep,'hipp_frac_acti_session'];
-% saveas(barFig,[figPref,'.fig'])
-% print('-depsc',[figPref,'.eps'])
-
 
 % ****************************************************
 % Fraction of active neurons, 5 day concantenated, Fig 5I
@@ -826,42 +799,6 @@ ylabel({'fraction of','place cells'},'FontSize',20)
 %save the figures
 % figPref = [sFolder,filesep,'hipp_frac_acti_5day'];
 % saveas(barFig5Day,[figPref,'.fig'])
-% print('-depsc',[figPref,'.eps'])
-
-
-% ******************************************
-% overlap of neurons
-% ******************************************
-% figOl = figure;
-% % set(gcf,'renderer','Painters')
-% pos(3)=figWidth;  
-% pos(4)=figHeight;
-% set(gcf,'color','w','Units','inches','Position',pos)
-% hold on
-% ph1 = plot(oDSRH(:,4),'Color',blues(9,:));
-% x = [1:size(oDSRH(:,1),1),fliplr(1:size(oDSRH(:,1),1))];
-% A = [oDSRH(:,5)', fliplr(oDSRH(:,6)')];
-% h1 = fill(x,A,blues(4,:));
-% set(h1,'FaceAlpha',0.2)
-% 
-% % add randomized
-% ph2 = plot(1:size(oDSRH(:,10),1),oDSRH(:,10),'LineWidth',2,'Color',greys(7,:));
-% A = [oDSRH(:,11)', fliplr(oDSRH(:,12)')];
-% h1 = fill(x,A,greys(4,:));
-% set(h1,'FaceAlpha',0.2)
-% 
-% hold off
-% box on
-% legend([ph1,ph2],'Place cell','Random')
-% ylim([0 1])
-% xlim([0,40])
-% xlabel('Days','FontSize',labelFontSize)
-% % ylabel({'Recurrence','Probability'})
-% ylabel({'Neuron overlap'},'FontSize',labelFontSize)
-
-%save the figures
-% figPref = [sFolder,filesep,'hipp_data_neuro_overlap'];
-% saveas(figOl,[figPref,'.fig'])
 % print('-depsc',[figPref,'.eps'])
 
 

@@ -10,7 +10,7 @@ param.Nthe = 6;     % number of rotations
 param.Nx =  3;      % offset of x-direction
 param.Ny = 3;       % offset of y-direction
 param.Ng = param.Nlbd*param.Nthe*param.Nx*param.Ny;   % total number of grid cells
-param.Np = 200;   % number of place cells, default 20*20
+param.Np = 200;     % number of place cells, default 20*20
 
 param.baseLbd = 0.2;   % spacing of smallest grid RF, default 0.28
 param.sf =  1.42;       % scaling factor between adjacent module
