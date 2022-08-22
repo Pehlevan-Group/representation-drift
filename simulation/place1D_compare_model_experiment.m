@@ -7,12 +7,12 @@
 % 4) Distance 
 
 % load the data
-sFolder = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/figures';
+% sFolder = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/figures';
 
 %% load the summarized data
 dFolder = '/Users/shawnqin/Dropbox (Harvard University)/analyzedData';
 dFile1 = 'hippocampus_data_1222.mat';   % without information of active cells
-dFile2 = 'hippocampus_data.mat';   % without information of active cells
+dFile2 = 'hippocampus_data.mat';        % without information of active cells
 
 
 load(fullfile(dFolder,filesep,dFile1))
@@ -93,21 +93,20 @@ end
 % fraction of number of shared neurons
 neuronOL = nan(size(allCat1,1),1);
 days = [1:5,16:20]';
-figure
-plot(days,numberShared/numberShared(dayRef),'o-','MarkerSize',10,'LineWidth',3)
-xlabel('days')
-ylabel('neuron overlap')
+% figure
+% plot(days,numberShared/numberShared(dayRef),'o-','MarkerSize',10,'LineWidth',3)
+% xlabel('days')
+% ylabel('neuron overlap')
 
 
 % population vector correlation coefficients
-figure
-errorbar(days,PVcorr(:,1),PVcorr(:,2),'o-','MarkerSize',errSymSize,'MarkerFaceColor',blues(9,:),...
-    'MarkerEdgeColor',blues(9,:),'Color',blues(9,:),'LineWidth',lineWd)
-xlabel('Days','FontSize',labelFontSize)
-ylabel('PV correlation','FontSize',labelFontSize)
-set(gca,'FontSize',axisFont,'LineWidth',axisLw)
-
-
+% figure
+% errorbar(days,PVcorr(:,1),PVcorr(:,2),'o-','MarkerSize',errSymSize,'MarkerFaceColor',blues(9,:),...
+%     'MarkerEdgeColor',blues(9,:),'Color',blues(9,:),'LineWidth',lineWd)
+% xlabel('Days','FontSize',labelFontSize)
+% ylabel('PV correlation','FontSize',labelFontSize)
+% set(gca,'FontSize',axisFont,'LineWidth',axisLw)
+% 
 
 %% Example representation and similarity matrix
 day1 = 1;
@@ -123,24 +122,24 @@ end
 Y1 = allCat1{day1,2}(sharedIx0,4:end);
 Y2 = allCat1{day2,2}(sharedIx,4:end);
 
-figure
-subplot(1,2,1)
-imagesc(Y1)
-
-subplot(1,2,2)
-imagesc(Y2)
-
-% simiarity matrix
-figure
-subplot(1,2,1)
-imagesc(Y1'*Y1,[0,80])
-
-subplot(1,2,2)
-imagesc(Y2'*Y2,[0,80])
+% figure
+% subplot(1,2,1)
+% imagesc(Y1)
+% 
+% subplot(1,2,2)
+% imagesc(Y2)
+% 
+% % simiarity matrix
+% figure
+% subplot(1,2,1)
+% imagesc(Y1'*Y1,[0,80])
+% 
+% subplot(1,2,2)
+% imagesc(Y2'*Y2,[0,80])
 
 
 %% Shift of place fields
-
+%{
 tmp = cell(1);
 tmpR = cell(1);
 binWidth = 50;
@@ -186,9 +185,7 @@ xticklabels({x});
 xlabel('Centroid shift')
 ylabel('Fraction')
 set(gca,'FontSize',20)
-
-
-
+%}
 %% shift of centroid, use more data
 
 daysep = 50;                   % total interval of day seperation
@@ -218,7 +215,6 @@ for day = 1:daysep
 
     k=k+1;
 end 
-
 
 
 %% Correlation of drift as a function of centroid distance
@@ -287,15 +283,8 @@ histogram(mergeShifts/50,'Normalization','pdf')
 xlabel('Centroid shift (L)')
 ylabel('Probability')
 
-std(mergeShifts)
-
 % merge adjust one-day shift
 mergeShiftsAdj =  cat(1,oneDayShiftAdj{:});
-figure
-histogram(mergeShiftsAdj/50,'Normalization','pdf')
-xlabel('Centroid shift (L)')
-ylabel('Probability')
-title('boundary')
 
 % merge removed centroids one-day shift
 mergeShiftsRm =  cat(1,oneDayShiftRm{:});
@@ -345,21 +334,11 @@ for am = 1:numAnimals
     end
 end
 finalAveRho = nanmean(aveRho,2);
-% plot the figure
-figure
-hold on
-plot(centroid_sep(2:end)'/trackL,aveRho,'Color',greys(7,:), 'LineWidth',2)
-plot(centroid_sep(2:end)'/trackL,finalAveRho,'Color',blues(7,:), 'LineWidth',4)
-hold off
-box on
-xlabel('Distance (L)')
-ylabel('$\langle \Delta r_A \Delta r_B\rangle$','Interpreter','latex')
-%save the figures
-% figPref = [sFolder,filesep,'hipp_shift_corr_raw'];
-% saveas(gcf,[figPref,'.fig'])
-% print('-depsc',[figPref,'.eps'])
 
 
+% *********************************************
+% Plot distance-dependent correlation of drift
+% *********************************************
 figure
 hold on
 plot(centroid_sep(2:end)'/trackL,aveShift,'Color',greys(7,:),'LineWidth',2)
@@ -382,13 +361,6 @@ ix = any(~isnan(Z),2);
 Zsel = Z(ix,:);
 dayInters = dayInterval{anm}(:,1);
 
-% heat map of centroids
-figure
-imagesc(Zsel)
-colorbar
-xlabel('day')
-ylabel('neuron')
-
 % another way to represent the centroid position
 actiDays = sum(~isnan(Zsel),2);
 [~,neuInx] = sort(actiDays,'descend');
@@ -396,8 +368,9 @@ exampleNeurons = neuInx(1:3);   % example neurons to high light the centroids
 exampleColors = [blues(8,:);oranges(4,:);PuRd(6,:)];
 
 
-
-
+% *********************************************
+% Visualize the shift of example RFs
+% *********************************************
 figure
 set(gcf,'renderer','painters');
 hold on
@@ -434,19 +407,17 @@ ylabel('Day')
 % the random walk step is generated from experimental distribution
 % we can either use the experimental data as the step size
 % or use the fitted exponential distributed step size
+% the estimated pdf of onestep shift is from "fitStepSize_1D.m"
 trackL = 50;
 repeats = 20;
 numNeu = 100;
 totSteps = 20;
 mergeShifts = mergeShiftsRm;   % if we adjust the experimental shift
 rwType = 'experiment';  % or 'experiment'
-muOpt = 0.1722;    % this is from "fitStepSize_1D.m'
+muOpt = 0.1722;        % this is from "fitStepSize_1D.m"
 
 Ns = length(mergeShifts);
 centroids_model = cell(repeats,1); % store all the centroid shift
-% gaussStd = std(mergeShifts);
-% gaussStd = 50;
-
 
 for rp = 1:repeats
     centroids_model{rp} = nan(numNeu,totSteps);
@@ -474,7 +445,6 @@ for rp = 1:repeats
     end
 end
 
-
 % estimated the distance-dependent correlation of centroid shift
 % centroid_sep = 0:1:trackL;   % bins of centroid positions
 deltaTau = 1;      % select time step seperation, subsampling
@@ -497,7 +467,6 @@ for rp = 1:repeats
             temp = centroids_model{rp}(bothActiInx,i);
             
             % remove two ends
-%             rmInx = temp <= stdExp | temp >= trackL - stdExp;
             rmInx = temp < rmL | temp > trackL - rmL;
             temp(rmInx) = nan;
             
@@ -510,9 +479,7 @@ for rp = 1:repeats
         % merge
         shiftCentroid{bin,rp} = firstCen.*secondCen;
         C = corrcoef(firstCen,secondCen);  % correlation
-%         C2 = cov(firstCen,secondCen);     % covariance
         aveShiftRW(bin,rp) = C(1,2);
-%         allCov(bin,rp) = C2(1,2);   % covariance
     end
 end
 
@@ -560,53 +527,12 @@ ylabel('$\rho$','Interpreter','latex')
 
 
 % load the 1D place cell model to make direct comparision
-% modelFile = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/data/pc1D_hippo_paper/1D_centroidCorr_0421.mat';
-modelFile = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/data/pc1D_hippo_paper/1D_slice_centroidCorr_0708.mat';
-% modelFile = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/data/revision/1D_slice_EI_random_corr_25_14-Apr-2022.mat';
-
+modelFile = '../data/1D_slice_centroidCorr_0708.mat';
 pc1Dmodel = load(modelFile,'aveShift','aveShiftM');
 
 % ********************************************************************************
 % compare model and experiment data together
 % ********************************************************************************
-figure
-hold on
-fh = shadedErrorBar((1:size(aveShift,1))',aveShift',{@mean,@std});
-box on
-set(fh.edge,'Visible','off')
-fh.mainLine.LineWidth = 4;
-fh.mainLine.Color = blues(10,:);
-fh.patch.FaceColor = blues(7,:);
-
-distR = 0.5:0.5:6;
-selModelData = pc1Dmodel.aveShift(1:12,:);
-fh3 = shadedErrorBar(distR',selModelData',{@mean,@std});
-box on
-set(fh3.edge,'Visible','off')
-fh3.mainLine.LineWidth = 4;
-fh3.mainLine.Color = reds(10,:);
-fh3.patch.FaceColor = reds(7,:);
-
-fh2 = shadedErrorBar((1:size(aveShiftRW,1))',aveShiftRW',{@mean,@std});
-box on
-set(fh2.edge,'Visible','off')
-fh2.mainLine.LineWidth = 3;
-fh2.mainLine.Color = greys(7,:);
-fh2.patch.FaceColor = greys(5,:);
-hold off
-
-lg = legend('Experiment','Model','Random walk');
-set(gca,'XTick',0:2:6,'XTickLabel',{'0','0.2','0.4','0.6'})
-% title(['$\Delta t = ',num2str(deltaTau),'$'],'Interpreter','latex')
-xlabel('Distance (L)')
-ylabel('$\rho$','Interpreter','latex')
-% 
-% figPref = [sFolder,filesep,'hipp_centroid_shift_exp_rw_model_shaded_EI_',date];
-% saveas(gcf,[figPref,'.fig'])
-% print('-depsc',[figPref,'.eps'])
-
-
-% using error bar
 barFig = figure;
 pos(3)=3.5;  
 pos(4)=2.8;
@@ -633,9 +559,6 @@ fh2.mainLine.Color = greys(7,:);
 fh2.patch.FaceColor = greys(5,:);
 hold off
 
-% fh2 = errorbar((1:size(aveShiftRW,1))',mean(aveShiftRW,2),std(aveShiftRW,0,2),'o-',...
-%     'MarkerFaceColor',greys(9,:),'MarkerEdgeColor',greys(7,:),'LineWidth',2,...
-%     'Color',greys(9,:),'MarkerSize',10,'CapSize',0);
 box on
 hold off
 xlabel('Distance (L)','FontSize',20)
@@ -650,150 +573,11 @@ set(gca,'XTick',0:2:6,'XTickLabel',{'0','0.2','0.4','0.6'})
 % print('-depsc',[figPref,'.eps'])
 
 
-%% Fraction of active place cell over time
-
-% index 1,2,5 are place cell
-
-% Left Hemispher
-LH_acti = cell(size(actiStruct_LH.days,1),1);
-for i = 1:size(LH_acti,1)
-    acti = nan(length(actiStruct_LH.days{i}),1);
-    for j = 1:length(actiStruct_LH.days{i})
-        acti(j) = mean(any(actiStruct_LH.catInfo{j,i}==[1,2,5],2));
-    end
-    LH_acti{i} = acti;
-end
-
-% Right Hemispher
-RH_acti = cell(size(actiStruct_RH.days,1),1);
-for i = 1:size(RH_acti,1)
-    acti = nan(length(actiStruct_RH.days{i}),1);
-    for j = 1:length(actiStruct_RH.days{i})
-        acti(j) = mean(any(actiStruct_RH.catInfo{j,i}==[1,2,5],2));
-    end
-    RH_acti{i} = acti;
-end
-
-% plot the actigve fraction for individual mouse
-figure
-hold on
-for i = 1:length(LH_acti)
-    plot(actiStruct_LH.days{i}',LH_acti{i},'Color',blues(3+2*i,:))
-    plot(actiStruct_RH.days{i}',RH_acti{i},'Color',greys(3+2*i,:))
-end
-hold off
-box on
-xlabel('days')
-ylabel('fraction of active')
-
-
-% Concantenate data very 3 days till day 24
-gap = 5;
-sepDays = gap:gap:25;
-numSess = round(25/gap);   % number of sessions
-sessionInfo = cell(numSess,4);   % lH
-catActiLH = cell(numSess,1);
-catActiRH = cell(numSess,1);
-allAct = cell(numSess,1);
-
-actFracLH = nan(numSess,1);
-actFracRH = nan(numSess,1);
-actFrac = nan(numSess,1);
-for day = 1:length(sepDays)
-    % left Hemisphere
-    for animal = 1:length(LH_acti)
-%     tmp = [];
-%     for day = 1:length(sepDays)
-        inx = actiStruct_LH.days{animal} > sepDays(day)-gap & actiStruct_LH.days{animal}...
-            <= sepDays(day);
-        sessionInfo{day,animal} = cat(1,actiStruct_LH.catInfo{inx,animal});
-    end
-    catActiLH{day} = cat(1,sessionInfo{day,:});
-    actFracLH(day) = mean(any(catActiLH{day}==[1,2,5],2));
-    
-    % right hemispher
-    tmp = [];
-    for animal = 1:length(RH_acti)
-        inx = actiStruct_RH.days{animal} > sepDays(day)-gap & actiStruct_RH.days{animal}...
-            <= sepDays(day);
-        tmp = cat(1,tmp,actiStruct_RH.catInfo{inx,animal});
-    end
-    catActiRH{day} = tmp;
-    actFracRH(day) = mean(any(catActiRH{day}==[1,2,5],2));
-    % combine LH and RH together
-    allAct{day} = cat(1,catActiLH{day},catActiRH{day});
-    actFrac(day) = mean(any(allAct{day}==[1,2,5],2));
-end
-
-% catActi = cat(2,sessionInfo{});
-% figure
-% plot(actFrac)
-% ylim([0,0.5])
-
-
-% another way to concantenate the data
-numSess = 4;    % divide the data into 4 groups
-sessLH = cell(numSess,1);   % lH
-sessRH = cell(numSess,1);   % lH
-sessAll = cell(numSess,1);  %concantenate all of them
-
-actiFracSess = nan(numSess,1);
-for i = 1:numSess
-    % left hemispher
-    tmp = [];
-    for animal = 1:length(LH_acti)
-        dayInx = ismember(actiStruct_LH.days{animal},daysLH{i,animal});
-        tmp = cat(1,tmp,actiStruct_LH.catInfo{dayInx,animal});
-    end
-    sessLH{i} = tmp;
-    actFracLH(i) = mean(any(sessLH{i}==[1,2,5],2));
-    
-    % right hemispher
-    tmp = [];
-    for animal = 1:length(RH_acti)
-        dayInx = ismember(actiStruct_RH.days{animal},daysRH{i,animal});
-        tmp = cat(1,tmp,actiStruct_RH.catInfo{dayInx,animal});
-    end
-    sessRH{i} = tmp;
-    actFracRH(i) = mean(any(sessRH{i}==[1,2,5],2));
-    
-    % concatenate
-    sessAll{i} = cat(1,sessLH{i},sessRH{i});
-    actiFracSess(i) = mean(any(sessAll{i}==[1,2,5],2));
-end
-
-% plot based on every 5 days average
-
-
 %% Publication-ready figures
 
 sFolder = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/figures';
 figWidth = 3.5;      % width of figure
 figHeight = 2.8;   % height of figure
-
-% ****************************************************
-% Fraction of active neurons, based on defined sessions
-% ****************************************************
-barFig = figure;
-pos(3)=figWidth;  
-pos(4)=figHeight;
-set(gcf,'color','w','Units','inches','Position',pos)
-
-% bh = bar(actiFracSess,0.7,'FaceColor',blues(5,:),'EdgeColor',greys(7,:),'LineWidth',1.5);
-bh = bar(actiFracSess,0.7,'EdgeColor',greys(7,:),'LineWidth',1.5);
-bh.FaceColor = 'flat';
-for i = 1:4
-    bh.CData(i,:) = blues(2+2*i,:);
-end
-ylim([0,0.3])
-set(gca,'xticklabel',{'learning','consolidation','recall','reconsolidation'},'FontSize',16)
-xtickangle(40)
-ylabel({'fraction of','place cells'},'FontSize',20)
-
-%save the figures
-% figPref = [sFolder,filesep,'hipp_frac_acti_session'];
-% saveas(barFig,[figPref,'.fig'])
-% print('-depsc',[figPref,'.eps'])
 
 
 % ****************************************************
@@ -820,43 +604,6 @@ ylabel({'fraction of','place cells'},'FontSize',20)
 % figPref = [sFolder,filesep,'hipp_frac_acti_5day'];
 % saveas(barFig5Day,[figPref,'.fig'])
 % print('-depsc',[figPref,'.eps'])
-
-
-% ******************************************
-% overlap of neurons
-% ******************************************
-figOl = figure;
-% set(gcf,'renderer','Painters')
-pos(3)=figWidth;  
-pos(4)=figHeight;
-set(gcf,'color','w','Units','inches','Position',pos)
-hold on
-ph1 = plot(oDSRH(:,4),'Color',blues(9,:));
-x = [1:size(oDSRH(:,1),1),fliplr(1:size(oDSRH(:,1),1))];
-A = [oDSRH(:,5)', fliplr(oDSRH(:,6)')];
-h1 = fill(x,A,blues(4,:));
-set(h1,'FaceAlpha',0.2)
-
-% add randomized
-ph2 = plot(1:size(oDSRH(:,10),1),oDSRH(:,10),'LineWidth',2,'Color',greys(7,:));
-A = [oDSRH(:,11)', fliplr(oDSRH(:,12)')];
-h1 = fill(x,A,greys(4,:));
-set(h1,'FaceAlpha',0.2)
-
-hold off
-box on
-legend([ph1,ph2],'Place cell','Random')
-ylim([0 1])
-xlim([0,40])
-xlabel('Days','FontSize',labelFontSize)
-% ylabel({'Recurrence','Probability'})
-ylabel({'Neuron overlap'},'FontSize',labelFontSize)
-
-%save the figures
-% figPref = [sFolder,filesep,'hipp_data_neuro_overlap'];
-% saveas(figOl,[figPref,'.fig'])
-% print('-depsc',[figPref,'.eps'])
-
 
 % ******************************************
 % population vector if order based on day 1
