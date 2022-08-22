@@ -575,7 +575,7 @@ set(gca,'XTick',0:2:6,'XTickLabel',{'0','0.2','0.4','0.6'})
 % saveas(gcf,[figPref,'.fig'])
 % print('-depsc',[figPref,'.eps'])
 
-%% Fraction of active place cell over time
+%%
 
 % index 1,2,5 are place cell
 
@@ -599,6 +599,19 @@ for i = 1:size(RH_acti,1)
     RH_acti{i} = acti;
 end
 
+% plot the actigve fraction for individual mouse
+figure
+hold on
+for i = 1:length(LH_acti)
+    plot(actiStruct_LH.days{i}',LH_acti{i},'Color',blues(3+2*i,:))
+    plot(actiStruct_RH.days{i}',RH_acti{i},'Color',greys(3+2*i,:))
+end
+hold off
+box on
+xlabel('days')
+ylabel('fraction of active')
+
+
 % Concantenate data very 3 days till day 24
 gap = 5;
 sepDays = gap:gap:25;
@@ -614,6 +627,7 @@ actFrac = nan(numSess,1);
 for day = 1:length(sepDays)
     % left Hemisphere
     for animal = 1:length(LH_acti)
+%     tmp = [];
         inx = actiStruct_LH.days{animal} > sepDays(day)-gap & actiStruct_LH.days{animal}...
             <= sepDays(day);
         sessionInfo{day,animal} = cat(1,actiStruct_LH.catInfo{inx,animal});
