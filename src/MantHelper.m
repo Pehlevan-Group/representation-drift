@@ -29,7 +29,7 @@ classdef MantHelper < handle
             states.V = V;
         end
         
-        % offline neural dynamics
+        % offline neural dynamics, based on "Manifold tiling paper"
         function [states, params] = neuralDynBatch(X,Y,Z,V, params)
             MaxIter = 1e4; % maximum iterations
             ErrTol = 1e-5; % error tolerance
@@ -53,19 +53,15 @@ classdef MantHelper < handle
             states.V = V;
         end
         
-        
-        % simple non-negative similarity matching neural dynamics
+        % simple non-negative similarity matching neural dynamics, Euler 
         function states = nsmDynBatch(X,Y, params)
-            MaxIter = 1e4; % maximum iterations
-            ErrTol = 1e-4; % error tolerance, should be smaller for convergence
+            MaxIter = 1e4;  % maximum iterations
+            ErrTol = 1e-4;  % error tolerance, should be smaller for convergence
             count = 0;
             err = inf;
             cumErr = inf;
-%             uyold = zeros(size(Y));
-            m = mean(diag(params.M));
-            uyold = Y*(params.lbd2 + m);   % revised on 05/11/2021
+            uyold = Y*(params.lbd2 + mean(diag(params.M)));   % revised on 05/11/2021
             Yold = Y;
-            T = size(X,2);  % number of samples
             errTrack = rand(5,1); % store the lated 5 error
             cumErrTol = 1e-10;    % 1e-6
             
@@ -88,12 +84,13 @@ classdef MantHelper < handle
         
         % estimate the centroid of the ring model
         function centroid = nsmCentroidRing(Y, flags)
-            [num,bins] = size(Y);  % number of neurons and bins of 2pi rnage
+            [num,bins] = size(Y);    % number of neurons and bins of 2pi rnage
             half_bins = round(bins/2);
             centroid = nan(num,1);
-            thd = 0.1;    % default threshod to remove small bumps
+            thd = 0.1;        % default threshod to remove small bumps
+            lower_thd = 0.01;   % lower threshold of activity as "inactive"
             for i = 1:num
-                if Y(i,end) > 0.01 && flags(i)
+                if Y(i,end) > lower_thd && flags(i)
                     temp = [Y(i,:),Y(i,:)];
                     temp(temp<thd) = 0;   % remove small bump
                     cm = mean(temp(half_bins:3*half_bins).*(half_bins:3*half_bins))/mean(temp(half_bins:3*half_bins));
@@ -102,13 +99,14 @@ classdef MantHelper < handle
                     else
                         centroid(i) = cm;
                     end  
-                elseif Y(i,end) <= 0.01 && flags(i)
+                elseif Y(i,end) <= lower_thd && flags(i)
                     temp = Y(i,:);
                     temp(temp <thd) = 0;   % remove small bump
                     centroid(i) = mean(temp.*(1:bins))/mean(temp); 
                 end
             end
         end
+        
         % simple non-negative similarity matching neural dynamics
         function [states, params] = nsmRingModel(X,Y, params)
             MaxIter = 1e4; % maximum iterations
@@ -170,10 +168,9 @@ classdef MantHelper < handle
             end
             states.Y = Y;
         end
-
-        
+    
         % simple non-negative similarity matching neural dynamics with
-        % current noise
+        % recurrent current noise
         function [states, params] = nsmNoiseDynBatch(X,Y, params)
             MaxIter = 1e4; % maximum iterations
             ErrTol = 1e-3; % error tolerance

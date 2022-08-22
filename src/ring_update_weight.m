@@ -1,5 +1,5 @@
 function [Yt, params] = ring_update_weight(X,total_iter,params,input_flag)
-% whether or not with input
+% flag indicating whether or not with input, default yes
 if exist('input_flag','var')
     Flag = input_flag;
 else
@@ -16,7 +16,7 @@ num_samp = size(X,2);
         if Flag
             y0 = 0.1*rand(params.dim_out,params.batch_size);
             inx = randperm(num_samp,params.batch_size);
-            x = X(:,inx);  % randomly select one input
+            x = X(:,inx);         % randomly select one input
     %         y = MantHelper.quadprogamYfixed(x,params);
             states= MantHelper.nsmDynBatch(x,y0, params);
             y = states.Y;
