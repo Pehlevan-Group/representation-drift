@@ -115,7 +115,6 @@ set(gca,'LineWidth',1,'FontSize',16)
 % print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
-
 % ************************************************************
 % peak amplitude of example neuron
 % ************************************************************
@@ -202,7 +201,7 @@ ylim([0,2.5])
 % prefix = [figPre, 'active_diffCont_'];
 % saveas(DiffuAmpFig,[sFolder,filesep,prefix,'.fig'])
 % print('-depsc',[sFolder,filesep,prefix,'.eps'])
-% 
+
 
 
 %%

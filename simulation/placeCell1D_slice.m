@@ -3,7 +3,7 @@
 % 1D grid fields are slices of 2D lattice of grid fields
 
 % add input noise simulation
-% last revised  6/30/2021
+% last revised  8/22/2022
 clear
 close all
 
@@ -20,9 +20,9 @@ param.baseLbd = 1/4;    % spacing of smallest grid RF, default 1/4
 param.sf =  1.42;       % scaling factor between adjacent module
 
 % parameters for learning 
-noiseVar = 'various';      % using different noise or the same noise level for each synpase
-noiseStd = 0.01;        % 0.001
-learnRate = 0.02;       % default 0.05
+noiseVar = 'same';      % using different noise or the same noise level for each synpase
+noiseStd = 0.005;        % 0.001
+learnRate = 0.05;       % default 0.05
 
 param.W = 0.5*randn(param.Np,param.Ng);   % initialize the forward matrix
 param.M = eye(param.Np);        % lateral connection if using simple nsm
@@ -38,7 +38,7 @@ param.gv = 0.2;          % update step for V
 param.b = zeros(param.Np,1);  % biase
 param.learnRate = learnRate;  % learning rate for W and b
 param.noise =  noiseStd; % stanard deivation of noise 
-param.rwSpeed = 10;      % steps each update, default 1
+% param.rwSpeed = 10;      % steps each update, default 1
 param.step = 20;         % store every 20 step
 param.ampThd = 0.1;      % amplitude threshold, depending on the parameters
 
@@ -201,173 +201,6 @@ time_points = round(total_iter/param.step);
 
 [output, param] = place_cell_stochastic_update_snsm(gdInput,total_iter, param);
 
-%% analyzing the drift behavior
-%{
-% pca of the peak amplitude=  dynamcis
-[COEFF, SCORE, ~, ~, EXPLAINED] = pca(pkAmp');
-
-
-figure
-plot(cumsum(EXPLAINED),'LineWidth',3)
-xlabel('pc','FontSize',24)
-ylabel('cummulative variance','FontSize',24)
-set(gca,'FontSize',20,'LineWidth',1.5)
-
-%}
-%% input and output similarity when random sampling from certain distribution
-%{
-% Xsamp = gdInput(:,posiInfo);
-% [~,ix] = sort(posiInfo,'ascend');
-% Xsorted = Xsamp(:,ix(1:20:end));
-% figure
-% imagesc(Xsorted'*Xsorted)
-% xlabel('position')
-% ylabel('position')
-
-
-% output
-ys = states_fixed.Y;
-[~,iy] = sort(ys,2,'descend');
-[~,in] = sort(iy(:,1),'ascend');
-
-% plot heat map of final output
-figure
-imagesc(ys(in,:),[0,2])
-colorbar
-xlabel('Position')
-ylabel('Neuron')
-
-
-figure
-imagesc(ys'*ys,[0,12])
-colorbar
-xlabel('Position')
-ylabel('Position')
-
-%}
-%% Peak dynamics
-%{
-% shift of peak positions
-epInx = randperm(param.Np,1);  % randomly slect
-epPosi = [floor(output.pks(epInx,:)/param.ps);mod(output.pks(epInx,:),param.ps)]+randn(2,size(output.pks,2))*0.1;
-
-specColors = brewermap(size(epPosi,2), 'Spectral');
-
-% colors indicate time
-figure
-hold on
-for i=1:size(output.pks,2)
-    plot(epPosi(1,i),epPosi(2,i),'^','MarkerSize',4,'MarkerEdgeColor',...
-        specColors(i,:),'LineWidth',1.5)
-end
-hold off
-box on
-xlabel('x position','FontSize',24)
-ylabel('y position','FontSize',24)
-set(gca,'FontSize',24,'LineWidth',1.5)
-
-% 2d trajectory
-figure
-plot(epPosi(1,:),epPosi(2,:), 'o-','MarkerSize',4,'LineWidth',2)
-xlabel('x position','FontSize',24)
-ylabel('y position','FontSize',24)
-set(gca,'FontSize',24,'LineWidth',1.5)
-
-% distribution of step size
-ixs = epPosi(1,:)>0;
-times =1:size(epPosi,2);
-pkTimePoints = times(ixs);
-silentInt = diff(pkTimePoints)-1; % silent interval
-figure
-histogram(silentInt(silentInt > 0)*param.step)
-xlabel('$\Delta t$','Interpreter','latex','FontSize',24)
-ylabel('count','FontSize',24)
-set(gca,'FontSize',24,'LineWidth',1.5)
-
-
-temp = epPosi(:,ixs);
-dp = [diff(temp(1,:));diff(temp(2,:))];
-ds = sqrt(sum(dp.^2,1));
-
-% distribution of
-figure
-histogram(log(ds(ds>=1)),32)
-xlabel('$\ln(\Delta d)$','Interpreter','latex','FontSize',24)
-ylabel('count','FontSize',24)
-set(gca,'FontSize',24,'LineWidth',1.5)
-
-[f,X] = ecdf(ds(ds>=1 & ds < 20));
-figure
-plot(X,1 - f,'LineWidth',3)
-xlabel('$\log_{10}(\Delta d)$','Interpreter','latex','FontSize',24)
-ylabel('$1-F(x)$','Interpreter','latex','FontSize',24)
-set(gca,'XScale','log','YScale','log','LineWidth',1.5,'FontSize',24)
-
-
-% statistics of jump and local diffusion
-ds = diff(epPosi,1,2);
-dsTraj = sqrt(sum(ds.^2,1))/param.ps;
-figure
-plot(dsTraj,'LineWidth',1)
-xlabel('time','FontSize',24)
-ylabel('$\Delta d$','Interpreter','latex','FontSize',24)
-set(gca,'LineWidth',1.5,'FontSize',20)
-
-% make an animation of peak positions
-% randomly select 10 neurons
-selNeur = randperm(param.Np,min(10,param.Np));
-set1 = brewermap(11,'Set1');
-frameSep = 5; % only capture every 5 steps, each step  = 2 iterations
-
-epPosiXs = floor(output.pks(selNeur,:)/param.ps);
-epPosiYs = mod(output.pks(selNeur,:),param.ps); 
-
-
-if makeAnimation
-    figure
-    set(gcf,'color','w');
-    hold on
-    for i = 1:length(selNeur)
-        plot(epPosiXs(i,1),epPosiYs(i,1),'o','MarkerSize',20,'MarkerEdgeColor',...
-            set1(i,:),'LineWidth',3)
-        xlim([0,32])
-        ylim([0,32])
-        text(epPosiXs(i,1)-0.3,epPosiYs(i,1),num2str(i),'FontSize',20)
-    end
-    hold off
-    box on
-    xlabel('x','FontSize',20)
-    ylabel('y','FontSize',20)
-    set(gca,'LineWidth',1.5,'FontSize',20)
-
-    detlaT = 0.05;
-    f = getframe(gcf);
-    [im,map] = rgb2ind(f.cdata,256,'nodither');
-    k = 1;
-    for i = 1:round(size(epPosiXs,2)/frameSep)
-        for j=1:length(selNeur)
-            plot(epPosiXs(j,i*frameSep),epPosiYs(j,i*frameSep),'o','MarkerSize',20,'MarkerEdgeColor',...
-            set1(j,:),'LineWidth',3)
-            text(epPosiXs(j,i*frameSep)-0.3,epPosiYs(j,i*frameSep),num2str(j),'FontSize',16)
-            hold on
-        end
-        hold off
-        box on
-        xlim([0,32])
-        ylim([0,32])
-        xlabel('x','FontSize',20)
-        ylabel('y','FontSize',20)
-        set(gca,'LineWidth',1.5,'FontSize',20)
-        title(['time = ', num2str(i*frameSep)])
-        f = getframe(gcf);
-        im(:,:,1,k) = rgb2ind(f.cdata,map,'nodither');
-        k = k + 1;
-
-    end
-    imwrite(im,map,'scatterPkPosi.gif','DelayTime',detlaT,'LoopCount',inf)
-end
-
-%}
 %% Estimate the diffusion constant
 
 msds = nan(floor(time_points/2),size(output.pkMas,1));
@@ -418,18 +251,6 @@ tolActiTime = sum(temp,2)/size(output.pkAmp,2);
 avePks = nan(size(output.pkAmp));
 avePks(temp) = output.pkAmp(temp);
 meanPks = nanmean(avePks,2);
-
-% figure
-% plot(meanPks,tolActiTime,'o','MarkerSize',8,'LineWidth',2)
-% xlabel('Average peak amplitude','FontSize',labelFont)
-% ylabel({'faction of', 'active time'},'FontSize',labelFont)
-% set(gca,'FontSize',axisFont,'LineWidth',axisLineWd)
-% 
-% figure
-% histogram(tolActiTime,20)
-% xlabel('active time fraction','FontSize',24)
-% ylabel('count','FontSize',24)
-% set(gca,'FontSize',20,'LineWidth',1.5)
 
 %% Diffusion constant, active time
 figure
@@ -1336,9 +1157,9 @@ ylabel('Fraction','FontSize',labelFont)
 set(gca,'FontSize',axisFont)
 
 % save the figure
-prefix = [figPre, 'shiftDistrFrac'];
-saveas(histFig,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'shiftDistrFrac'];
+% saveas(histFig,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 
@@ -1391,6 +1212,6 @@ xlabel('Time','FontSize',labelFont)
 ylabel({'Fraction shift','< 10% change'},'FontSize',labelFont)
 set(gca,'LineWidth',axisLineWd,'FontSize',axisFont)
 
-prefix = [figPre, 'shift10percent_'];
-saveas(frac10Fig,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'shift10percent_'];
+% saveas(frac10Fig,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
