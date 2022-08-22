@@ -93,20 +93,6 @@ end
 % fraction of number of shared neurons
 neuronOL = nan(size(allCat1,1),1);
 days = [1:5,16:20]';
-% figure
-% plot(days,numberShared/numberShared(dayRef),'o-','MarkerSize',10,'LineWidth',3)
-% xlabel('days')
-% ylabel('neuron overlap')
-
-
-% population vector correlation coefficients
-% figure
-% errorbar(days,PVcorr(:,1),PVcorr(:,2),'o-','MarkerSize',errSymSize,'MarkerFaceColor',blues(9,:),...
-%     'MarkerEdgeColor',blues(9,:),'Color',blues(9,:),'LineWidth',lineWd)
-% xlabel('Days','FontSize',labelFontSize)
-% ylabel('PV correlation','FontSize',labelFontSize)
-% set(gca,'FontSize',axisFont,'LineWidth',axisLw)
-% 
 
 %% Example representation and similarity matrix
 day1 = 1;
@@ -122,70 +108,7 @@ end
 Y1 = allCat1{day1,2}(sharedIx0,4:end);
 Y2 = allCat1{day2,2}(sharedIx,4:end);
 
-% figure
-% subplot(1,2,1)
-% imagesc(Y1)
-% 
-% subplot(1,2,2)
-% imagesc(Y2)
-% 
-% % simiarity matrix
-% figure
-% subplot(1,2,1)
-% imagesc(Y1'*Y1,[0,80])
-% 
-% subplot(1,2,2)
-% imagesc(Y2'*Y2,[0,80])
 
-
-%% Shift of place fields
-%{
-tmp = cell(1);
-tmpR = cell(1);
-binWidth = 50;
-% figure('pos',[200 200 1200 400])
-% subplot(1,2,1)
-figure
-%field drift in real data
-k=1;
-dayApart = [1,10,20];
-for i = 1:length(dayApart)
-    for animal = 1:size(centroidShift_P,1)
-        if size(centroidShift_P{animal, 1},1)>dayApart(i)
-            tmp{k}(animal,:) = centroidShift_P{animal, 1}(dayApart(i),:);
-        end
-    end
-    errorbar(median(tmp{k},1),std(tmp{k},1)./size(centroidShift_P,1),'-o',...
-        'MarkerSize',6,'Color',blues(2+3*i,:),'MarkerEdgeColor',blues(2+3*i,:),...
-        'MarkerFaceColor',blues(2+3*i,:),'CapSize',0,'LineWidth',1.5)
-    hold on
-    k=k+1;
-end 
-
-k=1;
-%field drift in random data
-for i = 1:length(dayApart)
-    for animal = 1:size(centroidShift_P,1)
-        if size(centroidShift_P{animal, 1},1)>dayApart(i)
-            tmpR{k}(animal,:) = centroidShift_P_R{animal, 1}(dayApart(i),:);
-        end
-    end
-    errorbar(median(tmpR{k},1),std(tmpR{k},1)./size(centroidShift_P,1),'-',...
-        'MarkerSize',3,'Color',greys(2+3*i,:),'MarkerEdgeColor',greys(2+3*i,:),...
-        'MarkerFaceColor',greys(2+3*i,:),'CapSize',0,'LineWidth',1.5)
-%     hold on
-    k=k+1;
-end 
-legend('1 day','10 days','20 days')
-ylim([0 0.20])
-xlim([1 binWidth])
-xticks(1:5:binWidth+1)
-x = -binWidth/2:5:binWidth/2;
-xticklabels({x});
-xlabel('Centroid shift')
-ylabel('Fraction')
-set(gca,'FontSize',20)
-%}
 %% shift of centroid, use more data
 
 daysep = 50;                   % total interval of day seperation
