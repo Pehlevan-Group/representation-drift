@@ -1,14 +1,18 @@
 % Use CMA-ES to search for the best fitted distribution of dS
 % This is used to generate data for Fig 5J
+% Due to the stochastic nature of the optimization, you might need to run
+% the simulation a couple of times to get the best solution
 
 % load the data, specify the directory of data
-load('./data/pc1D_hippo_paper/pc_1dayShift_exper.mat',...
+load('../data/pc_1dayShift_exper.mat',...
     'allCentroids','mergeShifts')
 % set the parameters
 
+% *****************************************************************************
 % add the opitmization program file folder to the path, we used external
 % CMA-ES algorithm: http://www.cmap.polytechnique.fr/~nikolaus.hansen/cmaes_inmatlab.html
 addpath '/Users/shawnqin/Documents/MATLAB/olfaction'
+%*****************************************************************************
 
 global param targetData oneDayShift x_eval targetECDF
 param.L = 50;  % length of the linear track
@@ -58,10 +62,6 @@ end
 
 
 %% plot and compare the histogram of dr with experiments
-
-% run this in debug mode
-% fitLevyAlpStable(wmin)
-% fitLevyAlpStable_nlsq(wmin)
 
 % generate the 1-step difference based on the fitted distribution
 N  = length(targetData);
@@ -118,11 +118,10 @@ lg = legend('random walk','experiment');
 set(lg,'FontSize',14)
 set(gca,'FontSize',16)
 
-sFolder = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/figures';
-figPref = [sFolder,filesep,'hipp_centroid_shift_LevyAlpStable_rw_model_stepSize_06122022'];
-saveas(gcf,[figPref,'.fig'])
-print('-depsc',[figPref,'.eps'])
-
+% sFolder = '../figures';
+% figPref = [sFolder,filesep,'hipp_centroid_shift_LevyAlpStable_rw_model_stepSize_06122022'];
+% saveas(gcf,[figPref,'.fig'])
+% print('-depsc',[figPref,'.eps'])
 
 
 % distribution of model step size
@@ -143,8 +142,8 @@ xlabel('$\Delta s$','Interpreter','latex')
 ylabel('Pdf')
 set(gca,'FontSize',16)
 % 
-figPref = [sFolder,filesep,'hipp_shift_LevyStable_model_stepSize_06122022'];
-saveas(gcf,[figPref,'.fig'])
-print('-depsc',[figPref,'.eps'])
+% figPref = [sFolder,filesep,'hipp_shift_LevyStable_model_stepSize_06122022'];
+% saveas(gcf,[figPref,'.fig'])
+% print('-depsc',[figPref,'.eps'])
 
 

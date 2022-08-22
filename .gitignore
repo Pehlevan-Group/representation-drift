@@ -2,3 +2,5 @@ figures/**
 data/**
 *.mat
 *.pdf
+*.dat
+*.asv
