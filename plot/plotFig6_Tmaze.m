@@ -198,9 +198,6 @@ for i= 1:2
     [~,neurOrder] = sort(actiPkCM);
     newInx = actiInx(neurOrder);
     
-%     [~,temp]= sort(YtMerge(:,:,inxSelPV(i)),2,'descend');
-%     [~, newInx] = sort(temp(:,1));
-%     [~, newInx] = sort(mergePeakInx(:,inxSelPV(i)));
     for j = 1:length(inxSelPV)
         imagesc(axsh{i,j},YtMerge(newInx,:,inxSelPV(j)),[0,0.5])
         set(axsh{i,j},'YDir','normal','FontSize',20)
@@ -222,8 +219,6 @@ end
 % add titile
 title(axsh{1},['t = ', num2str(inxSelPV(1))], 'FontSize', 16)
 title(axsh{3},['t = ', num2str(inxSelPV(2))], 'FontSize', 16)
-
-
 
 
 
@@ -314,11 +309,11 @@ set(gca,'FontSize',16,'XTick',(0:1:2)*1e4,'LineWidth',1)
 % print('-depsc',[saveFolder,filesep,prefix,'.eps'])
 
 %% Fraction of centroid shift Fig 6D
-adjPeaks = mod(peakPosi, size(Yt,2)/2);
-psRange = pi;   % the range of ring positions
-pks0 = adjPeaks/size(Yt,2)*2*psRange;
-% tps = [1,2,3,8];
-tps = [50,100,150,200,250];
+
+% adjPeaks = mod(peakPosi, size(Yt,2)/2);
+% psRange = pi;   % the range of ring positions
+% pks0 = adjPeaks/size(Yt,2)*2*psRange;
+tps = [50,100,150,200];
 % quantiles = (1:3)/10*psRange;
 quantiles = [0.35,0.5,1]/4.5*psRange;
 probs = nan(length(tps),length(quantiles));

@@ -90,8 +90,7 @@ classdef PlaceCellhelper < handle
             dt = param.gy;
             
             while count < MaxIter && err > ErrTol && cumErr > cumErrTol
-%                 dt = max(param.gy/(1+count/10),1e-2); % using decaying learning rate
-                
+%                 dt = max(param.gy/(1+count/10),1e-2); % using decaying learning rate 
                 uy = uyold + dt*(-uyold + param.W*X - sqrt(param.alpha)*param.b - ...
                     (param.M - diag(diag(param.M)))*Yold);
                 Y = max((uy - param.lbd1)./(param.lbd2 + diag(param.M)), 0);
