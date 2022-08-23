@@ -10,36 +10,36 @@ param.Nthe = 6;     % number of rotations
 param.Nx =  5;      % offset of x-direction
 param.Ny = 5;       % offset of y-direction
 param.Ng = param.Nlbd*param.Nthe*param.Nx*param.Ny;   % total number of grid cells
-param.Np = 200;     % number of place cells, default 20*20
+param.Np = 200;         % number of place cells, default 20*20
 
-param.baseLbd = 0.2;   % spacing of smallest grid RF, default 0.28
+param.baseLbd = 0.2;    % spacing of smallest grid RF, default 0.28
 param.sf =  1.42;       % scaling factor between adjacent module
 
 % parameters for learning 
-noiseStd =0.005;          % 0.01 for 2d, 5 grid mode
-learnRate = 0.05;     % default 0.05
+noiseStd =0.002;        % 0.01 for 2d, 5 grid mode
+learnRate = 0.02;       % default 0.05
 
 param.W = 0.5*randn(param.Np,param.Ng);   % initialize the forward matrix
 param.M = eye(param.Np);        % lateral connection if using simple nsm
-param.lbd1 = 0.08;               % 0.15 for 400 place cells and 5 modes
+param.lbd1 = 0.0;               % 0.15 for 400 place cells and 5 modes
 param.lbd2 = 0.05;              % 0.05 for 400 place cells and 5 modes
 
 
 param.alpha = 95;  % 85 for regular,95 for 5 grid modes, 150 for weakly input
 param.beta = 2; 
 param.gy = 0.05;   % update step for y
-param.gz = 0.1;   % update step for z
-param.gv = 0.2;   % update step for V
+param.gz = 0.1;    % update step for z
+param.gv = 0.2;    % update step for V
 param.b = zeros(param.Np,1);  % biase
 param.learnRate = learnRate;  % learning rate for W and b
-% param.noise =  noiseStd;   % stanard deivation of noise 
-% param.rwSpeed = 1;         % steps each update, default 1
+% param.noise =  noiseStd;    % stanard deivation of noise 
+% param.rwSpeed = 1;          % steps each update, default 1
 
 
-BatchSize = 1;      % minibatch used to to learn
-learnType = 'snsm';  % snsm, batch, randwalk
+BatchSize = 1;         % minibatch used to to learn
+learnType = 'snsm';    % snsm, batch, randwalk
 
-noiseVar = 'same';    % same or different noise level for Wij and Mij
+noiseVar = 'same';     % same or different noise level for Wij and Mij
 param.sigWmax = noiseStd;   % maximum noise std of W
 param.sigMmax = noiseStd;   % maximum noise std of M
 
@@ -62,50 +62,46 @@ Z0 = zeros(numIN,BatchSize);  % initialize interneurons
 Y0 = zeros(param.Np, BatchSize); 
 V = rand(numIN,param.Np);          % feedback from cortical neurons
 
-gridQuality = 'regular';  % regular or weak
-
-
 makeAnimation = 0;    % whether make a animation or not
 
 %% generate grid fields
-if strcmp(gridQuality,'regular')
-    % sample parameters for grid cells
-    param.lbds = param.baseLbd*(param.sf.^(0:param.Nlbd-1));   % all the spacings of different modules
-    param.thetas =(0:param.Nthe-1)*pi/3/param.Nthe;             % random sample rotations
-    param.x0  = (0:param.Nx-1)'/param.Nx*param.lbds;            % offset of x
-    param.y0  = (0:param.Ny-1)'/param.Ny*param.lbds;            % offset of
+% sample parameters for grid cells
+param.lbds = param.baseLbd*(param.sf.^(0:param.Nlbd-1));   % all the spacings of different modules
+param.thetas =(0:param.Nthe-1)*pi/3/param.Nthe;             % random sample rotations
+param.x0  = (0:param.Nx-1)'/param.Nx*param.lbds;            % offset of x
+param.y0  = (0:param.Ny-1)'/param.Ny*param.lbds;            % offset of
 
-    % generate a Gramian of the grid fields
-    gridFields = nan(param.ps^2,param.Ng);
-    count = 1;    % concantenate the grid cells
-    for i = 1:param.Nlbd
-        for j = 1: param.Nthe
-            for k = 1:param.Nx
-                for l = 1:param.Ny
-                    r = [i/param.ps;j/param.ps];
-                    r0 = [param.x0(k,i);param.y0(l,i)];
-                    gridFields(:,count) = PlaceCellhelper.gridModule(param.lbds(i),...
-                        param.thetas(j),r0,param.ps);
-                    count = count +1;
-                end
+% generate a Gramian of the grid fields
+gridFields = nan(param.ps^2,param.Ng);
+count = 1;    % concantenate the grid cells
+for i = 1:param.Nlbd
+    for j = 1: param.Nthe
+        for k = 1:param.Nx
+            for l = 1:param.Ny
+                r = [i/param.ps;j/param.ps];
+                r0 = [param.x0(k,i);param.y0(l,i)];
+                gridFields(:,count) = PlaceCellhelper.gridModule(param.lbds(i),...
+                    param.thetas(j),r0,param.ps);
+                count = count +1;
             end
         end
     end
+end
 
-    figure
-    ha = tight_subplot(3,5);
-    sel_inx = randperm(param.Ng, 15);
-    for i = 1:15
-        gd = gridFields(:,sel_inx(i));
-        imagesc(ha(i),reshape(gd,param.ps,param.ps))
-        ha(i).XAxis.Visible = 'off';
-        ha(i).YAxis.Visible = 'off';
-    end
+% show example grid fields
+figure
+ha = tight_subplot(3,5);
+sel_inx = randperm(param.Ng, 15);
+for i = 1:15
+    gd = gridFields(:,sel_inx(i));
+    imagesc(ha(i),reshape(gd,param.ps,param.ps))
+    ha(i).XAxis.Visible = 'off';
+    ha(i).YAxis.Visible = 'off';
 end
 %% using non-negative similarity matching to learng place fields
 % generate input from grid filds
 
-tot_iter = 2e2;   % total interation, default 2e3
+tot_iter = 2e3;   % total interation, default 2e3
 sep = 20;
 
 % all the position input by the grid code

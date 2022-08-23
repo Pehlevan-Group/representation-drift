@@ -15,40 +15,19 @@ saveFolder = './figures';
 %% Generate sample data
 
 k =300;       % number of neurons
-% m = 20;     % number of interneurons
 
 % default is a ring
 tau = 0.5;
-learnType = 'snsm';    % snsm if using simple non-negative similarity matching
 BatchSize = 1;         % default 50
 
 radius = 1;
 t = 1e3;    % total number of samples previously 1e4
 
 % generate the data
-n = 3;     % input dimensionality, 3 for Tmaze and 2 for ring
+n = 3;     % input dimensionality, third entry specifies contex
 sep = 2*pi/t;
 X1 = [radius*cos(0:sep:pi-sep);radius*sin(0:sep:pi-sep)]; 
-X = [X1,X1;ones(1,t/2),-ones(1,t/2)];
-
-
-% plot input similarity matrix
-SMX = X'*X;
-
-figure
-ax = axes;
-imagesc(ax,SMX);
-colorbar
-ax.XTick = [1 5e3 1e4];
-ax.YTick = [1 5e3 1e4];
-ax.XTickLabel = {'0', '\pi', '\pi'};
-ax.YTickLabel = {'0', '\pi', '\pi'};
-xlabel('position','FontSize',28)
-ylabel('position','FontSize',28)
-set(gca,'FontSize',24)
-
-figure
-plot(X(1,:),X(2,:))
+X = [X1,X1;ones(1,t/2),-ones(1,t/2)];   
 
 %% setup the learning parameters
 noiseStd = 4e-5;      % 0.005 for ring, 1e-3 for Tmaze
@@ -61,9 +40,7 @@ record_step = 100;
 
 % initialize the states
 y0 = zeros(k,BatchSize);
-% estimate error
-validBatch = 100; % randomly select 100 to estimate the error
-Y0val = zeros(k,validBatch);
+
 
 % Use offline learning to find the inital solution
 params.W = 0.1*randn(k,n);
@@ -71,82 +48,69 @@ params.M = eye(k);      % lateral connection if using simple nsm
 params.lbd1 = 2e-5;     % regularization for the simple nsm, 1e-3
 params.lbd2 = 1e-3;        %default 1e-3
 
-params.alpha = 1.5;  % should be smaller than 1 if for the ring model
+params.alpha = 1.5;     % should be smaller than 1 if for the ring model
 params.beta = 1; 
-params.gy = 0.05;   % update step for y
-params.gz = 0.05;   % update step for z
-params.gv = 0.1;   % update step for V
+params.gy = 0.05;       % update step for y
+params.gz = 0.05;       % update step for z
+params.gv = 0.1;        % update step for V
 params.b = zeros(k,1);  % biase
 params.learnRate = learnRate;  % learning rate for W and b
 params.noise =  noiseStd;   % stanard deivation of noise 
 
 
-if strcmp(learnType, 'snsm')
-    for i = 1:1e4
-        inx = randperm(t,BatchSize);
-        x = X(:,inx);  % randomly select one input
-%         states = MantHelper.nsmDynBatch(x,y0, params);
-        states = PlaceCellhelper.nsmDynBatch(x,y0, params);
-        
-%         [states, params] = MantHelper.nsmDynAutopase(x,y0, params);
-        y = states.Y;
+for i = 1:1e4
+    inx = randperm(t,BatchSize);
+    x = X(:,inx);       % randomly select one input
+    states = PlaceCellhelper.nsmDynBatch(x,y0, params);
+    y = states.Y;
 
-        % update weight matrix
-%         params.W = (1-params.learnRate)*params.W + params.learnRate*y*x'/BatchSize;
-        params.W = (1-params.learnRate)*params.W + params.learnRate*y*x'/BatchSize...
-            +sqrt(params.learnRate)*params.noise*randn(k,n);        
-%         params.M = (1-params.learnRate)*params.M + params.learnRate*y*y'/BatchSize;
-        params.M = max(0,(1-params.learnRate)*params.M + params.learnRate*y*y'/BatchSize + ...
-            sqrt(params.learnRate)*params.noise*randn(k,k));
-        params.b = (1-params.learnRate)*params.b + params.learnRate*sqrt(params.alpha)*mean(y,2);
-    end
+    % update weight matrix
+    params.W = (1-params.learnRate)*params.W + params.learnRate*y*x'/BatchSize...
+        +sqrt(params.learnRate)*params.noise*randn(k,n);        
+    params.M = max(0,(1-params.learnRate)*params.M + params.learnRate*y*y'/BatchSize + ...
+        sqrt(params.learnRate)*params.noise*randn(k,k));
+    params.b = (1-params.learnRate)*params.b + params.learnRate*sqrt(params.alpha)*mean(y,2);
 end
 
+%%
+%{
 % check the receptive field
 Xsel = X(:,1:5:end);
 Y0 = zeros(k,size(Xsel,2));
-% Z0 = zeros(m,size(Xsel,2));
-% states_fixed_nn= MantHelper.nsmDynBatch(Xsel,Y0, params);
 states_fixed_nn = PlaceCellhelper.nsmDynBatch(Xsel,Y0, params);
-% [states_fixed_nn, params] = MantHelper.neuralDynBatch(Xsel,Y0,Z0,V, params);
 
 Z = norm(Xsel'*Xsel - states_fixed_nn.Y'*states_fixed_nn.Y - params.alpha);
 
 % ============ visualize the input ==============
-colors = brewermap(round(t/10),'Spectral');
-figure
-hold on
-for i = 1:round(t/10)
-    plot(X(1,i*10),X(2,i*10),'.','Color',colors(i,:),'MarkerSize',10)
-end
-hold off
-pbaspect([1 1 1])
-xlabel('x','FontSize',28)
-ylabel('y','FontSize',28)
+% colors = brewermap(round(t/10),'Spectral');
+% figure
+% hold on
+% for i = 1:round(t/10)
+%     plot(X(1,i*10),X(2,i*10),'.','Color',colors(i,:),'MarkerSize',10)
+% end
+% hold off
+% pbaspect([1 1 1])
+% xlabel('x','FontSize',28)
+% ylabel('y','FontSize',28)
 
 
 % =============place field of neurons ==========
-figure
-imagesc(states_fixed_nn.Y)
-colorbar
-xlabel('position','FontSize',28)
-ylabel('neuron','FontSize',28)
-ax = gca;
-ax.XTick = [1 500 1000];
-ax.XTickLabel = {'0', '\pi', '2\pi'};
-set(gca,'FontSize',24)
+% figure
+% imagesc(states_fixed_nn.Y)
+% colorbar
+% xlabel('position','FontSize',28)
+% ylabel('neuron','FontSize',28)
+% ax = gca;
+% ax.XTick = [1 500 1000];
+% ax.XTickLabel = {'0', '\pi', '2\pi'};
+% set(gca,'FontSize',24)
 
 % =============reorder the place field of neurons ==========
-% % sort the location
-% [sortVal,sortedInx] = sort(states_fixed_nn.Y,2,'descend');
-% [~,neurOrder] = sort(sortedInx(:,1));
-
 % sort the neurons based on their centroid of RFs
 [pkCM, ~] = PlaceCellhelper.centerMassPks1D(states_fixed_nn.Y,0.05);
 actiInx = find(~isnan(pkCM));
 actiPkCM = pkCM(actiInx);
 [~,neurOrder] = sort(actiPkCM);
-
 
 
 figure
@@ -159,9 +123,6 @@ ax.XTick = [1 500 1000];
 ax.XTickLabel = {'0', '\pi', '2\pi'};
 set(gca,'FontSize',24)
 
-% % =========== peak amplitude distribution ================
-% figure
-% histogram(sortVal(:,1),30)
 
 % =========== Example place field ========================
 % sort and find the
@@ -195,81 +156,53 @@ xlabel('position','FontSize',28)
 ylabel('position','FontSize',28)
 set(gca,'FontSize',24)
 
-
-
+%}
 %% continue updating with noise
 
 tot_iter = 2e4;
 num_sel = 200;
-step = 50;
+step = 50;       %store every 50 step
 time_points = round(tot_iter/step);
-
-ystore = nan(tot_iter,1);
-% store the weight matrices to see if they are stable
-allW = nan(k,n,time_points);
-allM = nan(k,k,time_points);
-allbias = nan(k,time_points);
 
 % testing data, only used when check the representations
 Xsel = X(:,1:4:end);   % modified on 7/18/2020
 Y0 = zeros(k,size(Xsel,2));
 Yt = nan(k,size(Xsel,2),time_points);
 
-if strcmp(learnType, 'snsm')
-    for i = 1:tot_iter
-        inx = randperm(t,BatchSize);
-        x = X(:,inx);  % randomly select one input
-%         states= MantHelper.nsmDynBatch(x,y0,params);
-        states = PlaceCellhelper.nsmDynBatch(x,y0, params);
-%         [states, params] = MantHelper.nsmNoiseDynBatch(x,y0,params);
-        y = states.Y;
-%         ystore(i) = y;
-        
-        % update weight matrix   
-        params.W = (1-params.learnRate)*params.W + params.learnRate*y*x'/BatchSize...
-            +sqrt(params.learnRate)*params.noise*randn(k,n);        
-        params.M = max(0,(1-params.learnRate)*params.M + params.learnRate*y*y'/BatchSize....
-            +sqrt(params.learnRate)*params.noise*randn(k,k));
-        params.b = (1-params.learnRate)*params.b + params.learnRate*sqrt(params.alpha)*mean(y,2);
- 
-        % store and check representations
-        if mod(i, step) == 0
-%             [states_fixed, params] = MantHelper.nsmDynBatch(Xsel,Y0,params);
-            states_fixed = PlaceCellhelper.nsmDynBatch(Xsel,Y0, params);
-            Yt(:,:,round(i/step)) = states_fixed.Y;
-%             for samp = 1:size(Xsel,2)
-%                 states_fixed = PlaceCellhelper.nsmDynBatch(x,y0, params);
-%                 Yt(:,samp,round(i/step)) = states_fixed.Y;
-%             end
-        end
-    end 
-end
+for i = 1:tot_iter
+    inx = randperm(t,BatchSize);
+    x = X(:,inx);  % randomly select one input
+    states = PlaceCellhelper.nsmDynBatch(x,y0, params);
+    y = states.Y;
+
+    % update weight matrix   
+    params.W = (1-params.learnRate)*params.W + params.learnRate*y*x'/BatchSize...
+        +sqrt(params.learnRate)*params.noise*randn(k,n);        
+    params.M = max(0,(1-params.learnRate)*params.M + params.learnRate*y*y'/BatchSize....
+        +sqrt(params.learnRate)*params.noise*randn(k,k));
+    params.b = (1-params.learnRate)*params.b + params.learnRate*sqrt(params.alpha)*mean(y,2);
+
+    % store and check representations
+    if mod(i, step) == 0
+        states_fixed = PlaceCellhelper.nsmDynBatch(Xsel,Y0, params);
+        Yt(:,:,round(i/step)) = states_fixed.Y;
+    end
+end 
 
 %% Analysis, check the change of place field
 pkThreshold = 0.05;  % active threshold
-
 
 % peak of receptive field
 peakInx = nan(k,time_points);
 peakVal = nan(k,time_points);
 peakPosi = nan(k,time_points);
 for i = 1:time_points
-%     [pkVal, peakPosi] = sort(Yt(:,:,i),2,'descend');
-%     peakInx(:,i) = peakPosi(:,1);
-%     peakVal(:,i) = pkVal(:,1);
-    
     % based on centroid of RFs
     [pkCM, ~] = PlaceCellhelper.centerMassPks1D(Yt(:,:,i),0.05);
-%     actiInx = find(~isnan(pkCM));
-%     actiPkCM = pkCM(actiInx);
-%     [~,neurOrder] = sort(actiPkCM);
     peakPosi(:,i) = pkCM;
 end
 
 % ======== faction of neurons have receptive field at a give time =====
-
-% quantified by the peak value larger than a threshold 0.01
-% rfIndex = peakVal > pkThreshold;
 
 % fraction of neurons
 activeRatio = mean(~isnan(peakPosi),1);
@@ -281,11 +214,6 @@ ylim([0,1])
 
 figure
 histogram(activeRatio(101:end))
-
-% drop in 
-% figure
-% plot(sum(rfIndex,2)/k)
-
 
 % =========place field order by the begining ======================
 inxSel = [100, 200, 400];
@@ -302,15 +230,11 @@ for i = 1:length(inxSel)
     xlabel('position')
 end
 
-
 % ======== ordered by current index ==========
 figure
 for i = 1:length(inxSel)
-%     actiInx = find(~isnan(pkCM));
-%     actiPkCM = pkCM(actiInx);
     [~,neuroInx] = sort(peakPosi(:,inxSel(i)));
 
-%     [~,neuroInx] = sort(peakInx(:,inxSel(i)));
     subplot(1,3,i)
     imagesc(Yt(neuroInx,:,inxSel(i)))
     colorbar
@@ -342,7 +266,6 @@ for i = 1:length(inxSelPV)
     imagesc(YtMerge(newInx,:,inxSelPV(i)),[0,0.5])
     colorbar
     ax = gca;
-%     ax.XTick = [1 500 1000];
     ax.XTickLabel = {'0', '\pi', '2\pi'};
     title(['iteration ', num2str(inxSelPV(i))])
     xlabel('position')
@@ -419,10 +342,7 @@ xlim([0,450])
 L = size(Yt,2);
 tuningLR = nan(k,time_points);
 peakInx = nan(k,time_points);
-% peakInxLeft = nan(k,time_points);
-% peakValLeft = nan(k,time_points);
-% peakInxRight = nan(k,time_points);
-% peakValRight = nan(k,time_points);
+
 for i = 1:time_points
     [pkVal, peakPosi] = sort(Yt(:,:,i),2,'descend');
     actInx = pkVal(:,1)>pkThreshold;
