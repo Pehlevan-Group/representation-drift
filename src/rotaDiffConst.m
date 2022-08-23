@@ -96,6 +96,6 @@ end
 rmsd = SMhelper.rotationalMSD(Yt);
 ave_rmsd = mean(rmsd,1);
 % return the diffusion constant
-[dph,ephi] = SMhelper.fitRotationDiff(rmsd,step, 2000, 'linear');
+[dph,ephi] = SMhelper.fitRotationDiff(rmsd,step, 2000, 'log');
 
 end

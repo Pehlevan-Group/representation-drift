@@ -529,15 +529,15 @@ set(gca,'FontSize',gcaFontSize,'LineWidth',1.5)
 % Scaling of the diffusion constant and the noise amplitude
 % =========================================================
 % first, load the data
-% noiseData = load('../data/noiseAmp0808.mat');          % offline
-noiseData = load('../data/noiseAmp_08232022.mat');  
-% spectrumData = load('../data/eigenSpectr0821.mat');  % offline
-spectrumData = load('../data/eigenSpectr_08222022.mat'); % online
+noiseData = load('../data/noiseAmp0808.mat');          % offline
+% noiseData = load('../data/noiseAmp_08222022.mat');  
+spectrumData = load('../data/eigenSpectr0821.mat');  % offline
+% spectrumData = load('../data/eigenSpectr_08232022_1.mat'); % online
 
 num_std = floor(length(noiseData.noiseStd)/40);  % number of different std
 syn_noise_std = reshape(noiseData.noiseStd,[40,num_std]);
 noiseAmpl = syn_noise_std(1,:).^2;
-allD_noise = noiseData.allDiffConst(:,1);  % the factor 4 is due to fitting
+allD_noise = noiseData.allDiffConst(:,1)/4;  % the factor 4 is due to fitting
 aveD_noise = mean(reshape(allD_noise,[40,num_std]),1);
 stdD_noise = std(reshape(allD_noise,[40,num_std]),0,1);
 meanExp_noise = mean(noiseData.allDiffConst(:,2));
@@ -545,7 +545,7 @@ stdExp_noise = std(noiseData.allDiffConst(:,2));
 
 allEigs = spectrumData.eigens(1:3,:);
 sumKeigs = sum(1./(allEigs.^2),1);
-allD_spectr = spectrumData.allDiffConst(:,1);
+allD_spectr = spectrumData.allDiffConst(:,1)/4;     % factor 4 in fitting
 aveExp_spectr = mean(spectrumData.allDiffConst(:,2));
 stdExp_spectr = mean(spectrumData.allDiffConst(:,2));
 
@@ -566,7 +566,7 @@ eh1.YNegativeDelta = []; % only show upper half of the error bar
 % lh1 = plot(noiseAmpl(selInx)',10.^(X0*[b_fit;1]),'LineWidth',3,'Color',PuRd(7,:));
 % hold off
 % this need to be checked in the original data
-prefForm = sum(1./noiseData.eigens(1:3).^2)*noiseData.learnRate/4;
+prefForm = sum(1./noiseData.eigens(1:3).^2)*noiseData.learnRate/2;  % factor 2 or 4 for offline and online
 plot(cAxes,noiseAmpl(selInx)',noiseAmpl(selInx)'*prefForm,'LineWidth',2,'Color',PuRd(7,:))
 hold off
 % lg = legend(eh1,'$D_{\varphi} \propto \sigma^2 $','Location','northwest');
@@ -577,12 +577,12 @@ legend boxoff
 xlabel('Noise amplitude $(\sigma^2)$','Interpreter','latex','FontSize',labelFontSize)
 % ylabel('diffusion constant','FontSize',20)
 ylabel('$D_{\varphi}$','Interpreter','latex','FontSize',labelFontSize)
-% ylim([5e-9,2e-4])
-ylim([1e-6,1e-4])
-% set(gca,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
-%     'YTick',10.^(-8:2:-4))
+ylim([5e-9,2e-4])
+% ylim([1e-6,1e-4])
 set(gca,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
-    'YTick',10.^(-6:-4))
+    'YTick',10.^(-8:2:-4))
+% set(gca,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
+%     'YTick',10.^(-6:-4))
 
 
 % ***************************************************
@@ -602,7 +602,7 @@ centers = spRange(1)*10.^(dbin*(1:nBins));
 selInx = 1:20;      % remove the last two data points
 b_fit_eg = mean(log10(aveSpDs(selInx,1))-log10(centers(selInx)'));
 X0_eg = [ones(length(selInx),1),log10(centers(selInx)')];
-theoPre = spectrumData.learnRate*spectrumData.noiseStd^2/4;
+theoPre = spectrumData.learnRate*spectrumData.noiseStd^2/2; % factor 2 or 4
 
 axes(dAxes)
 eh = errorbar(centers',aveSpDs(:,1),aveSpDs(:,2),'o','MarkerSize',8,'MarkerFaceColor',...
@@ -618,7 +618,7 @@ ylabel('$D_{\varphi}$','Interpreter','latex','FontSize',labelFontSize)
 % set(dAxes,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
 %     'Ylim',[1e-5,2e-4],'YTick',10.^(-5:1:-2),'XTick',10.^([2,3]))
 set(dAxes,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
-    'Ylim',[1e-7,1e-4],'YTick',10.^(-7:1:-4),'XTick',10.^([-1,0,1,2]))
+    'Ylim',[1e-6,1e-3],'YTick',10.^(-6:1:-3),'XTick',10.^([-1,0,1,2]))
 
 prefix = 'psp_fit_rotational_fig2_2';
 saveas(paperFig3,[sFolder,filesep,prefix,'_',date,'_3','.fig'])

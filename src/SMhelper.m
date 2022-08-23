@@ -21,7 +21,7 @@ classdef SMhelper < handle
         % generate random eigenvalues, with first k explain fraction of rho
         % variation of the total variation, with different distribution
         if nargin > 4
-            eig_sum = vargin{1};
+            eig_sum = vargin;
         else
             eig_sum = 10;  % sum of eigs
         end

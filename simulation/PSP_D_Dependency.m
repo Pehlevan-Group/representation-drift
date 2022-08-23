@@ -27,7 +27,7 @@ step = 10;              % store every 10 updates
 tot_iter = 2e4;  
 time_points = round(tot_iter/step);
 Yt = zeros(k,time_points,num_sel);
-learnRate = 0.05;       % learning rate
+learnRate = 0.08;       % learning rate
 t = 10000;  % total number of samples
 
 if strcmp(simType,'noiseAmp')
@@ -49,7 +49,7 @@ elseif strcmp(simType,'eigenSpectr')
     allDiffConst = nan(totSimul,2) ;  %store all the diffusion constant and exponents
     all_ave_rmsd = cell(totSimul,1);  % store all the mean rmsd
     parfor i= 1:totSimul
-        eigens(:,i) = SMhelper.genRandEigs(k,n,rho,'lognorm',100);
+        eigens(:,i) = SMhelper.genRandEigs(k,n,rho,'lognorm');
         [dph,ephi,ave_rmsd] = rotaDiffConst(n,k, eigens(:,i), noiseStd,learnRate);
         allDiffConst(i,:) = [dph,ephi];
         all_ave_rmsd{i} = ave_rmsd;
