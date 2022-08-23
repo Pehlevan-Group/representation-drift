@@ -17,9 +17,14 @@ classdef SMhelper < handle
    end
    
    methods(Static) 
-     function randEigs = genRandEigs(k,n,rho, distr)
+     function randEigs = genRandEigs(k,n,rho, distr,vargin)
         % generate random eigenvalues, with first k explain fraction of rho
         % variation of the total variation, with different distribution
+        if nargin > 4
+            eig_sum = vargin{1};
+        else
+            eig_sum = 10;  % sum of eigs
+        end
         if strcmp(distr, 'rand')
             firstK = rand(k,1);
         elseif strcmp(distr, 'lognorm')
@@ -30,7 +35,7 @@ classdef SMhelper < handle
         
         % fix the summation of eigenvalues to be 10, for convinience
         rest = rand(n-k,1);
-        randEigs = [sort(firstK./sum(firstK)*rho,'descend'); rest*(1-rho)./sum(rest)]*10;
+        randEigs = [sort(firstK./sum(firstK)*rho,'descend'); rest*(1-rho)./sum(rest)]*eig_sum;
      end
      
      function diffs = meanSquareDisp(seq,lr_range)
@@ -95,14 +100,14 @@ classdef SMhelper < handle
          % cumulative angulars
          cumAngs = cumsum(angVel,2);      % cumulated angles
          time_points = size(cumAngs,2);
-%          num_sel = size(angles,1);
          msd_tot = nan(samples,floor(time_points/2));
-%          msd_comp = nan(samples,floor(time_points/2),size(Yt,1));
-         for i = 1:floor(time_points/2)
-            diffLag = cumAngs(:,i+1:end,:) - cumAngs(:,1:end-i,:);
-            msd_tot(:,i) = squeeze(mean(sum(diffLag.*diffLag,1),2));
+
+         for sinx = 1:samples
+             for i = 1:floor(time_points/2)
+                diffLag = cumAngs(:,i+1:end,sinx) - cumAngs(:,1:end-i,sinx);
+                msd_tot(sinx,i) = mean(sum(diffLag.*diffLag,1));
+             end
          end
-         
      end
      
      function [Dphi,exponent] = fitRotationDiff(rmsd, stepSize, fitRange, fitMethod, vargin)
