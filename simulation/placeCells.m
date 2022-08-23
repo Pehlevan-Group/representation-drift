@@ -7,8 +7,8 @@ close all
 param.ps =  32;     % number of positions along each dimension
 param.Nlbd = 5;     % number of different scales/spacing
 param.Nthe = 6;     % number of rotations
-param.Nx =  3;      % offset of x-direction
-param.Ny = 3;       % offset of y-direction
+param.Nx =  5;      % offset of x-direction
+param.Ny = 5;       % offset of y-direction
 param.Ng = param.Nlbd*param.Nthe*param.Nx*param.Ny;   % total number of grid cells
 param.Np = 200;     % number of place cells, default 20*20
 
@@ -21,11 +21,11 @@ learnRate = 0.05;     % default 0.05
 
 param.W = 0.5*randn(param.Np,param.Ng);   % initialize the forward matrix
 param.M = eye(param.Np);        % lateral connection if using simple nsm
-param.lbd1 = 0.001;               % 0.15 for 400 place cells and 5 modes
-param.lbd2 = 0.02;              % 0.05 for 400 place cells and 5 modes
+param.lbd1 = 0.08;               % 0.15 for 400 place cells and 5 modes
+param.lbd2 = 0.05;              % 0.05 for 400 place cells and 5 modes
 
 
-param.alpha = 35;  % 85 for regular,95 for 5 grid modes, 150 for weakly input
+param.alpha = 95;  % 85 for regular,95 for 5 grid modes, 150 for weakly input
 param.beta = 2; 
 param.gy = 0.05;   % update step for y
 param.gz = 0.1;   % update step for z
@@ -33,11 +33,11 @@ param.gv = 0.2;   % update step for V
 param.b = zeros(param.Np,1);  % biase
 param.learnRate = learnRate;  % learning rate for W and b
 % param.noise =  noiseStd;   % stanard deivation of noise 
-param.rwSpeed = 1;         % steps each update, default 1
+% param.rwSpeed = 1;         % steps each update, default 1
 
 
 BatchSize = 1;      % minibatch used to to learn
-learnType = 'snsm';  % snsm, batch, online, randwalk
+learnType = 'snsm';  % snsm, batch, randwalk
 
 noiseVar = 'same';    % same or different noise level for Wij and Mij
 param.sigWmax = noiseStd;   % maximum noise std of W
@@ -56,9 +56,8 @@ else
 end
 
 
-
 % only used when using "bathc"
-numIN  = 10;              % number of inhibitory neurons
+numIN  = 10;                  % number of inhibitory neurons
 Z0 = zeros(numIN,BatchSize);  % initialize interneurons
 Y0 = zeros(param.Np, BatchSize); 
 V = rand(numIN,param.Np);          % feedback from cortical neurons
@@ -93,7 +92,6 @@ if strcmp(gridQuality,'regular')
         end
     end
 
-
     figure
     ha = tight_subplot(3,5);
     sel_inx = randperm(param.Ng, 15);
@@ -103,115 +101,34 @@ if strcmp(gridQuality,'regular')
         ha(i).XAxis.Visible = 'off';
         ha(i).YAxis.Visible = 'off';
     end
-
-elseif strcmp(gridQuality,'weak')
-    % generate weakly-tuned MEC cells
-    sig = 2;
-    gridFields = PlaceCellhelper.weakMEC(param.ps, param.Ng, sig);
-    
-    % randomly select 15 of them to show
-    figure
-    ha = tight_subplot(3,5);
-    sel_inx = randperm(param.Ng, 15);
-    for i = 1:15
-        gd = gridFields(:,sel_inx(i));
-        imagesc(ha(i),reshape(gd,param.ps,param.ps))
-        ha(i).XAxis.Visible = 'off';
-        ha(i).YAxis.Visible = 'off';
-    end
-
 end
 %% using non-negative similarity matching to learng place fields
 % generate input from grid filds
 
-tot_iter = 2e3;   % total interation, default 2e3
+tot_iter = 2e2;   % total interation, default 2e3
 sep = 20;
 
-% allW = nan(tot_iter/sep,size(gridFields,2));
-% allbias = nan(tot_iter/sep,1);
 % all the position input by the grid code
 posiGram = eye(param.ps*param.ps);
 gdInput = gridFields'*posiGram;  % gramin of input matrix
 % gdInput = gridFields'*posiGram*3/sqrt(param.Ng);  % gramin of input matrix
 
-
-if strcmp(learnType, 'online')
-    for i = 1:1000
-        x = X(:,randperm(t,1));  % randomly select one input
-        [states, param] = PlaceCellhelper.neuralDynOnline(x,Y0,Z0,V, param);
-        y = states.y;
-        % update weight matrix
-        param.W = (1-param.learnRate)*param.W + y*x';
-        param.b = (1-param.learnRate)*param.b + param.learnRatessqrt(param.alpha)*y;
-        V = states.V;   % current 
-    end
-elseif strcmp(learnType, 'batch')
-    for i = 1:tot_iter
-        x = gdInput(:,randperm(param.ps*param.ps,BatchSize));
-%         x = X(:,randperm(param.ps*param.ps,BatchSize));  % randomly select one input
-        [states, param] = PlaceCellhelper.neuralDynBatch(x,Y0,Z0,V, param);
-        y = states.Y;
-        % update weight matrix
-        param.W = (1-param.learnRate)*param.W + param.learnRate*y*x'/BatchSize;
-        param.b = (1-param.learnRate)*param.b + param.learnRate*sqrt(param.alpha)*mean(y,2);
-        V = states.V;   % current 
-    end
 % simple non-negative similarity matching
-elseif strcmp(learnType, 'snsm')
-    ystart = zeros(param.Np,BatchSize);  % inital of the output
-    
-    % generate position code by the grid cells    
-    for i = 1:tot_iter
-        positions = gdInput(:,randperm(param.ps*param.ps,BatchSize));
-        states= PlaceCellhelper.nsmDynBatch(positions,ystart, param);
-        y = states.Y;
-        
-        % update weight matrix
-%         param.W = (1-param.learnRate)*param.W + param.learnRate*y*positions'/BatchSize;
-%         param.M = (1-param.learnRate)*param.M + param.learnRate*y*y'/BatchSize;
-        param.W = (1-param.learnRate)*param.W + param.learnRate*y*positions'/BatchSize + ...
-            sqrt(param.learnRate)*param.noiseW.*randn(param.Np,param.Ng);
-        param.M = max(0,(1-param.learnRate)*param.M + param.learnRate*(y*y')/BatchSize + ...
-            sqrt(param.learnRate)*param.noiseM.*randn(param.Np,param.Np));
-%         param.M = (1-param.learnRate)*param.M + param.learnRate*y*y'/BatchSize + ...
-%             sqrt(param.learnRate)*param.noise*randn(param.Np,param.Np);
-%         param.W = max((1-param.learnRate)*param.W + param.learnRate*y*gdInput'/BatchSize,0);
-        param.b = (1-param.learnRate)*param.b + param.learnRate*sqrt(param.alpha)*mean(y,2);
-%         V = states.V;   % current 
+ystart = zeros(param.Np,BatchSize);  % inital of the output
 
-        % store the matrix and weights
-%         if mod(i,sep) ==0
-%             allW(round(i/sep),:) = param.W;
-%             allbias(round(i/sep)) = param.b;
-%         end
-    end
-elseif strcmp(learnType, 'randwalk')
-    % position information is delivered as a random walk
-    ystart = zeros(param.Np,1);  % inital of the output
-    
-    % generate position code by the grid cells
-    ix = 16;
-    iy = 16;
-    posiInfo = nan(tot_iter,2);
-    for i = 1:tot_iter
-        [ix,iy] = PlaceCellhelper.nextPosi(ix,iy,param);
-        posiInfo(i,:) = [ix,iy];
-        positions = gdInput(:,(iy - 1)*param.ps + ix);  % column-wise storation
-%         positions = gdInput(:,randperm(param.ps*param.ps,1));
-        
-        states= PlaceCellhelper.nsmDynBatch(positions,ystart, param);
-        y = states.Y;
-        
-        % update weight matrix
-        param.M = (1-param.learnRate)*param.M + param.learnRate*y*y';
-        param.W = (1-param.learnRate)*param.W + param.learnRate*y*positions' + ...
-            sqrt(param.learnRate)*param.noise*randn(param.Np,param.Ng);
-        param.b = (1-param.learnRate)*param.b + param.learnRate*sqrt(param.alpha)*mean(y,2);
+% generate position code by the grid cells    
+for i = 1:tot_iter
+    positions = gdInput(:,randperm(param.ps*param.ps,BatchSize));
+    states= PlaceCellhelper.nsmDynBatch(positions,ystart, param);
+    y = states.Y;
 
-    end
-    
+    % update weight matrix
+    param.W = (1-param.learnRate)*param.W + param.learnRate*y*positions'/BatchSize + ...
+        sqrt(param.learnRate)*param.noiseW.*randn(param.Np,param.Ng);
+    param.M = max(0,(1-param.learnRate)*param.M + param.learnRate*(y*y')/BatchSize + ...
+        sqrt(param.learnRate)*param.noiseM.*randn(param.Np,param.Np));
+    param.b = (1-param.learnRate)*param.b + param.learnRate*sqrt(param.alpha)*mean(y,2);
 end
-
 
 % estimate the place field of place cells
 numProb = 1024;    % number of positions used to estimate the RF
@@ -232,10 +149,7 @@ figure
 hp = tight_subplot(10,10);
 sel_inx = randperm(param.Np, min(100,param.Np));
 for i = 1:length(sel_inx)
-%     axes(hp(i))
-%     subplot(10,10,i)
     pf = y(sel_inx(i),:);
-%     pf = pfs(sel_inx(i),:);
     imagesc(hp(i),reshape(pf,param.ps,param.ps));
     hp(i).XAxis.Visible = 'off';
     hp(i).YAxis.Visible = 'off';

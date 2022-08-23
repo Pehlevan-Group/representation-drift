@@ -27,8 +27,6 @@ tot_iter = 1e5;
 syn_noise_std = 2e-2;    % 1e-2 for offline
 learnRate = 5e-2;        % 0.05 for offline
 
-rng(100);                % fix the random number generator seed 
-
 % initilize the synaptic weight matrices
 W = randn(output_dim,input_dim);
 M = eye(output_dim,output_dim);
@@ -108,7 +106,7 @@ xlim([1 2e2])
 
 %% now add noise to see how F and output drift
 
-% tot_iter = 5e4;     % total number of updates after entering stationary state
+% tot_iter = 5e4;   % total number of updates after entering stationary state
 num_sel = 200;      % randomly selected samples used to calculate the drift and diffusion constants
 step = 10;          % store every 10 updates
 time_points = round(tot_iter/step);
@@ -226,19 +224,15 @@ set(gca,'FontSize',16,'XLim',[-4,4],'YLim',[-4,4],'ZLim',[-3,3])
 % saveas(figYens,[saveFolder,filesep,prefix,'.fig'])
 % print('-depsc',[saveFolder,filesep,prefix,'.eps'])
 
-
-
 rmsd = SMhelper.rotationalMSD(Yt);
-[dph,ephi] = SMhelper.fitRotationDiff(rmsd,step,2000,'log');
-
+[dph,ephi] = SMhelper.fitRotationDiff(rmsd,step,2000,'mean_log');
+[dph_linear,~] = SMhelper.fitRotationDiff(rmsd,step,2000,'mean_linear');
 
 % prefix = 'oja_readout_fig2';
 % saveas(hbh,[saveFolder,filesep,prefix,'.fig'])
 % print('-depsc',[saveFolder,filesep,prefix,'.eps'])
 
-
 %% Plot and save the figures
-
 % first define all the colors might be used 
 
 % divergent colors, used in heatmap
@@ -536,7 +530,8 @@ set(gca,'FontSize',gcaFontSize,'LineWidth',1.5)
 % =========================================================
 % first, load the data
 noiseData = load('../data/noiseAmp0808.mat');
-spectrumData = load('../data/eigenSpectr0821.mat');  % new data
+% spectrumData = load('../data/eigenSpectr0821.mat');  % new data
+spectrumData = load('../data/eigenSpectr_08222022.mat');
 % spectrumData = load('./data/eigenSpectr0301.mat');
 
 
@@ -604,7 +599,7 @@ centers = spRange(1)*10.^(dbin*(1:nBins));
 selInx = 1:20;      % remove the last two data points
 b_fit_eg = mean(log10(aveSpDs(selInx,1))-log10(centers(selInx)'));
 X0_eg = [ones(length(selInx),1),log10(centers(selInx)')];
-theoPre = spectrumData.learnRate*spectrumData.noiseStd^2/2;
+theoPre = spectrumData.learnRate*spectrumData.noiseStd^2/8;
 
 axes(dAxes)
 eh = errorbar(centers',aveSpDs(:,1),aveSpDs(:,2),'o','MarkerSize',8,'MarkerFaceColor',...
@@ -614,13 +609,13 @@ hold on
 plot(centers',theoPre*centers','LineWidth',2,'Color',PuRd(7,:))
 eh.YNegativeDelta = []; % only show upper half of the error bar
 lg = legend('simulation','theory','Location','northwest');
-
+hold off
 xlabel('$\sum_{i=1}^{k}1/\lambda_i^2$','Interpreter','latex','FontSize',labelFontSize)
 ylabel('$D_{\varphi}$','Interpreter','latex','FontSize',labelFontSize)
 % set(dAxes,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
 %     'Ylim',[1e-5,2e-4],'YTick',10.^(-5:1:-2),'XTick',10.^([2,3]))
 set(dAxes,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
-    'Ylim',[1e-6,1e-3],'YTick',10.^(-6:1:-3),'XTick',10.^([0,1,2]))
+    'Ylim',[1e-7,1e-4],'YTick',10.^(-7:1:-4),'XTick',10.^([-1,0,1,2]))
 
 prefix = 'psp_fit_rotational_fig2_2';
 saveas(paperFig3,[sFolder,filesep,prefix,'_',date,'_3','.fig'])

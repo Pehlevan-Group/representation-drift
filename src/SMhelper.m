@@ -126,6 +126,8 @@ classdef SMhelper < handle
                 bs = xs\ys;   % linear regression
                 allDs(i) = bs(2)/4;   % notice the factor 4 is from the definition
             end
+            Dphi = nanmean(allDs);     % population average
+            exponent = nanmean(allExpo);
 
         % fit in the logscale to reduce error
          elseif strcmp(fitMethod,'log')
@@ -138,10 +140,27 @@ classdef SMhelper < handle
                 allDs(i) = exp(b(1))/4;   % notice the scaling factor 4
                 allExpo(i) = b(2);
              end
-        end
-         % return the average
-         Dphi = nanmean(allDs);     % population average
-         exponent = nanmean(allExpo);
+             Dphi = nanmean(allDs);     % population average
+             exponent = nanmean(allExpo);
+        % using the mean rmsd and linear fit     
+        elseif strcmp(fitMethod, 'mean_linear')
+             init_remove = 5; % remove the first 10 time points
+             ave_rmsd = mean(rmsd,1);
+             ys = ave_rmsd(init_remove+1:fitRange)';
+             xs = (init_remove+1:fitRange)'*stepSize;
+             b = xs\ys;  
+             Dphi = b/4;   % notice the scaling factor 4
+             exponent = nan;
+             
+        elseif strcmp(fitMethod, 'mean_log')
+             init_remove = 5; % remove the first 10 time points
+             ave_rmsd = mean(rmsd,1);
+             logY = log(ave_rmsd(init_remove+1:fitRange)');
+             logX = [ones(fitRange-init_remove,1),log((init_remove+1:fitRange)'*stepSize)];
+             b = logX\logY;  
+             Dphi = exp(b(1))/4;   % notice the scaling factor 4
+             exponent = b(2);
+        end         
          
          % plot and save
          if plotFlag
