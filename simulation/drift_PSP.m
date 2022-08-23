@@ -529,28 +529,28 @@ set(gca,'FontSize',gcaFontSize,'LineWidth',1.5)
 % Scaling of the diffusion constant and the noise amplitude
 % =========================================================
 % first, load the data
-noiseData = load('../data/noiseAmp0808.mat');
-% spectrumData = load('../data/eigenSpectr0821.mat');  % new data
-spectrumData = load('../data/eigenSpectr_08222022.mat');
-% spectrumData = load('./data/eigenSpectr0301.mat');
+% noiseData = load('../data/noiseAmp0808.mat');          % offline
+noiseData = load('../data/noiseAmp_08232022.mat');  
+% spectrumData = load('../data/eigenSpectr0821.mat');  % offline
+spectrumData = load('../data/eigenSpectr_08222022.mat'); % online
 
-
-syn_noise_std = reshape(noiseData.noiseStd,[40,41]);
+num_std = floor(length(noiseData.noiseStd)/40);  % number of different std
+syn_noise_std = reshape(noiseData.noiseStd,[40,num_std]);
 noiseAmpl = syn_noise_std(1,:).^2;
-allD_noise = noiseData.allDiffConst(:,1)/4;  % the factor 4 is due to fitting
-aveD_noise = mean(reshape(allD_noise,[40,41]),1);
-stdD_noise = std(reshape(allD_noise,[40,41]),0,1);
+allD_noise = noiseData.allDiffConst(:,1);  % the factor 4 is due to fitting
+aveD_noise = mean(reshape(allD_noise,[40,num_std]),1);
+stdD_noise = std(reshape(allD_noise,[40,num_std]),0,1);
 meanExp_noise = mean(noiseData.allDiffConst(:,2));
 stdExp_noise = std(noiseData.allDiffConst(:,2));
 
 allEigs = spectrumData.eigens(1:3,:);
 sumKeigs = sum(1./(allEigs.^2),1);
-allD_spectr = spectrumData.allDiffConst(:,1)/4;
+allD_spectr = spectrumData.allDiffConst(:,1);
 aveExp_spectr = mean(spectrumData.allDiffConst(:,2));
 stdExp_spectr = mean(spectrumData.allDiffConst(:,2));
 
 % linear regression to estimate the power law exponent
-selInx = 1:41;  % select part of the data to fit
+selInx = 1:num_std;  % select part of the data to fit
 alp_dr = [ones(length(noiseAmpl(selInx)),1),log10(noiseAmpl(selInx)')]\log10(aveD_noise(selInx)');
 % alp_dthe =[ones(length(noiseStd),1), log10(noiseStd')]\log10(diffThe_noise(:,1));
 b_fit = mean(log10(aveD_noise(selInx)')-log10(noiseAmpl(selInx)'));
@@ -566,9 +566,9 @@ eh1.YNegativeDelta = []; % only show upper half of the error bar
 % lh1 = plot(noiseAmpl(selInx)',10.^(X0*[b_fit;1]),'LineWidth',3,'Color',PuRd(7,:));
 % hold off
 % this need to be checked in the original data
-prefForm = sum(1./noiseData.eigens(1:3).^2)*noiseData.learnRate/2;
+prefForm = sum(1./noiseData.eigens(1:3).^2)*noiseData.learnRate/4;
 plot(cAxes,noiseAmpl(selInx)',noiseAmpl(selInx)'*prefForm,'LineWidth',2,'Color',PuRd(7,:))
-
+hold off
 % lg = legend(eh1,'$D_{\varphi} \propto \sigma^2 $','Location','northwest');
 lg = legend('simulation','theory','Location','northwest');
 
@@ -577,9 +577,12 @@ legend boxoff
 xlabel('Noise amplitude $(\sigma^2)$','Interpreter','latex','FontSize',labelFontSize)
 % ylabel('diffusion constant','FontSize',20)
 ylabel('$D_{\varphi}$','Interpreter','latex','FontSize',labelFontSize)
-ylim([5e-9,2e-4])
+% ylim([5e-9,2e-4])
+ylim([1e-6,1e-4])
+% set(gca,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
+%     'YTick',10.^(-8:2:-4))
 set(gca,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
-    'YTick',10.^(-8:2:-4))
+    'YTick',10.^(-6:-4))
 
 
 % ***************************************************
@@ -599,7 +602,7 @@ centers = spRange(1)*10.^(dbin*(1:nBins));
 selInx = 1:20;      % remove the last two data points
 b_fit_eg = mean(log10(aveSpDs(selInx,1))-log10(centers(selInx)'));
 X0_eg = [ones(length(selInx),1),log10(centers(selInx)')];
-theoPre = spectrumData.learnRate*spectrumData.noiseStd^2/8;
+theoPre = spectrumData.learnRate*spectrumData.noiseStd^2/4;
 
 axes(dAxes)
 eh = errorbar(centers',aveSpDs(:,1),aveSpDs(:,2),'o','MarkerSize',8,'MarkerFaceColor',...

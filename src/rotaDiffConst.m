@@ -1,4 +1,4 @@
-function [dph,ephi] = rotaDiffConst(dimIn, dimOut, eigs, noiseStd, learnRate, varargin)
+function [dph,ephi,ave_rmsd] = rotaDiffConst(dimIn, dimOut, eigs, noiseStd, learnRate, varargin)
 % this function returns the rotational diffusion constants calculated by two different
 % methods    one based ont the mean squre displacement of the eucleadian
 % distance   the other one based on the MSD of rotation angles
@@ -9,6 +9,7 @@ function [dph,ephi] = rotaDiffConst(dimIn, dimOut, eigs, noiseStd, learnRate, va
 % learnRate  leraning rate
 % dph        return the rotational diffusion costants
 % ephi       return the exponents of rmsd
+% ave_rmsd   return the averaged rmsd
 
 % by default, using the offline update of W and M, to emphasize the drift
 % due to external noise
@@ -29,7 +30,7 @@ end
 % basic parameters
 n = dimIn;              % default 10
 k = dimOut;             % default 3
-t = 1e4;              % total number of samples
+t = 5e3;              % total number of samples
 
 
 % generate input data
@@ -57,8 +58,8 @@ end
 
 
 % now add noise to see how representation drift
-tot_iter = 1e5;     % total iteration time, longer for better estimation
-num_sel = 500;      % only select part of the samples to estimate diffusion costant
+tot_iter = 5e4;     % total iteration time, longer for better estimation
+num_sel = 200;      % only select part of the samples to estimate diffusion costant
 step = 10;          % store every 10 step to reduce data size
 time_points = round(tot_iter/step);
 Yt = zeros(k,time_points,num_sel);
@@ -93,8 +94,8 @@ end
 % estimate the rotational diffusion constants, notice the time unit is
 % "step"
 rmsd = SMhelper.rotationalMSD(Yt);
-
+ave_rmsd = mean(rmsd,1);
 % return the diffusion constant
-[dph,ephi] = SMhelper.fitRotationDiff(rmsd,step, 2000, 'log');
+[dph,ephi] = SMhelper.fitRotationDiff(rmsd,step, 2000, 'linear');
 
 end
