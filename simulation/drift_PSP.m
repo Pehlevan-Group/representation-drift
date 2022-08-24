@@ -24,8 +24,8 @@ output_dim = 3;
 num_sample = 1e4;        % total number of samples generated
 tot_iter = 1e5; 
 
-syn_noise_std = 2e-2;    % 1e-2 for offline
-learnRate = 5e-2;        % 0.05 for offline
+syn_noise_std = 5e-3;    % 1e-2 for offline
+learnRate = 1e-1;        % 0.05 for offline
 
 % initilize the synaptic weight matrices
 W = randn(output_dim,input_dim);
@@ -69,7 +69,7 @@ stdM = syn_noise_std;
 tot_inital = 2e3;
 step = 1;
 time_points = round(tot_inital/step);
-pspErr = nan(time_points,1);
+initial_pspErr = nan(time_points,1);
 for i = 1:tot_inital
         curr_inx = randperm(num_sample,1);  % randm generate one sample
         % generate noise matrices
@@ -83,7 +83,7 @@ for i = 1:tot_inital
             temp = pinv(M)*W;  % current feature map
             % PSP error
             if strcmp(type,'psp')
-                pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)','fro')/Vnorm;
+                initial_pspErr(round(i/step)) = norm(temp'*temp - V(:,1:output_dim)*V(:,1:output_dim)','fro')/Vnorm;
             end
         end
 end
@@ -94,7 +94,7 @@ f_learnCurve = figure;
 pos(3)= 4.5; pos(4)= 3.5;
 set(f_learnCurve,'color','w','Units','inches','Position',pos)
 % plot(pspErr(1:200),'LineWidth',4)
-plot(((1:length(pspErr))*step)',pspErr,'LineWidth',4)
+plot(((1:length(initial_pspErr))*step)',initial_pspErr,'LineWidth',4)
 set(gca,'FontSize',20,'LineWidth',1.5)
 xlabel('$t$','Interpreter','latex','FontSize',24)
 ylabel('PSP error','FontSize',24)
@@ -204,7 +204,7 @@ Fvec = reshape(Ft,output_dim*input_dim,time_points);
 % plot the ensemble representations
 figYens = figure;
 set(figYens,'Units','inches','Position',[0,0,4,3])
-ensem_sel = [8, 11];   % this should depdend on the learning type
+ensem_sel = [6, 11];   % this should depdend on the learning type
 for i = 1:length(ensem_sel)
     scatterHd = plot3(Y_ensemble(1,:,ensem_sel(i)),Y_ensemble(2,:,ensem_sel(i)),...
         Y_ensemble(3,:,ensem_sel(i)),'.','MarkerSize',6);
@@ -220,7 +220,7 @@ zlabel('$y_3$','Interpreter','latex','FontSize',20)
 set(gca,'FontSize',16,'XLim',[-4,4],'YLim',[-4,4],'ZLim',[-3,3])
 
 % save the figure
-% prefix = [type,'_ensemble_orientation_dt3e3_',date,'_3'];
+% prefix = [type,'_ensemble_orientation_dt5e3_',date,'_2'];
 % saveas(figYens,[saveFolder,filesep,prefix,'.fig'])
 % print('-depsc',[saveFolder,filesep,prefix,'.eps'])
 
@@ -411,6 +411,353 @@ c.Position = [0.955,0.12,0.01,0.35];
 % saveas(paperFig2,[sFolder,filesep,prefix,'_',date,'_2','.fig'])
 % print('-depsc',[saveFolder,filesep,prefix,'.eps'])
 
+%% ======================== Figure 2 in the main text ====================
+
+sFolder = '../figures';
+fig2 = figure; 
+set(gcf,'color','w','Units','inches')
+pos(3)=16.5;  %17.4; %8.5;%pos(3)*1.5;
+pos(4)=8;%pos(4)*1.5;
+set(gcf,'Position',pos)
+labelFontSize = 24;
+gcaFontSize = 20;
+
+
+% example trajectories
+aAxes = axes('position',[.07  .63  0.2  0.35]); hold on
+annotation('textbox', [.005 .98 .03 .03],...
+    'String', 'A','BackgroundColor','none','Color','k',...
+    'LineStyle','none','fontsize',labelFontSize,'HorizontalAlignment','Center');
+
+% example trajectories
+bAxesi = axes('position',[.33  .63  .16  .3]); hold on
+bAxesii = axes('position',[.5  .63  .16  .3]); hold on
+annotation('textbox', [.29 .98 .03 .03],...
+    'String', 'B','BackgroundColor','none','Color','k',...
+    'LineStyle','none','fontsize',labelFontSize,'HorizontalAlignment','Center');
+
+
+% Ensemble data clouds
+cAxes = axes('position',[.78  .63  .2  .35]); hold on
+annotation('textbox', [.72 .98 .03 .03],...
+    'String', 'C','BackgroundColor','none','Color','k',...
+    'LineStyle','none','fontsize',labelFontSize,'HorizontalAlignment','Center');
+
+% Example trajectory of one neuron
+dAxes = axes('position',[.07  .12  0.2  0.35]); hold on
+annotation('textbox', [.005 .47 .03 .03],...
+    'String', 'D','BackgroundColor','none','Color','k',...
+    'LineStyle','none','fontsize',labelFontSize,'HorizontalAlignment','Center');
+
+% D vs noise amplitude
+eAxes = axes('position',[.4  .12  .22  .35]);
+annotation('textbox', [.33 .47 .03 .03],...
+    'String', 'E','BackgroundColor','none','Color','k',...
+    'LineStyle','none','fontsize',labelFontSize,'HorizontalAlignment','Center');
+
+% D vs eigen spectrum
+fAxes = axes('position',[.7  .12  .22  .35]); 
+annotation('textbox', [.63 .47 .03 .03],...
+    'String', 'F','BackgroundColor','none','Color','k',...
+    'LineStyle','none','fontsize',labelFontSize,'HorizontalAlignment','Center');
+
+% **************************************************
+% plot the example trajectory
+%**************************************************
+selYInx = randperm(num_sel,1);
+ys = Yt(:,:,selYInx);
+% ys = Ytest(:,:,13);
+colorsSel = [YlOrRd(6,:);PuRd(8,:);blues(8,:)];
+axes(aAxes)
+
+for i = 1:output_dim
+    plot(xs,ys(i,1:pointGap:time_points)','Color',colorsSel(i,:),'LineWidth',2)
+    hold on
+end
+hold off
+box on
+bLgh = legend('y_1','y_2','y_3','Location','northwest');
+legend boxoff
+set(bLgh,'FontSize',14)
+xlabel('$t$','Interpreter','latex','FontSize',labelFontSize)
+ylabel('$y_i(t)$','Interpreter','latex','FontSize',labelFontSize)
+set(aAxes,'LineWidth',1,'FontSize',gcaFontSize)
+
+% **************************************************
+% plot the similarity marix at two time points
+% **************************************************
+% smSelect = randperm(num_sel,20);
+time1 = 1;
+time2 = 2e3;
+Y1sel = squeeze(Yt(:,time1,smSelect));
+Y2sel = squeeze(Yt(:,time2,smSelect));
+
+% order the idex by the cluster
+tree = linkage(Y1sel','average');
+D = pdist(Y1sel');
+leafOrder = optimalleaforder(tree,D);
+
+axes(bAxesi)
+imagesc(Y1sel(:,leafOrder)'*Y1sel(:,leafOrder),[-6,6])
+colormap(RdBuMap)
+box on
+set(bAxesi,'XTick',[1,10,20],'YTick',[1,10,20],'YLim',[0.5,20.5],'XLim',...
+    [0.5,20.5],'FontSize',gcaFontSize)
+xlabel('Stimuli','FontSize',labelFontSize)
+ylabel('Stimuli','FontSize',labelFontSize)
+
+axes(bAxesii)
+imagesc(Y2sel(:,leafOrder)'*Y2sel(:,leafOrder),[-6,6])
+colormap(RdBuMap)
+box on
+set(bAxesii,'XTick',[1,10,20],'YTick','','YLim',[0.5,20.5],'XLim',[0.5,20.5],...
+    'FontSize',gcaFontSize)
+c = colorbar;
+c.Position = [0.67,0.63,0.01,0.3];
+xlabel('Stimuli','FontSize',labelFontSize)
+
+% **************************************************
+% ensemble data cloud
+% **************************************************
+ensem_sel = [6, 11];   % this should depdend on the learning type
+axes(cAxes)
+for i = 1:length(ensem_sel)
+    scatterHd = plot3(Y_ensemble(1,:,ensem_sel(i)),Y_ensemble(2,:,ensem_sel(i)),...
+        Y_ensemble(3,:,ensem_sel(i)),'.','MarkerSize',6);
+    hold on
+    scatterHd.MarkerFaceColor(4) = 0.2;
+    scatterHd.MarkerEdgeColor(4) = 0.2;
+    grid on
+end
+% lg = legend('$t = 0$','$t= 5\times 10^4$','interpreter','latex')
+xlabel('$y_1$','Interpreter','latex','FontSize',labelFontSize)
+ylabel('$y_2$','Interpreter','latex','FontSize',labelFontSize)
+zlabel('$y_3$','Interpreter','latex','FontSize',labelFontSize)
+set(gca,'FontSize',gcaFontSize,'XLim',[-4,4],'YLim',[-4,4],'ZLim',[-3,3])
+
+% ************************************************************
+% Trajectory of an example output
+% ************************************************************
+exampleSel = randperm(num_sel,1);  % randomly select a 
+% exampleSel = 110;
+Yexample = Yt(:,:,exampleSel);
+interSep = 5;   % only select data every 10 time points, to eliminate clutter
+dotColors = flip(brewermap(size(Yexample,2)/interSep,'Spectral'));
+
+% Also plot a sphere to guid visualization
+ridus = sqrt(mean(sum(Yexample.^2,1)));
+gridNum = 30;
+u = linspace(0, 2 * pi, gridNum);
+v = linspace(0, pi, gridNum);
+
+axes(dAxes)
+sfh = surf(ridus * cos(u)' * sin(v), ridus * sin(u)' * sin(v), ...
+    ridus * ones(size(u, 2), 1) * cos(v), 'FaceColor', 'w', 'EdgeColor', [.9 .9, .9]);
+sfh.FaceAlpha = 0.3000;  % for transparency
+hold on
+for i = 1:(size(Yexample,2)/interSep)
+    plot3(Yexample(1,i*interSep),Yexample(2,i*interSep),Yexample(3,i*interSep),...
+        '.','MarkerSize',8,'Color',dotColors(i,:))
+end
+% grid on
+hold off
+colormap(dAxes,dotColors)
+c2 = colorbar;
+c2.Position = [0.25,0.2,0.01,0.15];
+
+% enhance visualization
+radius_new = ridus;   % this should be modified based on the effect
+set(dAxes,'XLim',[-radius_new,radius_new],'YLim',[-radius_new,radius_new],...
+    'ZLim',[-radius_new,radius_new])
+
+view([45,30])
+xlabel('$y_1$','Interpreter','latex','FontSize',labelFontSize)
+ylabel('$y_2$','Interpreter','latex','FontSize',labelFontSize)
+zlabel('$y_3$','Interpreter','latex','FontSize',labelFontSize)
+set(dAxes,'FontSize',gcaFontSize,'LineWidth',1.5)
+
+% **************************************************
+%  D vs noise amplitude
+% **************************************************
+% first, load the data
+noiseData_offline = load('../data/noiseAmp0808.mat');          % offline
+noiseData_online = load('../data/PSPonline/noiseAmp_08242022.mat'); 
+
+% offline data
+out_offline = PSP_noise_data_aggregate(noiseData_offline,'offline');
+
+% online data
+out_online = PSP_noise_data_aggregate(noiseData_online,'online');
+
+selInx = 1:out_offline.num_std;  % select part of the data to fit
+
+axes(eAxes)
+eh1 = errorbar(out_offline.noiseAmpl(selInx)',out_offline.aveD_noise(selInx)',...
+    out_offline.stdD_noise(selInx)','o','MarkerSize',5,'MarkerFaceColor',...
+    greys(7,:),'Color',greys(7,:),'LineWidth',2,'CapSize',0);
+eh1.YNegativeDelta = []; % only show upper half of the error bar
+hold on
+eh2 = errorbar(out_online.noiseAmpl(selInx)',out_online.aveD_noise(selInx)',...
+    out_online.stdD_noise(selInx)','o','MarkerSize',5,'MarkerFaceColor',...
+    blues(7,:),'Color',blues(7,:),'LineWidth',2,'CapSize',0);
+eh2.YNegativeDelta = []; % only show upper half of the error bar
+
+plot(eAxes,out_offline.noiseAmpl(selInx)',out_offline.D_pred(selInx),'LineWidth',2,'Color',PuRd(7,:))
+plot(eAxes,out_online.noiseAmpl(selInx)',out_online.D_pred(selInx),'LineWidth',2,'Color',greens(7,:))
+
+hold off
+% lg = legend(eh1,'$D_{\varphi} \propto \sigma^2 $','Location','northwest');
+lg = legend('Oflline','Online','theory','Location','northwest');
+
+set(lg,'Interpreter','Latex')
+legend boxoff
+xlabel('Noise amplitude $(\sigma^2)$','Interpreter','latex','FontSize',labelFontSize)
+ylabel('$D_{\varphi}$','Interpreter','latex','FontSize',labelFontSize)
+ylim([5e-9,2e-4])
+% ylim([1e-6,1e-4])
+set(gca,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
+    'YTick',10.^(-8:2:-4))
+% set(gca,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
+%     'YTick',10.^(-6:-4))
+
+
+% ***************************************************
+% D vs eigenspectrum
+% ***************************************************
+spectrumData_offline = load('../data/eigenSpectr0821.mat');  % offline
+spectrumData_online = load('../data/PSPonline/eigenSpectr_3.mat'); % online
+out_offline = PSP_spectrum_data_aggregate(spectrumData_offline,'offline');
+out_online = PSP_spectrum_data_aggregate(spectrumData_online,'online');
+
+nBins = 20;
+spRange = 10.^[-0.5,2];     % this range depends on the data set used
+dbin = (log10(spRange(2)) - log10(spRange(1)))/nBins;
+aveSpDs = nan(nBins, 2);  % average and standard deviation
+for i = 1:nBins
+    inx = log10(sumKeigs) >= log10(spRange(1)) + (i-1)*dbin & log10(sumKeigs) < log10(spRange(1)) + i*dbin;
+    aveSpDs(i,:) = [mean(allD_spectr(inx)),std(allD_spectr(inx))];
+end
+centers = spRange(1)*10.^(dbin*(1:nBins));
+
+% a linear fit based on the averaged diffusion constant
+selInx = 1:20;      % remove the last two data points
+% b_fit_eg = mean(log10(aveSpDs(selInx,1))-log10(centers(selInx)'));
+% X0_eg = [ones(length(selInx),1),log10(centers(selInx)')];
+theoPre = spectrumData.learnRate*spectrumData.noiseStd^2/2; % factor 2 or 4
+
+axes(fAxes)
+eh1 = errorbar(out_offline.centers',out_offline.aveSpDs(:,1),out_offline.aveSpDs(:,2),...
+    'o','MarkerSize',5,'MarkerFaceColor',...
+    greys(7,:),'Color',greys(7,:),'LineWidth',1,'CapSize',0);
+eh1.YNegativeDelta = []; % only show upper half of the error bar
+hold on
+eh2 = errorbar(out_online.centers',out_online.aveSpDs(:,1),out_online.aveSpDs(:,2),...
+    'o','MarkerSize',5,'MarkerFaceColor',...
+    blues(7,:),'Color',blues(7,:),'LineWidth',1,'CapSize',0);
+eh2.YNegativeDelta = []; % only show upper half of the error bar
+
+% theory
+plot(out_offline.centers',out_offline.theoPre*out_offline.centers','LineWidth',2,'Color',greens(7,:))
+% plot(out_online.centers',out_online.theoPre*out_online.centers','LineWidth',2,'Color',PuRd(7,:))
+lg = legend('simulation','theory','Location','northwest');
+hold off
+xlabel('$\sum_{i=1}^{k}1/\lambda_i^2$','Interpreter','latex','FontSize',labelFontSize)
+ylabel('$D_{\varphi}$','Interpreter','latex','FontSize',labelFontSize)
+% set(dAxes,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
+%     'Ylim',[1e-5,2e-4],'YTick',10.^(-5:1:-2),'XTick',10.^([2,3]))
+set(fAxes,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
+    'Ylim',[1e-6,1e-3],'YTick',10.^(-6:1:-3),'XTick',10.^([-1,0,1,2]))
+
+%% ======================= Figure S1 =====================================
+sFolder = '../figures';
+figS2 = figure; 
+set(figS2,'color','w','Units','inches')
+pos(3)=10;  %17.4; %8.5;%pos(3)*1.5;
+pos(4)=8;%pos(4)*1.5;
+set(gcf,'Position',pos)
+
+
+% PSP error initial stage
+aAxes = axes('position',[.14  .63  0.35  0.35]); hold on
+annotation('textbox', [.005 .98 .03 .03],...
+    'String', 'A','BackgroundColor','none','Color','k',...
+    'LineStyle','none','fontsize',labelFontSize,'HorizontalAlignment','Center');
+
+% PSP error stationary state
+bAxes = axes('position',[.63  .63  .35  .35]);
+annotation('textbox', [.52 .98 .03 .03],...
+    'String', 'B','BackgroundColor','none','Color','k',...
+    'LineStyle','none','fontsize',labelFontSize,'HorizontalAlignment','Center');
+
+% change of similarity matrix
+cAxes = axes('position',[.14  .12  0.35  0.38]); hold on
+annotation('textbox', [.005 .49 .03 .03],...
+    'String', 'C','BackgroundColor','none','Color','k',...
+    'LineStyle','none','fontsize',labelFontSize,'HorizontalAlignment','Center');
+
+% auto-correlation function
+dAxes = axes('position',[.63  .12  .35  .38]);
+annotation('textbox', [.52 .49 .03 .03],...
+    'String', 'D','BackgroundColor','none','Color','k',...
+    'LineStyle','none','fontsize',labelFontSize,'HorizontalAlignment','Center');
+
+% learning curve at initial stage
+axes(aAxes)
+plot(((1:length(initial_pspErr))*step)',initial_pspErr,'LineWidth',2)
+xlabel('$t$','Interpreter','latex','FontSize',labelFontSize)
+ylabel('PSP error','FontSize',labelFontSize)
+set(gca,'FontSize',gcaFontSize,'LineWidth',1)
+xlim([1 2e3])
+
+% plot PSP error
+pointGap = 20;
+xs = (1:pointGap:time_points)'*step;
+axes(bAxes)
+plot(xs,pspErr(1:pointGap:time_points),'Color',greys(8,:),'LineWidth',1)
+box on
+xlabel('$t$','Interpreter','latex','FontSize',labelFontSize)
+ylabel('PSP error','FontSize',labelFontSize)
+set(bAxes,'LineWidth',1,'FontSize',gcaFontSize,'Ylim',[0,1])
+
+% change of similarity matrix norm, and F'F norm compared with identity
+% matrix
+axes(cAxes)
+plot(xs,SMerror(1:pointGap:time_points),'Color',blues(9,:),'LineWidth',1)
+box on
+xlabel('$t$','Interpreter','latex','FontSize',labelFontSize)
+ylabel('$||\rm{SM_{t} - SM_{0}}||_F/||SM_0||_F$','Interpreter','latex',...
+    'FontSize',labelFontSize)
+set(cAxes,'LineWidth',1,'FontSize',gcaFontSize,'YLim',[0,0.2])
+
+
+% =================================================================
+% plot example rotational means quare displacement and a fit of the
+% diffusiotn constant
+% =================================================================
+fitRange = 1000;  % only select partial data to fit
+aveRMSD = mean(rmsd,1);
+logY = log(aveRMSD(1:fitRange)');
+logX = [ones(fitRange,1),log((1:fitRange)'*step)];
+b = logX\logY;  
+Dphi = exp(b(1));  % diffusion constant
+exponent = b(2); % factor
+pInx = randperm(size(rmsd,1),20);
+
+axes(dAxes)
+plot((1:size(rmsd,2))'*step, rmsd(pInx,:)','Color',greys(5,:),'LineWidth',1.5)
+hold on
+
+% overlap fitted line
+yFit = exp(logX*b);
+plot((1:fitRange)'*step,yFit,'k--','LineWidth',2)
+hold off
+xlabel('$\Delta t$','Interpreter','latex','FontSize',labelFontSize)
+ylabel('$\langle\varphi^2(\Delta t)\rangle$','Interpreter','latex','FontSize',labelFontSize)
+set(gca,'FontSize',20,'LineWidth',1,'XScale','log','YScale','log',...
+ 'XTick',10.^(1:5),'YTick',10.^(-4:2:2))
+set(gca,'FontSize',gcaFontSize,'LineWidth',1.5)
+
+
 %% ==================== Figure 3 ==================
 
 % chacterizing the drift in terms of rotational diffusion
@@ -498,7 +845,7 @@ set(gca,'FontSize',gcaFontSize,'LineWidth',1.5)
 % plot example rotational means quare displacement and a fit of the
 % diffusiotn constant
 % =================================================================
-fitRange = 500;  % only select partial data to fit
+fitRange = 1000;  % only select partial data to fit
 aveRMSD = mean(rmsd,1);
 logY = log(aveRMSD(1:fitRange)');
 logX = [ones(fitRange,1),log((1:fitRange)'*step)];
@@ -531,8 +878,8 @@ set(gca,'FontSize',gcaFontSize,'LineWidth',1.5)
 % first, load the data
 noiseData = load('../data/noiseAmp0808.mat');          % offline
 % noiseData = load('../data/noiseAmp_08222022.mat');  
-spectrumData = load('../data/eigenSpectr0821.mat');  % offline
-% spectrumData = load('../data/eigenSpectr_08232022_1.mat'); % online
+% spectrumData = load('../data/eigenSpectr0821.mat');  % offline
+spectrumData = load('../data/eigenSpectr_08232022_1.mat'); % online
 
 num_std = floor(length(noiseData.noiseStd)/40);  % number of different std
 syn_noise_std = reshape(noiseData.noiseStd,[40,num_std]);
@@ -620,9 +967,9 @@ ylabel('$D_{\varphi}$','Interpreter','latex','FontSize',labelFontSize)
 set(dAxes,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
     'Ylim',[1e-6,1e-3],'YTick',10.^(-6:1:-3),'XTick',10.^([-1,0,1,2]))
 
-prefix = 'psp_fit_rotational_fig2_2';
-saveas(paperFig3,[sFolder,filesep,prefix,'_',date,'_3','.fig'])
-print('-depsc',[saveFolder,filesep,prefix,'.eps'])
+% prefix = 'psp_fit_rotational_fig2_2';
+% saveas(paperFig3,[sFolder,filesep,prefix,'_',date,'_3','.fig'])
+% print('-depsc',[saveFolder,filesep,prefix,'.eps'])
 
 
 %% A closer look at the eigenspectrum and the diffusion constants

@@ -17,7 +17,7 @@ param.sf =  1.42;       % scaling factor between adjacent module
 
 % parameters for learning 
 noiseStd =0.002;        % 0.01 for 2d, 5 grid mode
-learnRate = 0.02;       % default 0.05
+learnRate = -1.95;       % default 0.05
 
 param.W = 0.5*randn(param.Np,param.Ng);   % initialize the forward matrix
 param.M = eye(param.Np);        % lateral connection if using simple nsm
@@ -34,7 +34,6 @@ param.b = zeros(param.Np,1);  % biase
 param.learnRate = learnRate;  % learning rate for W and b
 % param.noise =  noiseStd;    % stanard deivation of noise 
 % param.rwSpeed = 1;          % steps each update, default 1
-
 
 BatchSize = 1;         % minibatch used to to learn
 learnType = 'snsm';    % snsm, batch, randwalk
@@ -57,11 +56,6 @@ end
 
 
 % only used when using "bathc"
-numIN  = 10;                  % number of inhibitory neurons
-Z0 = zeros(numIN,BatchSize);  % initialize interneurons
-Y0 = zeros(param.Np, BatchSize); 
-V = rand(numIN,param.Np);          % feedback from cortical neurons
-
 makeAnimation = 0;    % whether make a animation or not
 
 %% generate grid fields
@@ -780,15 +774,15 @@ ylabel('$D$','Interpreter','latex','FontSize',24)
 set(gca,'FontSize',24)
 
 %% SAVE THE DATA OR NOT
-save_folder = fullfile(pwd,'data', filesep,'revision');
-save_data_name = fullfile(save_folder, ['pc_2D_various_noise_',date,'.mat']);
+save_folder = '..\data';
+save_data_name = fullfile(save_folder, ['pc_2D_online_noise_',date,'.mat']);
 save(save_data_name,'-v7.3')
 
 %% Publication ready figures
 % this part polish some of the figures and make them publication ready
 % define all the colors
 sFolder = './figures';
-figPre = 'placeCell2D_0412_2022_variousSig';   % this should change according to the task
+figPre = 'placeCell2D_0823_2022_variousSig';   % this should change according to the task
 
 nc = 256;   % number of colors
 spectralMap = brewermap(nc,'Spectral');

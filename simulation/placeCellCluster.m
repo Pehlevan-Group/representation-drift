@@ -139,6 +139,6 @@ for i = 1:tot_iter
 end
 
 % save all the data
-sFile = ['./data/placeCell_sig_',num2str(noiseStd),'l1_',num2str(lbd1),'_alp_',num2str(alp),'_',date,'.mat'];
+sFile = ['placeCell_sig_',num2str(noiseStd),'l1_',num2str(lbd1),'_alp_',num2str(alp),'_',date,'.mat'];
 save(sFile)
 end
