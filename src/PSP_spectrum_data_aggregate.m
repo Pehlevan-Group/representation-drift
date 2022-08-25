@@ -7,17 +7,25 @@ allEigs = spectrumData.eigens(1:3,:);
 sumKeigs = sum(1./(allEigs.^2),1);
 if strcmp(type,'offline')
     allD_spectr = spectrumData.allDiffConst(:,1)/4;     % factor 4 in fitting
-else
+elseif strcmp(type,'online')
     allD_spectr = spectrumData.allDiffConst(:,1);
+%     allD_spectr = spectrumData.Ds_log;
+elseif strcmp(type,'refit')
+    allD_spectr = spectrumData.Ds_new;
+else
+    disp('unrecognized type!')
 end
 
 nBins = 20;
 spRange = 10.^[-0.5,2];     % this range depends on the data set used
 dbin = (log10(spRange(2)) - log10(spRange(1)))/nBins;
 out.aveSpDs = nan(nBins, 2);  % average and standard deviation
+out.aveSptrums = nan(nBins, 2);  % average and standard deviation
+
 for i = 1:nBins
     inx = log10(sumKeigs) >= log10(spRange(1)) + (i-1)*dbin & log10(sumKeigs) < log10(spRange(1)) + i*dbin;
     out.aveSpDs(i,:) = [mean(allD_spectr(inx)),std(allD_spectr(inx))];
+    out.aveSptrums(i,:) = [mean(sumKeigs(inx)),std(sumKeigs(inx))];
 end
 out.centers = spRange(1)*10.^(dbin*(1:nBins));
 

@@ -12,10 +12,13 @@ totSimul = 2e3;              %  total number of sampling
 
 %% Confifguration when running on cluster
 % uncomment this section and modifiy the directory and settings
-addpath('/n/home09/ssqin/driftRepr')
+% addpath('/n/home09/ssqin/driftRepr')
  
 % start the parallel pool with 12 workers
-parpool('local', str2num(getenv('SLURM_CPUS_PER_TASK')));
+% parpool('local', str2num(getenv('SLURM_CPUS_PER_TASK')));
+
+% when run on pc
+parpool('local',8)
 
 %% learning rate depedent, keep eigen spectrum and noise level, tau the same
 n = 10;
@@ -27,7 +30,7 @@ step = 10;              % store every 10 updates
 tot_iter = 2e4;  
 time_points = round(tot_iter/step);
 Yt = zeros(k,time_points,num_sel);
-learnRate = 0.1;       % learning rate
+learnRate = 0.05;       % learning rate
 t = 10000;  % total number of samples
 
 if strcmp(simType,'noiseAmp')
