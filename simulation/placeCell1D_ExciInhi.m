@@ -24,8 +24,8 @@ param.baseLbd = 1/4;  % spacing of smallest grid RF, default 1/4
 param.sf =  1.42;     % scaling factor between adjacent module
 
 % parameters for learning 
-noiseStd = 0.02;          % 0.001
-learnRate = 0.05;       % default 0.05
+noiseStd = 0.05;          % 0.001
+learnRate = 0.02;       % default 0.05
 
 param.W = 0.5*randn(param.Np,param.Ng);       % initialize the forward matrix
 param.Wei = 0.05*rand(param.Np,param.Nin);  % i to e connection
@@ -186,9 +186,9 @@ epPosi = [floor(pks(epInx,:)/param.ps);mod(pks(epInx,:),param.ps)]+randn(2,size(
 
 specColors = brewermap(size(epPosi,2), 'Spectral');
 
-temp = epPosi(:,ixs);
-dp = [diff(temp(1,:));diff(temp(2,:))];
-ds = sqrt(sum(dp.^2,1));
+% temp = epPosi(:,ixs);
+% dp = [diff(temp(1,:));diff(temp(2,:))];
+% ds = sqrt(sum(dp.^2,1));
 
 %% Estimate the diffusion constant
 

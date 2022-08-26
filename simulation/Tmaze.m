@@ -13,7 +13,6 @@ set1 = brewermap(9,'Set1');
 
 saveFolder = './figures';
 %% Generate sample data
-
 k =300;       % number of neurons
 
 % default is a ring
@@ -21,7 +20,7 @@ tau = 0.5;
 BatchSize = 1;         % default 50
 
 radius = 1;
-t = 1e3;    % total number of samples previously 1e4
+t = 1e3;           % total number of samples previously 1e4
 
 % generate the data
 n = 3;     % input dimensionality, third entry specifies contex
@@ -57,7 +56,6 @@ params.b = zeros(k,1);  % biase
 params.learnRate = learnRate;  % learning rate for W and b
 params.noise =  noiseStd;   % stanard deivation of noise 
 
-
 for i = 1:1e4
     inx = randperm(t,BatchSize);
     x = X(:,inx);       % randomly select one input
@@ -72,93 +70,8 @@ for i = 1:1e4
     params.b = (1-params.learnRate)*params.b + params.learnRate*sqrt(params.alpha)*mean(y,2);
 end
 
-%%
-%{
-% check the receptive field
-Xsel = X(:,1:5:end);
-Y0 = zeros(k,size(Xsel,2));
-states_fixed_nn = PlaceCellhelper.nsmDynBatch(Xsel,Y0, params);
 
-Z = norm(Xsel'*Xsel - states_fixed_nn.Y'*states_fixed_nn.Y - params.alpha);
-
-% ============ visualize the input ==============
-% colors = brewermap(round(t/10),'Spectral');
-% figure
-% hold on
-% for i = 1:round(t/10)
-%     plot(X(1,i*10),X(2,i*10),'.','Color',colors(i,:),'MarkerSize',10)
-% end
-% hold off
-% pbaspect([1 1 1])
-% xlabel('x','FontSize',28)
-% ylabel('y','FontSize',28)
-
-
-% =============place field of neurons ==========
-% figure
-% imagesc(states_fixed_nn.Y)
-% colorbar
-% xlabel('position','FontSize',28)
-% ylabel('neuron','FontSize',28)
-% ax = gca;
-% ax.XTick = [1 500 1000];
-% ax.XTickLabel = {'0', '\pi', '2\pi'};
-% set(gca,'FontSize',24)
-
-% =============reorder the place field of neurons ==========
-% sort the neurons based on their centroid of RFs
-[pkCM, ~] = PlaceCellhelper.centerMassPks1D(states_fixed_nn.Y,0.05);
-actiInx = find(~isnan(pkCM));
-actiPkCM = pkCM(actiInx);
-[~,neurOrder] = sort(actiPkCM);
-
-
-figure
-imagesc(states_fixed_nn.Y(actiInx(neurOrder),:))
-colorbar
-xlabel('position','FontSize',28)
-ylabel('neuron','FontSize',28)
-ax = gca;
-ax.XTick = [1 500 1000];
-ax.XTickLabel = {'0', '\pi', '2\pi'};
-set(gca,'FontSize',24)
-
-
-% =========== Example place field ========================
-% sort and find the
-num_acti = length(actiInx);
-sel_inx = actiInx(neurOrder(1:round(num_acti/7):num_acti));
-rfExamples = states_fixed_nn.Y(sel_inx,:);
-figure
-for i = 1:length(sel_inx)
-    plot(states_fixed_nn.Y(sel_inx(i),:),'Color',set1(i,:),'LineWidth',3)
-    hold on
-end
-hold off
-xlabel('position','FontSize',28)
-ylabel('response','FontSize',28)
-ax = gca;
-ax.XTick = [1 500 1000];
-ax.XTickLabel = {'0', '\pi', '2\pi'};
-set(gca,'FontSize',24)
-
-%============= similarity matrix of ordered represenation =================
-SM = states_fixed_nn.Y(actiInx(neurOrder),:)'*states_fixed_nn.Y(actiInx(neurOrder),:);
-figure
-imagesc(SM)
-colorbar
-ax = gca;
-ax.XTick = [1 500 1000];
-ax.YTick = [1 500 1000];
-ax.XTickLabel = {'0', '\pi', '2\pi'};
-ax.YTickLabel = {'0', '\pi', '2\pi'};
-xlabel('position','FontSize',28)
-ylabel('position','FontSize',28)
-set(gca,'FontSize',24)
-
-%}
 %% continue updating with noise
-
 tot_iter = 2e4;
 num_sel = 200;
 step = 50;       %store every 50 step
@@ -193,7 +106,7 @@ end
 pkThreshold = 0.05;  % active threshold
 
 % peak of receptive field
-peakInx = nan(k,time_points);
+% peakInx = nan(k,time_points);
 peakVal = nan(k,time_points);
 peakPosi = nan(k,time_points);
 for i = 1:time_points
@@ -206,14 +119,6 @@ end
 
 % fraction of neurons
 activeRatio = mean(~isnan(peakPosi),1);
-figure
-plot(1:time_points,activeRatio(1:end))
-xlabel('iteration')
-ylabel('active fraction')
-ylim([0,1])
-
-figure
-histogram(activeRatio(101:end))
 
 % =========place field order by the begining ======================
 inxSel = [100, 200, 400];
@@ -260,38 +165,6 @@ MergeaPkCM = [peakPosi(neuroInx(1:sepInx-1),inxSelPV(1));peakPosi(neuroInx(sepIn
 [~, newInx] = sort(MergeaPkCM,'ascend');
 
 
-figure
-for i = 1:length(inxSelPV)
-    subplot(1,3,i)
-    imagesc(YtMerge(newInx,:,inxSelPV(i)),[0,0.5])
-    colorbar
-    ax = gca;
-    ax.XTickLabel = {'0', '\pi', '2\pi'};
-    title(['iteration ', num2str(inxSelPV(i))])
-    xlabel('position')
-    ylabel('sorted index')
-end
-
-
-% ======== representation similarity matrix =======
-figure
-for i = 1:length(inxSel)
-%     [~,neuroInx] = sort(peakInx(:,inxSel(i)));
-    SM = Yt(:,:,inxSel(i))'*Yt(:,:,inxSel(i));
-    subplot(1,3,i)
-    imagesc(SM,[0,0.6])
-    colorbar
-    ax = gca;
-    ax.XTick = [1 500 1000];
-    ax.YTick = [1 500 1000];
-    ax.XTickLabel = {'0', '\pi', '2\pi'};
-    ax.YTickLabel = {'0', '\pi', '2\pi'};
-    title(['iteration', num2str(inxSel(i))])
-    xlabel('position')
-    ylabel('position')
-end
-
-
 %% shift of centroids
 
 adjPeaks = mod(peakPosi, size(Yt,2)/2);
@@ -310,7 +183,6 @@ for i = 1:length(tps)
         probs(i,j) = sum(diffLagSel(:) > quantiles(j))/length(diffLagSel(:));
     end
 end
-
 
 probShift = figure; 
 set(probShift,'color','w','Units','inches')
@@ -335,10 +207,10 @@ ylim([0.2,0.6])
 xlim([0,450])
 
 %%
-% ============================================================
+% =====================================================================
 % Analyze the fraction of neurons that change the tunning property: from
 % left to right
-% ============================================================
+% =====================================================================
 L = size(Yt,2);
 tuningLR = nan(k,time_points);
 peakInx = nan(k,time_points);
@@ -380,7 +252,6 @@ for dt = 1:round(time_points/2)
     gainTun(dt,:) = [mean(mean(tmp1.*tmp2,1)./refTuning),std(mean(tmp1.*tmp2,1)./refTuning)];
 end
 
-
 % summarize the figure
 thisBlue = [52,153,204]/256;
 thisRed = [218,28,92]/256;
@@ -393,8 +264,6 @@ pos(3)=3.1;  %17.4; %8.5;%pos(3)*1.5;
 pos(4)=2.5;%pos(4)*1.5;
 set(shitTunFig,'color','w','Units','inches','Position',pos)
 hold on
-% plot(times',consist(:,1),'LineWidth',2,'Color',thisBlack)
-% plot(times',shiftTun(:,1),'LineWidth',2,'Color',thisRed)
 plot(times',lossTun(:,1),'LineWidth',2,'Color',thisRed)
 plot(times',gainTun(:,1),'LineWidth',2,'Color',thisBlue)
 hold off
