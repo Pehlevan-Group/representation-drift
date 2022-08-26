@@ -251,6 +251,7 @@ set1 = brewermap(11,'Set1');
 
 
 %% ================= Figure 2 =========================
+%{
 sFolder = '../figures';
 paperFig2 = figure; 
 set(gcf,'color','w','Units','inches')
@@ -408,7 +409,7 @@ c.Position = [0.955,0.12,0.01,0.35];
 % prefix = 'psp_summary_fig2';
 % saveas(paperFig2,[sFolder,filesep,prefix,'_',date,'_2','.fig'])
 % print('-depsc',[saveFolder,filesep,prefix,'.eps'])
-
+%}
 %% ======================== Figure 2 in the main text ====================
 
 sFolder = '../figures';
@@ -629,8 +630,8 @@ set(gca,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
 % ***************************************************
 % spectrumData_offline = load('../data/eigenSpectr0821.mat');  % offline
 spectrumData_offline = load('../data/PSP_offline/eigenSpectr_offline_0825_005.mat');  % offline
-spectrumData_online = load('../data/eigenSpectr_08232022_1.mat'); % online
-% spectrumData_online = load('../data/PSPonline/eigenSpectr_online_0825_005.mat'); % online
+% spectrumData_online = load('../data/eigenSpectr_08232022_1.mat'); % online
+spectrumData_online = load('../data/PSPonline/eigenSpectr_online_0825_005.mat'); % online
 
 
 out_offline = PSP_spectrum_data_aggregate(spectrumData_offline,'refit');
