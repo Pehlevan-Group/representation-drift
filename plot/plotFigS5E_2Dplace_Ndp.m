@@ -11,7 +11,6 @@ rb = brewermap(11,'RdBu');
 set1 = brewermap(9,'Set1');
 greys = brewermap(11,'Greys');
 
-
 sFolder = '../figures';
 
 pos(3)=3.2;  

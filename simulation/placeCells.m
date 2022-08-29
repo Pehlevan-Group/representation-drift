@@ -16,7 +16,7 @@ param.baseLbd = 0.2;    % spacing of smallest grid RF, default 0.28
 param.sf =  1.42;       % scaling factor between adjacent module
 
 % parameters for learning 
-noiseStd = 0.001;        % 0.01 for 2d, 5 grid mode
+noiseStd = 0.01;        % 0.01 for 2d, 5 grid mode
 learnRate = 0.005;       % default 0.05
 
 param.W = 0.5*randn(param.Np,param.Ng);   % initialize the forward matrix
@@ -43,10 +43,8 @@ param.sigWmax = noiseStd;   % maximum noise std of W
 param.sigMmax = noiseStd;   % maximum noise std of M
 
 if strcmp(noiseVar, 'various')
-%     noiseVecW = rand(param.Np,1);
     noiseVecW = 10.^(rand(param.Np,1)*2-2);
     param.noiseW = noiseVecW*ones(1,param.Ng)*param.sigWmax;   % noise amplitude is the same for each posterior 
-%     noiseVecM = rand(param.Np,1);
     noiseVecM = 10.^(rand(param.Np,1)*2-2);
     param.noiseM = noiseVecM*ones(1,param.Np)*param.sigMmax; 
 else
@@ -101,7 +99,6 @@ sep = 20;
 % all the position input by the grid code
 posiGram = eye(param.ps*param.ps);
 gdInput = gridFields'*posiGram;  % gramin of input matrix
-% gdInput = gridFields'*posiGram*3/sqrt(param.Ng);  % gramin of input matrix
 
 % simple non-negative similarity matching
 ystart = zeros(param.Np,BatchSize);  % inital of the output
@@ -132,7 +129,7 @@ for i = 1:numProb
     y(:,i) = states.Y;
 end
 %% Analysis and plot
-% y = allY(:,:,end);
+
 % =============== Place field  of all the place cells ===============
 pfs = y*posiGram'./(sum(y,2)*ones(1,param.ps*param.ps));
 figure
@@ -145,22 +142,6 @@ for i = 1:length(sel_inx)
     hp(i).YAxis.Visible = 'off';
 end
 
-% for figure plot, select two
-figure
-hf = tight_subplot(1,4);
-for i = 1:4
-    pf = y(randperm(param.Np,1),:);
-    imagesc(hf(i),reshape(pf,param.ps,param.ps));
-    hf(i).XAxis.Visible = 'off';
-    hf(i).YAxis.Visible = 'off';
-end
-
-% suface plot of an exmaple place field
-PMat = reshape(y(randperm(param.Np,1),:),param.ps,param.ps);
-figure
-surf(PMat)
-zlim([0,5])
-set(gca,'XTick',[],'YTick',[])
 
 % estimate the peak positions of the place field
 [~, pkInx] = sort(y,2,'descend');
@@ -192,33 +173,6 @@ for i = 1:length(sel_inx)
     hinput(i).YAxis.Visible = 'off';
 end
 
-% input similarity
-figure
-imagesc(gdInput'*gdInput,[60,110])
-colorbar
-xlabel('position index','FontSize',24)
-ylabel('position index','FontSize',24)
-set(gca,'LineWidth',1.5, 'FontSize',20)
-title('Input similarity matrix','FontSize',24)
-
-figure
-imagesc(gdInput(:,1:50))
-colorbar
-xlabel('position index (partial)','FontSize',24)
-ylabel('grid cell index','FontSize',24)
-set(gca,'LineWidth',1, 'FontSize',20)
-title('Input','FontSize',24)
-
-
-% output matrix and similarity matrix
-figure
-imagesc(y)
-colorbar
-xlabel('position index ','FontSize',24)
-ylabel('place cell index','FontSize',24)
-set(gca,'LineWidth',1, 'FontSize',20)
-title('Output','FontSize',24)
-
 
 figure
 imagesc(y'*y)
@@ -228,7 +182,6 @@ set(gca,'LineWidth',1, 'FontSize',20)
 title('Output Similarity','FontSize',24)
 
 
-
 % ============== visualize the learned matrix =======================
 % feedforward connection
 figure
@@ -236,13 +189,6 @@ imagesc(param.W,[0,0.03])
 colorbar
 xlabel('grid cell','FontSize',24)
 ylabel('place cell','FontSize',24)
-set(gca,'LineWidth',1.5,'FontSize',24)
-
-% histogram of W
-figure
-histogram(param.W(param.W<0.05))
-xlabel('$W_{ij}$','Interpreter','latex','FontSize',24)
-ylabel('Count','FontSize',24)
 set(gca,'LineWidth',1.5,'FontSize',24)
 
 % in term of individual palce cells
@@ -268,15 +214,6 @@ for i = 1:length(sel_inx)
     gaHdl(i).YAxis.Visible = 'off';
 end
 
-% 
-figure
-imagesc(param.W)
-colorbar
-xlabel('grid cell index','FontSize',24)
-xlabel('place cell index','FontSize',24)
-set(gca,'LineWidth',1.5, 'FontSize',20)
-title('forward connection matrix','FontSize',24)
-
 
 % ============== lateral connection matrix ===================
 Mhat = param.M - diag(diag(param.M));
@@ -297,7 +234,7 @@ set(gca,'LineWidth',1.5,'FontSize',24)
 
 %% Continuous Nosiy update
 
-tot_iter = 2e4;
+tot_iter = 3e4;
 num_sel = 200;
 step = 10;
 time_points = round(tot_iter/step);
@@ -311,162 +248,63 @@ placeFlag = nan(param.Np,time_points); % determine whether a place field
 
 pkCenterMass = nan(param.Np,2,time_points);  % store the center of mass
 pkMas = nan(param.Np,time_points);           % store the average ampltude 
-% store the weight matrices to see if they are stable
-% timeGap = 50;
-% allW = nan(param.Np,param.Ng,round(tot_iter/timeGap));
-% allM = nan(param.Np,param.Np,round(tot_iter/timeGap));
-% allY = nan(param.Np,param.ps^2,round(tot_iter/timeGap)); % store all the population vectors
 
 ampThd = 0.1;   % amplitude threshold, depending on the parameters
 
 % testing data, only used when check the representations
-% Xsel = gdInput(:,1:10:end);
 Y0 = zeros(param.Np,size(gdInput,2));
-Z0 = zeros(numIN,size(gdInput,2));
 Yt = nan(param.Np,param.ps*param.ps,time_points);
-if strcmp(learnType, 'online')
-    for i = 1:tot_iter
-        x = X(:,randperm(t,1));  % randomly select one input
-        [states, params] = MantHelper.neuralDynOnline(x,Y0,Z0,V, params);
-        y = states.y;
-        % update weight matrix
-        params.W = (1-params.learnRate)*params.W + params.learnRate*y*x' + ...
-            sqrt(params.learnRate)*params.noise*randn(k,2);
-        params.b = (1-params.learnRate)*params.b + params.learnRate*sqrt(params.alpha)*y;
-        V = states.V;   % current feedback matrix
-        
-    end
-elseif strcmp(learnType, 'batch')
-    y0 = zeros(param.Np, BatchSize);  % initialize mini-batch
-    z0 = zeros(numIN,BatchSize);  % initialize interneurons
 
-    for i = 1:tot_iter
-        x = gdInput(:,randperm(param.ps*param.ps,BatchSize));
-%         x = X(:,randperm(param.ps*param.ps,BatchSize));  % randomly select one input
-        [states, param] = PlaceCellhelper.neuralDynBatch(x,y0,z0,V, param);
-        y = states.Y;
-        % update weight matrix
-        param.W = (1-param.learnRate)*param.W + param.learnRate*y*x'/BatchSize...
-            + sqrt(param.learnRate)*param.noise*randn(param.Np,param.Ng);
-        param.b = (1-param.learnRate)*param.b + param.learnRate*sqrt(param.alpha)*mean(y,2);
-        V = states.V;   % current 
-        
-        if mod(i, step) == 0
-            [states_fixed,param] = PlaceCellhelper.neuralDynBatch(gdInput,Y0,Z0,V, param);
-            [~,pkInx] = sort(states_fixed.Y,2, 'descend');
-            pkAmp(:,round(i/step)) = states_fixed.Y((pkInx(:,1)-1)*param.Np + (1:param.Np)');
-            pcInx = pkAmp(:,round(i/step)) > ampThd;  % find the place cells
-            pks(pcInx,round(i/step)) = pkInx(pcInx,1);
-            Yt(:,:,round(i/step)) = states_fixed.Y;
+ystart = zeros(param.Np,BatchSize);  % inital of the output
 
-        end
-    end
-elseif strcmp(learnType, 'snsm')
-    
-    ystart = zeros(param.Np,BatchSize);  % inital of the output
-    
-    % generate position code by the grid cells    
-    for i = 1:tot_iter
-        positions = gdInput(:,randperm(param.ps*param.ps,BatchSize));
-        states = PlaceCellhelper.nsmDynBatch(positions,ystart, param);
-        y = states.Y;
-        
-        % noisy update weight matrix
-        param.W = (1-param.learnRate)*param.W + param.learnRate*y*positions'/BatchSize + ...
-            sqrt(param.learnRate)*param.noiseW.*randn(param.Np,param.Ng);  % 9/16/2020
+% generate position code by the grid cells    
+for i = 1:tot_iter
+    positions = gdInput(:,randperm(param.ps*param.ps,BatchSize));
+    states = PlaceCellhelper.nsmDynBatch(positions,ystart, param);
+    y = states.Y;
+
+    % noisy update weight matrix
+    param.W = (1-param.learnRate)*param.W + param.learnRate*y*positions'/BatchSize + ...
+        sqrt(param.learnRate)*param.noiseW.*randn(param.Np,param.Ng);  % 9/16/2020
 %         param.M = (1-param.learnRate)*param.M + param.learnRate*y*y'/BatchSize;
 %         param.W = (1-param.learnRate)*param.W + param.learnRate*y*positions'/BatchSize;
-        param.M = max(0,(1-param.learnRate)*param.M + param.learnRate*y*y'/BatchSize + ...
-            sqrt(param.learnRate)*param.noiseM.*randn(param.Np,param.Np));
+    param.M = max(0,(1-param.learnRate)*param.M + param.learnRate*y*y'/BatchSize + ...
+        sqrt(param.learnRate)*param.noiseM.*randn(param.Np,param.Np));
 %         param.M = (1-param.learnRate)*param.M + param.learnRate*y*y'/BatchSize + ...
 %             sqrt(param.learnRate)*param.noise*randn(param.Np,param.Np);
-        param.b = (1-param.learnRate)*param.b + param.learnRate*sqrt(param.alpha)*mean(y,2);
+    param.b = (1-param.learnRate)*param.b + param.learnRate*sqrt(param.alpha)*mean(y,2);
 %         param.b = (1-param.learnRate)*param.b + param.learnRate*sqrt(param.alpha)*mean(y,2) + ...
 %             sqrt(param.learnRate)*param.noise*randn(param.Np,1);
-        
-        % store and check representations
-        Y0 = zeros(param.Np,size(gdInput,2));
-        if mod(i, step) == 0
-            states_fixed = PlaceCellhelper.nsmDynBatch(gdInput,Y0, param);
-            flag = sum(states_fixed.Y > ampThd,2) > 4;  % only those neurons that have multiple non-zeros
-            [~,pkInx] = sort(states_fixed.Y,2, 'descend');
-            temp = states_fixed.Y((pkInx(:,1)-1)*param.Np + (1:param.Np)');
-            pkAmp(flag,round(i/step)) = temp(flag);
+
+    % store and check representations
+    Y0 = zeros(param.Np,size(gdInput,2));
+    if mod(i, step) == 0
+        states_fixed = PlaceCellhelper.nsmDynBatch(gdInput,Y0, param);
+        flag = sum(states_fixed.Y > ampThd,2) > 4;  % only those neurons that have multiple non-zeros
+        [~,pkInx] = sort(states_fixed.Y,2, 'descend');
+        temp = states_fixed.Y((pkInx(:,1)-1)*param.Np + (1:param.Np)');
+        pkAmp(flag,round(i/step)) = temp(flag);
 %             pcInx = pkAmp(:,round(i/step)) > ampThd & flag;  % find the place cells
-            pks(flag,round(i/step)) = pkInx(flag,1);
-            Yt(:,:,round(i/step)) = states_fixed.Y;
-            
-            % store the center of mass
-            [pkCM, aveMass] = PlaceCellhelper.centerMassPks(states_fixed.Y,param, ampThd);
-            pkCenterMass(:,:,round(i/step)) = pkCM;
-            pkMas(:,round(i/step)) = aveMass;
-            
-            
+        pks(flag,round(i/step)) = pkInx(flag,1);
+        Yt(:,:,round(i/step)) = states_fixed.Y;
+
+        % store the center of mass
+        [pkCM, aveMass] = PlaceCellhelper.centerMassPks(states_fixed.Y,param, ampThd);
+        pkCenterMass(:,:,round(i/step)) = pkCM;
+        pkMas(:,round(i/step)) = aveMass;
+
+
 %             allW(round(i/sep),:) = param.W(1,:);
 %             allbias(round(i/sep)) = param.b(1);
-        end
-        
+    end
+
 %         if mod(i,timeGap) ==0
 %             allW(:,:,round(i/timeGap)) = param.W;
 %             allM(:,:,round(i/timeGap)) = param.M;
 %             allY(:,:,round(i/timeGap)) = states_fixed.Y;
 %         end
-               
-    end
 
-elseif strcmp(learnType, 'randwalk')
-    
-    ystart = zeros(param.Np,BatchSize);  % inital of the output
-    
-    % generate position code by the grid cells    
-    for i = 1:tot_iter
-        [ix,iy] = PlaceCellhelper.nextPosi(ix,iy,param);
-%         posiInfo(i,:) = [ix,iy];
-        positions = gdInput(:,(iy - 1)*param.ps + ix);
-%         positions = gdInput(:,randperm(param.ps*param.ps,BatchSize));
-        
-        states = PlaceCellhelper.nsmDynBatch(positions,ystart, param);
-        y = states.Y;
-        
-        % noisy update weight matrix
-        param.W = (1-param.learnRate)*param.W + param.learnRate*y*positions'/BatchSize + ...
-            sqrt(param.learnRate)*param.noise*randn(param.Np,param.Ng);  % 9/16/2020
-        param.M = (1-param.learnRate)*param.M + param.learnRate*y*y'/BatchSize;
-        param.b = (1-param.learnRate)*param.b + param.learnRate*sqrt(param.alpha)*mean(y,2);
-        
-        % store and check representations
-        % store and check representations
-        Y0 = zeros(param.Np,size(gdInput,2));
-        if mod(i, step) == 0
-            states_fixed = PlaceCellhelper.nsmDynBatch(gdInput,Y0, param);
-            flag = sum(states_fixed.Y > ampThd,2) > 4;  % only those neurons that have multiple non-zeros
-            [~,pkInx] = sort(states_fixed.Y,2, 'descend');
-            temp = states_fixed.Y((pkInx(:,1)-1)*param.Np + (1:param.Np)');
-            pkAmp(flag,round(i/step)) = temp(flag);
-%             pcInx = pkAmp(:,round(i/step)) > ampThd & flag;  % find the place cells
-            pks(flag,round(i/step)) = pkInx(flag,1);
-            Yt(:,:,round(i/step)) = states_fixed.Y;
-                       
-             % store the center of mass
-            [pkCM, mass] = PlaceCellhelper.centerMassPks(states_fixed.Y,param, ampThd);
-            pkCenterMass(:,:,round(i/step)) = pkCM;
-            pkMas(:,round(i/step)) = mass;
-        end
-
-    end
-    
 end
-
-%% analyzing the drift behavior
-% pca of the peak amplitude=  dynamcis
-[COEFF, SCORE, ~, ~, EXPLAINED] = pca(pkAmp');
-
-
-figure
-plot(cumsum(EXPLAINED),'LineWidth',3)
-xlabel('pc','FontSize',24)
-ylabel('cummulative variance','FontSize',24)
-set(gca,'FontSize',20,'LineWidth',1.5)
 
 %% Peak dynamics
 % shift of peak positions
@@ -590,10 +428,6 @@ if makeAnimation
 end
 
 %% Estimate the diffusion constant
-
-% estimate the msd
-% msds = nan(min(floor(time_points/2),1000),size(pkMas,1));;
-% pkMas = pkAmp;
 msds = nan(floor(time_points/2),size(pkMas,1));
 for i = 1:size(msds,1)
     
@@ -758,7 +592,6 @@ ylabel('$D$','Interpreter','latex','FontSize',24)
 set(gca,'YScale','linear','XScale','linear','FontSize',24)
 
 
-
 figure
 plot(tot_noise_var(eff_acti_inx),Ds(eff_acti_inx),'o','MarkerSize',10)
 xlabel('$\sigma_W^2 + \sigma_M^2$','Interpreter','latex','FontSize',24)
@@ -774,9 +607,9 @@ ylabel('$D$','Interpreter','latex','FontSize',24)
 set(gca,'FontSize',24)
 
 %% SAVE THE DATA OR NOT
-save_folder = '..\data';
-save_data_name = fullfile(save_folder, ['pc_2D_online_noise_',date,'.mat']);
-save(save_data_name,'-v7.3')
+% save_folder = '..\data';
+% save_data_name = fullfile(save_folder, ['pc_2D_online_noise_',date,'.mat']);
+% save(save_data_name,'-v7.3')
 
 %% Publication ready figures
 % this part polish some of the figures and make them publication ready
@@ -1115,8 +948,6 @@ set(gca,'FontSize',16,'LineWidth',1)
 prefix = [figPre, 'pvCorrCoef'];
 saveas(f_pvCorr,[sFolder,filesep,prefix,'.fig'])
 print('-depsc',[sFolder,filesep,prefix,'.eps'])
-
-
 
 
 % ************************************************************

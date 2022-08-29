@@ -127,11 +127,11 @@ classdef PlaceCellhelper < handle
                     param.Wei*Zold);
                 Y = max((uy - param.lbd1)./param.lbd2, 0);
                 
-%                 uz = uzold + param.gz*(-uzold + param.Wie*Yold - (param.M - diag(diag(param.M)))*Zold);
-%                 Z = max(uz./diag(param.M),0);
+                uz = uzold + param.gz*(-uzold + param.Wie*Yold - (param.M - diag(diag(param.M)))*Zold);
+                Z = max(uz./diag(param.M),0);
                 % try new learning dynamics
 %                 Z = max(Zold + param.gz*(-Zold + param.Wie*Yold), 0);
-                Z = max(Zold + param.gz*(-param.M*Zold + param.Wie*Yold), 0);
+%                 Z = max(Zold + param.gz*(-param.M*Zold + param.Wie*Yold), 0);
                 err = norm(Y-Yold,'fro')/(norm(Yold,'fro')+ 1e-10)/param.gy +...
                     norm(Z-Zold,'fro')/(norm(Zold,'fro')+ 1e-10)/param.gz;  % previously divided by T
                 Yold = Y;

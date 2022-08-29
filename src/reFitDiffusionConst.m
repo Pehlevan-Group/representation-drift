@@ -1,8 +1,8 @@
 % This program re-fit the diffusion constants based on the average rmsd
 clear
-% load('../data/PSP_offline/eigenSpectr_offline_0824.mat');
+% load('../data/PSP_offline/noiseAmp_offline_08242022.mat');
 % load('../data/PSPonline/eigenSpectr_online_0825_005.mat');
-load('../data/eigenSpectr_08232022_1.mat');
+% load('../data/eigenSpectr_08232022_1.mat');
 
 
 reFitMthd = 'linear';
