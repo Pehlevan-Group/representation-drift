@@ -16,7 +16,7 @@ param.baseLbd = 0.2;    % spacing of smallest grid RF, default 0.28
 param.sf =  1.42;       % scaling factor between adjacent module
 
 % parameters for learning 
-noiseStd = 0.01;        % 0.01 for 2d, 5 grid mode
+noiseStd = 0.02;        % 0.01 for 2d, 5 grid mode
 learnRate = 0.005;       % default 0.05
 
 param.W = 0.5*randn(param.Np,param.Ng);   % initialize the forward matrix
