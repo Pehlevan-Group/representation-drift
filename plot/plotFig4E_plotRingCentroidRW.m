@@ -41,7 +41,7 @@ pos(4)=figHeight;
 
 %% Compare with independent random walk
 
-dFolder = '../data/pcRing_centerRW/';
+dFolder = '../data_in_paper/pcRing_centerRW/';
 allFile = dir([dFolder,filesep,'*.mat']);
 files = {allFile.name}';
 

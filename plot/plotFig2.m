@@ -2,7 +2,7 @@
 % data is generated from running "drift_PSP.m"
 
 % load the data
-dFile = '../data/PSPonline/PSP_eta0.05_sig0.01_0824.mat';  % eta = 0.05
+dFile = '../data_in_paper/PSP_eta0.05_sig0.01_0824.mat';  % eta = 0.05
 % dFile = '../data/PSPonline/PSP_eta0.1_sig0.01_0824.mat';  % eta = 0.1
 
 load(dFile)
@@ -201,8 +201,8 @@ set(dAxes,'FontSize',gcaFontSize,'LineWidth',1.5)
 %  D vs noise amplitude
 % **************************************************
 % first, load the data
-noiseData_offline = load('../data/PSP_offline/noiseAmp_offline_08242022.mat');          % offline
-noiseData_online = load('../data/PSPonline/noiseAmp_online_0824_01.mat'); 
+noiseData_offline = load('../data_in_paper/noiseAmp_offline_08242022.mat');          % offline
+noiseData_online = load('../data_in_paper/noiseAmp_online_0824_01.mat'); 
 
 % offline data
 out_offline_amp = PSP_noise_data_aggregate(noiseData_offline,'refit');
@@ -249,10 +249,8 @@ set(gca,'LineWidth',1.5,'FontSize',gcaFontSize,'XScale','log','YScale','log',...
 % ***************************************************
 % D vs eigenspectrum
 % ***************************************************
-% spectrumData_offline = load('../data/eigenSpectr0821.mat');  % offline
-spectrumData_offline = load('../data/PSP_offline/eigenSpectr_offline_0825_005.mat');  % offline
-% spectrumData_online = load('../data/eigenSpectr_08232022_1.mat'); % online
-spectrumData_online = load('../data/PSPonline/eigenSpectr_online_0825_005.mat'); % online
+spectrumData_offline = load('../data_in_paper/eigenSpectr_offline_0825_005.mat');  % offline
+spectrumData_online = load('../data_in_paper/eigenSpectr_online_0825_005.mat'); % online
 
 
 out_offline = PSP_spectrum_data_aggregate(spectrumData_offline,'refit');

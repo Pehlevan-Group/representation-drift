@@ -200,11 +200,11 @@ set(gca,'LineWidth',1,'FontSize',16)
 %% Fig 3G
 % load the data for no noise scenario but different N
 %
-dFileN= fullfile('../data','pc1D_ring_Np_alp0_Np1_std0_lr0.05_bs1_0217.mat');  % new simulation
+dFileN= fullfile('../data_in_paper','pc1D_ring_Np_alp0_Np1_std0_lr0.05_bs1_0217.mat');  % new simulation
 
 load(dFileN,'actiFrac')
 
-dFolder = '../data/pcRing_Ndp_0224';
+dFolder = '../data_in_paper/pcRing_Ndp_0224';
 figPre = 'pc';
 allFile = dir([dFolder,filesep,'*.mat']);
 files = {allFile.name}';

@@ -99,7 +99,7 @@ xlim([0,5000])
 % ************************************************************
 f_acti = figure;
 set(f_acti,'color','w','Units','inches','Position',pos)
-actiFrac = mean(pks > 0,1);
+actiFrac = mean(pks > 0.1,1);
 
 plot(times',actiFrac','LineWidth',lineWd)
 xlabel('Time','FontSize',labelSize)
@@ -161,7 +161,7 @@ set(gca,'FontSize',16,'LineWidth',1)
 
 %%
 % ************************************************************
-% Representational similarity across time, Fig S4A
+% Representational similarity across time, Fig S5A
 % ************************************************************
 % for better viusalization, only use part of the data
 % gray color maps
@@ -274,3 +274,68 @@ set(gca,'LineWidth',1,'FontSize',16)
 % prefix = [figPre, 'batch_diffu_Amp'];
 % saveas(f_silentInter,[sFolder,filesep,prefix,'.fig'])
 % print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
+%% More traigent criterion for "active"
+tps = size(Yt,3);
+pk_thd = 0.5;
+size_thd = 6;
+acti_frac_new = nan(tps,1);
+for i = 1:tps
+    acti_frac_new(i) = mean(sum(Yt(:,:,i)>pk_thd,2)>size_thd);
+end
+
+%% Fraction of active time
+f_acti = figure;
+set(f_acti,'color','w','Units','inches','Position',pos)
+
+plot(times',acti_frac_new(:),'LineWidth',lineWd)
+xlabel('Time','FontSize',labelSize)
+ylabel('Active fraction','FontSize',labelSize)
+ylim([0,1])
+xlim([0,5000])
+set(gca,'LineWidth',1,'FontSize',axisSize,'XTick',[0,2500,5000])
+
+
+
+%% distribution of active interval
+new_acti_flag = squeeze(sum(Yt > pk_thd, 2) > size_thd);
+silentInter = [];
+for i = 1:size(pkAmp,1)
+    I =  find(new_acti_flag(i,:));
+    temp = diff(I);
+    silentInter = [silentInter,temp(temp>1)-1];
+   
+end
+
+
+% fit with an exponential distribution
+pd = fitdist(silentInter(:),'Exponential');
+xval=0:0.2:20;
+yfit = pdf(pd,xval);
+
+f_silentInter= figure;
+set(f_silentInter,'color','w','Units','inches','Position',pos)
+histogram(silentInter(:),'Normalization','pdf')
+hold on
+plot(xval,yfit,'LineWidth',2)
+hold off
+box on
+xlim([0,30])
+lg = legend('simulation','exponential fit');
+
+xlabel('Silent interval','FontSize',16)
+ylabel('Pdf','FontSize',16)
+set(gca,'LineWidth',1,'FontSize',16)
+
+
+%% fraction of active vs amplitude
+new_acti_time = mean(new_acti_flag,2);
+f_ampActi= figure;
+set(f_ampActi,'color','w','Units','inches','Position',pos)
+
+plot(meanPks,new_acti_time,'o','MarkerSize',symbSize,...
+    'MarkerEdgeColor',greys(9,:),'LineWidth',lineWd)
+xlabel('Average peak amplitude','FontSize',labelSize)
+ylabel('Fraction of active time','FontSize',labelSize)
+% set(gca,'FontSize',axisSize,'LineWidth',axisWd,'YScale','log','YTick',10.^(-3:0))
+set(gca,'FontSize',axisSize,'LineWidth',axisWd)

@@ -23,7 +23,7 @@ labelFontSize = 24;
 
 %% 
 saveFolder = '../figures';
-dFile = '../data/Tmaze_EI_06242022.mat';
+dFile = '../data_in_paper/Tmaze_EI_06242022.mat';
 
 load(dFile)
 

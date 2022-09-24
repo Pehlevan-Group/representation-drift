@@ -7,7 +7,7 @@ close all
 %% prepare the data
 % the input is the image of a heatmap
 
-fig = 'Driscoll_fig3F.png';
+fig = '../data_in_paper/Driscoll_fig3F.png';
 
 I = imread(fig);
 figure
