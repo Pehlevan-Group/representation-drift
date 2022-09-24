@@ -1,4 +1,4 @@
-% Make figure 4: prediction of ring model
+% Make figure S2: Ring model with single neuron
 % REQUIREMNT:
 % run 'ringPlaceModel.m' first to generate the data for panel A & B
 % run 'runRingModeDriftComp.m' to generate data for C: data stored in the
@@ -31,14 +31,14 @@ GreyMap = brewermap(nc,'Greys');
 
 figWidth = 3.2;
 figHeight = 2.8;
-lineWd = 2;    %line width of plot
+lineWd = 1.5;    %line width of plot
 axisLineWd = 1;    % axis line width
 labelSize = 20;    % font size of labels
 axisFont = 16;     % axis font size
-symbSize = 6;
+symbSize = 4;
 
-pos = [0 0 3 2.5];
-%% D vs learning rate
+pos = [0 0 3.2 2.8];
+%% Fig S2B D vs learning rate
 
 dFolder = '../data_in_paper/';
 dFileLR = fullfile(dFolder,'pc1D_ring_learnRate_alp0_Np1_std0_lr0.01_bs1.mat');
@@ -60,9 +60,9 @@ stdD = std(squeeze(allDs/2),0,1);  % exact diffusion constant
 % D vs learn rate
 % **********************************************
 % fit a scaling function
-xs = [ones(length(lrs),1),log10(lrs')];
-bs = xs\log10(aveD');
-y_pred = 10.^(xs*[bs(1);2]);
+% xs = [ones(length(lrs),1),log10(lrs')];
+% bs = xs\log10(aveD');
+% y_pred = 10.^(xs*[bs(1);2]);
 
 f_lr_D= figure;
 hold on
@@ -84,9 +84,9 @@ ylabel('$D$','Interpreter','latex','FontSize',labelSize)
 set(gca,'FontSize',axisFont,'LineWidth',axisLineWd,'XScale','log','YScale','log',...
     'YTick',10.^(-6:2:-2),'XTick',10.^(-3:1:-1))
 
-%% D vs sigma for single neuron in the ring model
+%% Fig S2C   AD vs sigma for single neuron in the ring model
 dFolder = '../data_in_paper/';
-dFileSig = fullfile(dFolder,'pc1D_ring_sigma_alp0_Np1_std0_lr0.01_bs1.mat');  % previous simulation
+dFileSig = fullfile(dFolder,'pc1D_ring_sigma_alp0_Np1_std0_lr0.01_bs1.mat');  
 load(dFileSig)
 
 figPre = 'placeCell_ring_';    % depending on the noise level, this should be different
@@ -134,4 +134,55 @@ set(lg,'Interpreter','latex','FontSize',16)
 xlabel('$\sigma$','Interpreter','latex','FontSize',labelSize)
 ylabel('$D$','Interpreter','latex','FontSize',labelSize)
 set(gca,'FontSize',axisFont,'LineWidth',axisLineWd,'XScale','log','YScale','log',...
-    'YTick',10.^(-5:1:-3),'XTick',10.^(-4:1:-1),'YAxisLocation','right')
+    'YTick',10.^(-5:1:-3),'XTick',10.^(-4:1:-1))
+
+%% Fig S2D
+dFolder = '../data_in_paper/pcRing_paper_alpha/';
+dFileAlp1 = fullfile(dFolder,'pc1D_ring_alpha_alp0_Np1_std0.01_lr0.05_bs1.mat');
+datatSet1 = load(dFileAlp1);
+dFileAlp2 = fullfile(dFolder,'pc1D_ring_alpha_alp0_Np1_std0.05_lr0.01_bs1.mat');
+datatSet2 = load(dFileAlp2);
+dFileAlp3 = fullfile(dFolder,'pc1D_ring_alpha_alp0_Np1_std0.01_lr0.01_bs1.mat');
+datatSet3 = load(dFileAlp3);
+
+lr1 = 0.05; sig1 = 0.01;
+lr2 = 0.01; sig2 = 0.05;
+lr3 = 0.01; sig3 = 0.01;
+
+
+% repeats = size(allAmp,2);
+aveAmps = {mean(datatSet1.meanAmp,2);mean(datatSet2.meanAmp,2);...
+    mean(datatSet3.meanAmp,2)};
+allDs = {squeeze(datatSet1.allDs);squeeze(datatSet2.allDs);squeeze(datatSet3.allDs)};
+
+% **********************************************
+% alpha vs amplitude
+% **********************************************
+blues = brewermap(11,'Blues');
+greys = brewermap(11,'Greys');
+oranges = brewermap(11,'Oranges');
+plotColors = {blues;oranges;greys};
+
+f_D_amp= figure;
+set(f_D_amp,'color','w','Units','inches','Position',[0,0,5,2.8])
+hold on
+for i = 1:3
+    fh = shadedErrorBar(aveAmps{i},allDs{i},{@mean,@std});
+    set(fh.edge,'Visible','off')
+    fh.mainLine.LineWidth = 2;
+    fh.mainLine.Color = plotColors{i}(10,:);
+    fh.patch.FaceColor = plotColors{i}(7,:);
+end
+hold off
+box on
+lg = legend('\eta = 0.05; \sigma = 0.01','\eta = 0.01; \sigma = 0.05',...
+    '\eta = 0.01; \sigma = 0.01','Location','eastoutside');
+set(lg,'FontSize',12)
+
+set(gca,'FontSize',16,'LineWidth',1,'YScale','log')
+xlabel('Amplitude','FontSize',20)
+ylabel('$D$','Interpreter','latex','FontSize',20)
+
+% prefix = ['pc_ring_N1_', 'pkAmp_D_lrs_sigs'];
+% saveas(gcf,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
