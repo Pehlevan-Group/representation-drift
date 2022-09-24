@@ -40,7 +40,7 @@ symbSize = 6;
 pos = [0 0 3 2.5];
 %% D vs learning rate
 
-dFolder = '../data/';
+dFolder = '../data_in_paper/';
 dFileLR = fullfile(dFolder,'pc1D_ring_learnRate_alp0_Np1_std0_lr0.01_bs1.mat');
 load(dFileLR)
 
@@ -85,7 +85,7 @@ set(gca,'FontSize',axisFont,'LineWidth',axisLineWd,'XScale','log','YScale','log'
     'YTick',10.^(-6:2:-2),'XTick',10.^(-3:1:-1))
 
 %% D vs sigma for single neuron in the ring model
-dFolder = '../data/';
+dFolder = '../data_in_paper/';
 dFileSig = fullfile(dFolder,'pc1D_ring_sigma_alp0_Np1_std0_lr0.01_bs1.mat');  % previous simulation
 load(dFileSig)
 

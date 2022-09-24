@@ -16,13 +16,13 @@ param.baseLbd = 0.2;    % spacing of smallest grid RF, default 0.28
 param.sf =  1.42;       % scaling factor between adjacent module
 
 % parameters for learning 
-noiseStd = 0.02;        % 0.01 for 2d, 5 grid mode
+noiseStd = 0.01;        % 0.01 for 2d, 5 grid mode
 learnRate = 0.005;       % default 0.05
 
 param.W = 0.5*randn(param.Np,param.Ng);   % initialize the forward matrix
 param.M = eye(param.Np);        % lateral connection if using simple nsm
-param.lbd1 = 0.02;               % 0.15 for 400 place cells and 5 modes
-param.lbd2 = 0.05;              % 0.05 for 400 place cells and 5 modes
+param.lbd1 = 0.04;               % 0.15 for 400 place cells and 5 modes
+param.lbd2 = 0.01;              % 0.05 for 400 place cells and 5 modes
 
 
 param.alpha = 95;  % 85 for regular,95 for 5 grid modes, 150 for weakly input
@@ -93,7 +93,7 @@ end
 %% using non-negative similarity matching to learng place fields
 % generate input from grid filds
 
-tot_iter = 2e3;   % total interation, default 2e3
+tot_iter = 5e3;   % total interation, default 2e3
 sep = 20;
 
 % all the position input by the grid code

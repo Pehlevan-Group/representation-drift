@@ -23,10 +23,11 @@ labelSize = 20;
 axisSize = 16;
 axisWd = 1;
 %% Load the data
-dFolder = '../data/pc2D_paper_Ndp/';
+% dFolder = '../data/pc2D_paper_Ndp/';
+dFolder = '../data_in_paper/pc2D_online_Ndp/';
 
 
-figPre = 'pc2D';
+figPre = 'pc2D_online';
 allFile = dir([dFolder,filesep,'*.mat']);
 files = {allFile.name}';
 numNs = 10;  % different Ns
@@ -56,7 +57,9 @@ end
 
 
 %% load the simulation for small N (with repeat)
-smallNfile = fullfile(dFolder,'pc2D_smallN_0219.mat');
+% smallNfile = fullfile(dFolder,'pc2D_smallN_0219.mat');
+smallNfile = fullfile(dFolder,'pcDiffSmallNp_online_0828.mat');
+
 raw = load(fullfile(smallNfile));
 smNs = [1,2,4,8,16];
 Ds_sN = nan(length(smNs),2);  % mean and std
@@ -75,15 +78,17 @@ mergedDs(:,2) = [Ds_sN(:,2);stdDs(Ix(6:end))];
 f_N_D= figure;
 set(f_N_D,'color','w','Units','inches','Position',pos)
 
-errorbar(Ns(Ix),mergedDs(:,1),mergedDs(:,2),'-o','MarkerSize',symbSize,'MarkerFaceColor',...
+ebh = errorbar(Ns(Ix),mergedDs(:,1),mergedDs(:,2),'-o','MarkerSize',symbSize,'MarkerFaceColor',...
     greys(9,:),'MarkerEdgeColor',greys(9,:),'Color',greys(9,:),'LineWidth',...
-    lineWd,'CapSize',0)
+    lineWd,'CapSize',0);
+% ebh.YNegativeDelta = []; 
 xlabel('$N$','Interpreter','latex','FontSize',labelSize)
 ylabel('$D$','Interpreter','latex','FontSize',labelSize)
+ylim([1e-3,1e-1])
 set(gca,'FontSize',axisSize,'LineWidth',axisWd,'YScale','log','XScale','log',...
-    'YTick',[0.01,0.1,1])
+    'YTick',[0.001,0.01,0.1,1])
 
-% prefix = [figPre, '_Ns_D_',date];
-% saveas(f_N_D,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[sFolder,filesep,prefix,'.eps'])
+prefix = [figPre, '_Ns_D_',date];
+saveas(f_N_D,[sFolder,filesep,prefix,'.fig'])
+print('-depsc',[sFolder,filesep,prefix,'.eps'])
 

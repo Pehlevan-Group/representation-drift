@@ -10,7 +10,7 @@
 sFolder = '../figures';
 
 %% load the summarized data
-dFolder = '../data';
+dFolder = '../data_in_paper';
 dFile1 = 'hippocampus_data_1222.mat';   % without information of active cells
 dFile2 = 'hippocampus_data.mat';   % without information of active cells
 
@@ -62,6 +62,8 @@ end
 
 figSM = figure;
 set(gcf,'color','w','Units','inches','Position',[0,0,15,2])
+% store all pv for statistical test
+all_pvs = cell(size(allCat1,1),1);
 for day=1:size(allCat1,1)
     ind = zeros(1); 
     for i=1:size(allCat1{day,2},1)
@@ -78,7 +80,7 @@ for day=1:size(allCat1,1)
         ce(ps) = C(1,2);
     end
     PVcorr(day,:) = [nanmean(ce),nanstd(ce)];
-    
+    disp(sum(~isnan(ce)))
     
     h(day) = subplot(1,size(allCat1,1),day);
     imagesc(allOrderPV{day}'*allOrderPV{day},[0 130])
@@ -430,7 +432,7 @@ ylabel('Day')
 %% simulate the one day shift of centroids
 % we will randomly sample 200 centroid from the experiment centroid
 % positions
-load('../data/pc_1dayShift_exper.mat',...
+load('../data_in_paper/pc_1dayShift_exper.mat',...
     'allCentroids')
 
 trackL = 50;
@@ -565,9 +567,7 @@ ylabel('$\rho$','Interpreter','latex')
 
 
 % load the 1D place cell model to make direct comparision
-% modelFile = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/data/pc1D_hippo_paper/1D_centroidCorr_0421.mat';
-modelFile = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/data/pc1D_hippo_paper/1D_slice_centroidCorr_0708.mat';
-% modelFile = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/data/revision/1D_slice_EI_random_corr_25_14-Apr-2022.mat';
+modelFile = '../data_in_paper/1D_slice_centroidCorr_0708.mat';
 
 pc1Dmodel = load(modelFile,'aveShift','aveShiftM');
 
@@ -600,7 +600,7 @@ fh2.mainLine.Color = greys(7,:);
 fh2.patch.FaceColor = greys(5,:);
 hold off
 
-lg = legend('Experiment','Model','Random walk');
+lg = legend('Experiment','','Random walk');
 set(gca,'XTick',0:2:6,'XTickLabel',{'0','0.2','0.4','0.6'})
 % title(['$\Delta t = ',num2str(deltaTau),'$'],'Interpreter','latex')
 xlabel('Distance (L)')
@@ -609,8 +609,8 @@ ylabel('$\rho$','Interpreter','latex')
 % figPref = [sFolder,filesep,'hipp_centroid_shift_exp_rw_model_shaded_EI_',date];
 % saveas(gcf,[figPref,'.fig'])
 % print('-depsc',[figPref,'.eps'])
-
-
+ 
+% ********************* Figure 5K **********************
 % using error bar
 barFig = figure;
 pos(3)=3.5;  
@@ -649,9 +649,9 @@ set(gca,'FontSize',16,'LineWidth',1)
 lg = legend('Experiment','Model','Random walk','Location','southwest');
 set(gca,'XTick',0:2:6,'XTickLabel',{'0','0.2','0.4','0.6'})
 
-figPref = [sFolder,filesep,'hipp_centroid_shift_exp_rw_model_1Dslice_errorbar_06132022'];
-saveas(gcf,[figPref,'.fig'])
-print('-depsc',[figPref,'.eps'])
+% figPref = [sFolder,filesep,'hipp_centroid_shift_exp_rw_model_1Dslice_errorbar_06132022'];
+% saveas(gcf,[figPref,'.fig'])
+% print('-depsc',[figPref,'.eps'])
 
 
 %% Fraction of active place cell over time

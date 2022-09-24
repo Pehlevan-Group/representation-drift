@@ -1,7 +1,7 @@
 % plot 1D place cell results: simulation and modeling, Fig 5
 
 %%
-dFile = '../data/1Dplace_slice_0701.mat';
+dFile = '../data_in_paper/1Dplace_slice_0701.mat';
 load(dFile)
 
 % define all the colors

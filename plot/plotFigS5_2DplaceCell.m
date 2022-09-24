@@ -2,9 +2,9 @@
 %
 % the default dataset is './data/placeCell_1029_2.mat'
 % dFile = 'pc2D_Batch_Np_400std0.01_l1_0.17_l2_0.01_step1_lr0.05.mat';  % noise only on W
-dFile = 'noise02_lr005_0829.mat';
-load(fullfile('../data/pc2D_online/',dFile))
-
+dFile = '../data_in_paper/noise02_lr005_0829.mat';
+% load(fullfile('../data/pc2D_online/',dFile))
+load(dFile)
 
 %% Graphics setting
 % this part polish some of the figures and make them publication ready
@@ -60,9 +60,9 @@ xlabel('X position','FontSize',labelSize)
 ylabel('Y position','FontSize',labelSize)
 set(gca,'LineWidth',1,'FontSize',axisSize)
 
-prefix = [figPre, 'pkPosi'];
-saveas(f_pkPosi,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'pkPosi'];
+% saveas(f_pkPosi,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 
@@ -87,9 +87,9 @@ set(gca,'LineWidth',1,'FontSize',axisSize,'XTick',[0,2500,5000])
 xlim([0,5000])
 
 
-prefix = [figPre, 'pkAmp'];
-saveas(f_pkAmpTraj,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'pkAmp'];
+% saveas(f_pkAmpTraj,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 %% Fraction of active neurons
@@ -108,9 +108,9 @@ ylim([0,1])
 xlim([0,5000])
 set(gca,'LineWidth',1,'FontSize',axisSize,'XTick',[0,2500,5000])
 
-prefix = [figPre, 'fracActive'];
-saveas(f_acti,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'fracActive'];
+% saveas(f_acti,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 %% Fraction of active RFs vs average peak amplitude
@@ -125,9 +125,9 @@ ylabel('Fraction of active time','FontSize',labelSize)
 % set(gca,'FontSize',axisSize,'LineWidth',axisWd,'YScale','log','YTick',10.^(-3:0))
 set(gca,'FontSize',axisSize,'LineWidth',axisWd)
 
-prefix = [figPre, 'online_acti_Amp'];
-saveas(f_ampActi,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'online_acti_Amp'];
+% saveas(f_ampActi,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 %% trajectory of an example neuron, Fig 5C
 
@@ -155,9 +155,9 @@ xlabel('x position','FontSize',16)
 ylabel('y position','FontSize',16)
 set(gca,'FontSize',16,'LineWidth',1)
 
-prefix = [figPre, 'pkPosi_example'];
-saveas(f_pkPosi,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'pkPosi_example'];
+% saveas(f_pkPosi,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 %%
 % ************************************************************
@@ -196,9 +196,10 @@ cb = colorbar;
 set(cb,'FontSize',12)
 title('$t = 2000$','Interpreter','latex')
 set(gca,'XTick','','YTick','','LineWidth',0.5)
-prefix = [figPre, 'sm2'];
-saveas(f_sm2,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+
+% prefix = [figPre, 'sm2'];
+% saveas(f_sm2,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 %% Estimate the diffusion constants, vs averaged peak, Fig S4G
 
@@ -244,9 +245,9 @@ ylabel('$D$','Interpreter','latex','FontSize',labelSize)
 % set(gca,'FontSize',axisSize,'LineWidth',axisWd,'YScale','log','YTick',10.^(-3:0))
 set(gca,'FontSize',axisSize,'LineWidth',axisWd)
 
-prefix = [figPre, 'diffu_Amp'];
-saveas(f_ampDiff,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'diffu_Amp'];
+% saveas(f_ampDiff,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 %% Histogram of active and silent intervals, Fig S4C
 
@@ -270,6 +271,6 @@ xlabel('Silent interval','FontSize',16)
 ylabel('Pdf','FontSize',16)
 set(gca,'LineWidth',1,'FontSize',16)
 
-prefix = [figPre, 'batch_diffu_Amp'];
-saveas(f_silentInter,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'batch_diffu_Amp'];
+% saveas(f_silentInter,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])

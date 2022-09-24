@@ -37,7 +37,7 @@ axisWd = 1;
 pos(3)=figWidth;  
 pos(4)=figHeight;
 
-dFolder = '../data/pcRing_paper_alpha/';
+dFolder = '../data_in_paper/pcRing_paper_alpha/';
 
 
 %% ampltidue and alpha, diffusion constants, 1 place cell
@@ -133,7 +133,7 @@ plot(aveAmp,Ds_theory)
 set(gca,'YScale','linear')
 
 %% Merge the data from two parameter sets into one
-dFolder = '../data/pcRing_paper_alpha/';
+dFolder = '../data_in_paper/pcRing_paper_alpha/';
 dFileAlp1 = fullfile(dFolder,'pc1D_ring_alpha_alp0_Np1_std0.01_lr0.05_bs1.mat');
 datatSet1 = load(dFileAlp1);
 dFileAlp2 = fullfile(dFolder,'pc1D_ring_alpha_alp0_Np1_std0.05_lr0.01_bs1.mat');
@@ -151,17 +151,6 @@ aveAmps = {mean(datatSet1.meanAmp,2);mean(datatSet2.meanAmp,2);...
     mean(datatSet3.meanAmp,2)};
 allDs = {squeeze(datatSet1.allDs);squeeze(datatSet2.allDs);squeeze(datatSet3.allDs)};
 
-% aveAmp1 = mean(datatSet1.meanAmp,2);
-% stdAmp1 = std(datatSet1.meanAmp,0,2);
-% aveAmp2 = mean(datatSet2.meanAmp,2);
-% stdAmp2 = std(datatSet2.meanAmp,0,2);
-
-% diffusion constants
-% aveD1 = mean(squeeze(datatSet1.allDs),1);
-% stdD1 = std(squeeze(datatSet1.allDs),0,1);
-% 
-% aveD2 = mean(squeeze(datatSet2.allDs),1);
-% stdD2 = std(squeeze(datatSet2.allDs),0,1);
 
 % **********************************************
 % alpha vs amplitude
@@ -197,7 +186,7 @@ ylabel('$D$','Interpreter','latex','FontSize',20)
 
 %% Learning rate dependence, no noise
 % dFileLR = fullfile(dFolder,'pc1D_ring_learnRate_alp0_Np1_std0_lr0.01.mat');
-dFolder = '../data/';
+dFolder = '../data_in_paper/';
 dFileLR = fullfile(dFolder,'pc1D_ring_learnRate_alp0_Np1_std0_lr0.01_bs1.mat');
 load(dFileLR)
 
@@ -266,8 +255,6 @@ set(gca,'FontSize',axisSize,'LineWidth',axisWd,'XScale','log','YScale','log',...
 
 %% Learning rate dependence, with noise
 
-% dFileLR = fullfile(dFolder,'pc1D_ring_learnRate_alp0_Np1_std0.01_lr0.01.mat');
-% dFileLR = fullfile(dFolder, 'pc1D_ring_learnRate_alp0_Np100_std0.001_lr0.01.mat');
 dFileLR = fullfile(dFolder,'pc1D_ring_learnRate_alp0_Np1_std0_lr0.01_bs1.mat');
 load(dFileLR)
 
@@ -347,9 +334,7 @@ set(gca,'FontSize',axisSize,'LineWidth',axisWd,'XScale','log','YScale','log',...
 
 %% Learning rate dependent diffusion constants, 100 neurons
 
-% dFileLR = fullfile(dFolder,'pc1D_ring_learnRate_alp0_Np1_std0.01_lr0.01.mat');
-% dFileLR = fullfile(dFolder, 'pc1D_ring_learnRate_alp0_Np100_std0_lr0.01.mat');
-dFileLR = fullfile('../data', 'pc1D_ring_learnRate_alp0_Np100_std0.01_lr0.05_bs1-09-Jun-2022.mat');
+dFileLR = fullfile('../data_in_paper', 'pc1D_ring_learnRate_alp0_Np100_std0.01_lr0.05_bs1-09-Jun-2022.mat');
 
 load(dFileLR)
 
@@ -433,7 +418,7 @@ set(gca,'FontSize',axisSize,'LineWidth',axisWd,'XScale','log','YScale','log',...
 %}
 %% Diffusion constants vs noise amplitude, single cell
 % dFileSig = fullfile(dFolder,'pc1D_ring_sigma_alp0_Np1_std0_lr0.01.mat');  % previous simulation
-dFolder = '../data/';
+dFolder = '../data_in_paper/';
 dFileSig = fullfile(dFolder,'pc1D_ring_sigma_alp0_Np1_std0_lr0.01_bs1.mat');  % previous simulation
 
 load(dFileSig)
@@ -518,71 +503,10 @@ set(gca,'FontSize',axisSize,'LineWidth',axisWd,'XScale','log','YScale','log',...
 % print('-depsc',[sFolder,filesep,prefix,'.eps'])
 % 
 
-%% Explore the N-dependent effect
-%{
-% first, diffusion constants vs N, only sampling noise or with explict
-% noise
-
-% dFileN= fullfile(dFolder,'pc1D_ring_Np_alp0_Np10_std0_lr0.05.mat');
-dFileN= fullfile(dFolder,'pc1D_ring_Np_alp0_Np1_std0.01_lr0.01_bs1.mat');  % new simulation
-load(dFileN)
-
-aveDs_sample = nan(length(Nps),2);  % store average and standard deviation
-for i = 1:length(Nps)
-    if Nps(i) < 50
-        temp = cat(2,allDs{i,:});
-        aveDs_sample(i,:) = [nanmean(temp(:)),nanstd(temp(:))];
-    else
-        aveDs_sample(i,:) = [nanmean(allDs{i,1}),nanstd(allDs{i,1})];
-    end
-end
-
-
-% Simulation with explict noise
-dFileN_noise= fullfile(dFolder,'pc1D_ring_Np_alp0_Np10_std0.01_lr0.05.mat');
-load(dFileN_noise)
-
-aveDs_noise = nan(length(Nps),2);  % store average and standard deviation
-for i = 1:length(Nps)
-    if Nps(i) < 50
-        temp = cat(2,allDs{i,:});
-        aveDs_noise(i,:) = [mean(temp(:)),std(temp(:))];
-    else
-        aveDs_noise(i,:) = [mean(allDs{i,1}),std(allDs{i,1})];
-    end
-end
-
-% plot the figure and compare the difference
-f_N_D= figure;
-hold on
-set(f_N_D,'color','w','Units','inches','Position',pos)
-
-errorbar(Nps,aveDs_sample(:,1),aveDs_sample(:,2),'o-','MarkerSize',symbSize,'MarkerFaceColor',...
-    greys(9,:),'MarkerEdgeColor',greys(9,:),'Color',greys(9,:),'LineWidth',...
-    lineWd,'CapSize',0)
-errorbar(Nps,aveDs_noise(:,1),aveDs_noise(:,2),'o-','MarkerSize',symbSize,'MarkerFaceColor',...
-    blues(9,:),'MarkerEdgeColor',blues(9,:),'Color',blues(9,:),'LineWidth',...
-    lineWd,'CapSize',0)
-hold off
-box on
-lg = legend('no noise','$\sigma = 0.01$','Location','northwest');
-set(lg,'Interpreter','latex','FontSize',16)
-xlabel('$N$','Interpreter','latex','FontSize',labelSize)
-ylabel('$D$','Interpreter','latex','FontSize',labelSize)
-% xlim([5e-4,1e-1])
-% ylim([1e-4,2e-2])
-set(gca,'FontSize',axisSize,'LineWidth',axisWd,'XScale','log','YScale','log',...
-    'YTick',10.^(-6:2:-1),'XTick',10.^(0:1:2))
-
-% prefix = [figPre, 'ring_D_N_sample_explicitNoise'];
-% saveas(f_N_D,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[sFolder,filesep,prefix,'.eps'])
-%}
-
 %% No explicit noise
 
 % dFileN= fullfile('./data','pc1D_ring_Np_alp0_Np1_std0_lr0.05_bs1.mat');  % new simulation
-dFileN= fullfile('../data/','pc1D_ring_Np_alp0_Np1_std0_lr0.05_bs1_0217.mat');  % new simulation
+dFileN= fullfile('../data_in_paper/','pc1D_ring_Np_alp0_Np1_std0_lr0.05_bs1_0217.mat');  % new simulation
 
 load(dFileN)
 
@@ -606,10 +530,7 @@ set(gca,'XTickLabel','','YTickLabel','')
 %% phase diagram
 % x axis is the density of RF, y axis is the noise amplitude
 
-% dFolder = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/data/pcRing_paper_Ndp';
-% dFolder = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/data/pcRing_Mnoise_Ndp_0208';
-% dFolder = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/data/pcRing_Ndp_0224';
-dFolder = '../data/pcRing_Ndp_0224';
+dFolder = '../data_in_paper/pcRing_Ndp_0224';
 figPre = 'pc';
 allFile = dir([dFolder,filesep,'*.mat']);
 files = {allFile.name}';
@@ -835,25 +756,9 @@ set(gca,'LineWidth',1,'FontSize',16,'XTick',[100,300,500])
 % saveas(actiFrac_fig,[sFolder,filesep,prefix,'.fig'])
 % print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
-
-
-
-
-% ****************************************************************
-% Also plot the noise dependence when N = 1 to compare with theory
-% ****************************************************************
-% lr = 0.01;
-% Dtheory = lr^2/16 + lr*sigs'.^2./aveAmp.^2;
-% 
-% 
-% fitFun = @(c) c*log10(Dtheory) - log10(aveD);
-% c0 = aveD(1)/Dtheory(1);
-% c_best = lsqnonlin(fitFun,c0);
-% y_pred = 10.^(c_best*log10(Dtheory));
-
 %% Batch size effect on the sampling noise
 % show how the optimal N shift due to the batch size
-dFolder = '../data/pcRing_bs_0205';
+dFolder = '../data_in_paper/pcRing_bs_0205';
 allFile = dir([dFolder,filesep,'*.mat']);
 files = {allFile.name}';
 
@@ -995,37 +900,3 @@ xlabel('$\log_2(N)$','Interpreter','latex')
 % ylabel('$\log_{10}(\sigma)$','Interpreter','latex')
 ylabel('$\log_2(S)$','Interpreter','latex')
 set(gca,'XTick',[1,3,6,9],'xticklabel',[0,2,5,8])
-
-
-%% Diffusion constants and the amplitude
-%{
-dFolder = '../data/';
-dFileAlp = fullfile(dFolder,'pc1D_ring_alpha_alp0_Np1_std0_lr0.01_bs1.mat');
-load(dFileAlp)
-
-repeats = size(meanAmp,2);
-
-aveAmp = mean(meanAmp,2);
-stdAmp = std(meanAmp,0,2);
-
-% diffusion constants
-aveD = mean(squeeze(allDs),1);
-stdD = std(squeeze(allDs),0,1);
-
-% **********************************************
-% alpha vs average diffusion constants
-% **********************************************
-f_alp_D= figure;
-set(f_alp_D,'color','w','Units','inches','Position',pos)
-
-errorbar(aveAmp,aveD,stdD,'-o','MarkerSize',symbSize,'MarkerFaceColor',...
-    greys(9,:),'MarkerEdgeColor',greys(9,:),'Color',greys(9,:),'LineWidth',...
-    lineWd,'CapSize',0)
-ylabel('$D$','Interpreter','latex','FontSize',labelSize)
-xlabel('Amplitude','FontSize',labelSize)
-set(gca,'FontSize',axisSize,'LineWidth',axisWd)
-
-% prefix = [figPre, 'pkAmp_alphas'];
-% saveas(f_alp_D,[sFolder,filesep,prefix,'.fig'])
-% print('-depsc',[sFolder,filesep,prefix,'.eps'])
-%}

@@ -53,13 +53,14 @@ gf1 <- ggscatter(my_data, x = "amp", y = "Ds", size = 2,
   stat_cor(method = "pearson", label.x = 0.22, label.y = -1) + ylim(-2.7, -0.8)
 gf1
 
-figFile <- paste(sFolder,"ring_Ds_amp_online_06202022.pdf",sep='')
-ggsave(figFile,gf1,width = 3.4,height = 2.7)
-dev.off()
+#figFile <- paste(sFolder,"ring_Ds_amp_online_06202022.pdf",sep='')
+#ggsave(figFile,gf1,width = 3.4,height = 2.7)
+#dev.off()
 
 # str(data)
+```
 
-
+```{r}
 # active time vs mean peak amplitude
 data_time_amp <- data.frame(amp = ave_amp[eff_inx], acti = acti_time[eff_inx])
 
@@ -74,10 +75,31 @@ gf2 <- ggscatter(data_time_amp, x = "amp", y = "acti", size = 2,
   stat_cor(method = "pearson", label.x = 0.15, label.y = 0.83)
 gf2
 
-figFile <- paste(sFolder,"ring_actiTime_amp_online_06202022.pdf",sep='')
-ggsave(figFile,gf2,width = 3.2,height = 2.7)
+#figFile <- paste(sFolder,"ring_actiTime_amp_online_06202022.pdf",sep='')
+#ggsave(figFile,gf2,width = 3.2,height = 2.7)
 
-dev.off()
+#dev.off()
+
+```
+
+## Use `ggscatterstats` package
+```{r scatter corr}
+library(ggstatsplot)
+
+ggscatterstats(
+  data = my_data, ## data frame from which variables are taken
+  x = amp, ## predictor/independent variable
+  y = Ds, ## dependent variable
+  xlab = "noise amplitude", ## label for the x-axis
+  ylab = "diffusion constant", ## label for the y-axis
+  #label.var = title, ## variable to use for labeling data points
+  #label.expression = rating < 5 & budget > 100, ## expression for deciding which points to label
+  point.label.args = list(alpha = 0.7, size = 4, color = "grey50"),
+  xfill = "#CC79A7", ## fill for marginals on the x-axis
+  yfill = "#009E73", ## fill for marginals on the y-axis
+  title = "Relationship between movie budget and IMDB rating",
+  caption = "Source: www.imdb.com"
+)
 
 ```
 

@@ -35,7 +35,8 @@ pos(4)=figHeight;
 saveFolder = '../figures';
 
 %% Fig 3A
-dFile = '../data/exampleRF.mat';
+% dFile = '../data/exampleRF.mat';
+dFile = '../data_in_paper/exampleRF.mat';
 load(dFile,'Ys','X')
 
 % illustration of ring data manifold
@@ -81,7 +82,7 @@ set(gca,'FontSize',16,'XTick',[0,pi,2*pi-sep],'XTickLabel',{'0','\pi','2\pi'})
 %% Example drift RF, Fig 3C
 % this part requies new online simulation to make it consistant with 
 % dFile = '../data/pcRing_paper/onlineN200_0613.mat';
-dFile = '../data/ring_N5_noise_06232022.mat';
+dFile = '../data_in_paper/ring_N5_noise_06232022.mat';
 
 load(dFile, 'newPeaks','params')
 saveFolder = '../figures';
@@ -110,7 +111,7 @@ set(gca,'FontSize',16,'YTick',[0,pi,2*pi],'YTickLabel',{'0','\pi','2\pi'})
 % ********************************************
 %  Similarity matrix
 % ********************************************
-dFile = '../data/ringPlace_N200_online_06202022.mat';
+dFile = '../data_in_paper/ringPlace_N200_online_06202022.mat';
 load(dFile)
 
 
