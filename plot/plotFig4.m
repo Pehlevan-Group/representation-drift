@@ -233,8 +233,8 @@ legend('independent','model')
 xlabel('$N_{\rm{active}}$','Interpreter','latex','FontSize',20)
 ylabel('$\langle(\Delta s - \bar{\Delta s})^2 \rangle (\rm{rad}^2)$','Interpreter','latex','FontSize',20)
 % ylabel('$\langle(\Delta s - \langle\Delta s\rangle)^2 \rangle (\rm{rad}^2)$','Interpreter','latex','FontSize',20)
-% set(gca,'YScale','linear','XScale','linear','FontSize',16)
-set(gca,'YScale','log','XScale','linear','YTick',10.^(-2:1:1),'FontSize',16)
+set(gca,'YScale','linear','XScale','linear','FontSize',16)
+% set(gca,'YScale','log','XScale','linear','YTick',10.^(-2:1:1),'FontSize',16)
 % set(gca,'YScale','log','XScale','linear','FontSize',16)
 xlim([0,30])
 
@@ -243,7 +243,7 @@ xlim([0,30])
 
 % The figure can be generated directly by running
 % 'ring_model_three_phases.m' or by loading the data generated
-dFile = '../data_in_paper/ring_model_different_noise.mat';
+dFile = '../data_in_paper/ring_model_different_noise_2.mat';
 load(dFile,'total_iter','params','all_Yts')
 
 blues = brewermap(11,'Blues');
@@ -278,10 +278,10 @@ for phase = 1:3
     fh.patch.FaceColor = fig_colors(2*phase,:);
 end
 lg = legend('Full model','Forward noise', 'Recurrent noise');
-set(lg,'FontSize',10)
+set(lg,'FontSize',11)
 
 % ylim([0.25,1])
 xlim([0,100]*params.record_step)
-xlabel('Time','FontSize',16)
+xlabel('$t$','Interpreter','latex','FontSize',20)
 ylabel('PV correlation','FontSize',16)
 set(gca,'FontSize',16,'LineWidth',1)

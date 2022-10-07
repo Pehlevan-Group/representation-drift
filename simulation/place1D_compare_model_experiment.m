@@ -10,7 +10,7 @@
 % sFolder = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/figures';
 
 %% load the summarized data
-dFolder = '../data';
+dFolder = '../data_in_paper';
 dFile1 = 'hippocampus_data_1222.mat';   % without information of active cells
 dFile2 = 'hippocampus_data.mat';        % without information of active cells
 
@@ -456,8 +456,8 @@ pc1Dmodel = load(modelFile,'aveShift','aveShiftM');
 % ********************************************************************************
 % compare model and experiment data together
 % ********************************************************************************
-distR = 0.5:0.5:6;
-selModelData = pc1Dmodel.aveShift(1:12,:);
+distR = 1:0.5:6;
+selModelData = pc1Dmodel.aveShift(2:12,:);
 
 barFig = figure;
 pos(3)=3.5;  
@@ -488,7 +488,7 @@ hold off
 box on
 hold off
 xlabel('Distance (L)','FontSize',20)
-ylabel('$\rho$','Interpreter','latex','FontSize',20)
+ylabel('Corr. Coef.','FontSize',20)
 set(gca,'FontSize',16,'LineWidth',1)
 lg = legend('Experiment','Model','Random walk');
 set(gca,'XTick',0:2:6,'XTickLabel',{'0','0.2','0.4','0.6'})

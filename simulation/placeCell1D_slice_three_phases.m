@@ -1,6 +1,6 @@
-% using non-negative similarity matching to learn a 1-d place cells based
-% on predefined grid cells patterns. Based on the paper lian et al 2020
+% using non-negative similarity matching to learn a 1-d place cells
 % 1D grid fields are slices of 2D lattice of grid fields
+% three different noise sources
 
 % add input noise simulation
 % last revised  6/30/2021
@@ -101,7 +101,7 @@ parfor simulation_type = 1:3
     end
 end
 
-%% 
+%%  plot the figures
 blues = brewermap(11,'Blues');
 reds = brewermap(11,'Reds');
 greys = brewermap(11,'Greys');

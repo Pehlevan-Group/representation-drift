@@ -16,13 +16,12 @@ dataType = 'ring';      % 'Tmaze' or 'ring';
 learnType = 'snsm';     % snsm if using simple non-negative similarity matching
 noiseVar = 'same';      % using different noise or the same noise level for each synpase
 params.batch_size = 1;  % default 1
-params.record_step = 20;
 
 num_angle = 628;        % total number of angles
 X = generate_ring_input(num_angle);
 
-params.noiseStd = 1e4 ;      % 0.005 for ring, 1e-3 for Tmaze
-params.learnRate = 0.05;     % default 0.05
+params.noiseStd = 0.002;      % 0.005 for ring, 1e-3 for Tmaze
+params.learnRate = 0.005;     % default 0.05
 params.record_step = 100;    % only keep track of the information every 100 iteration
 
 % initialize the states
@@ -38,10 +37,9 @@ params.alpha = 0;           % should be smaller than 1 if for the ring model
 params.beta = 1;            % 
 params.gy = 0.05;           % update step for y
 params.b = zeros(params.dim_out,1);      % bias
-params.learnRate = 0.05;    % learning rate for W and b
 
-params.sigWmax = 0.002;      % the maxium noise level for the forward matrix
-params.sigMmax = 0.002;      % maximum noise level of recurrent matrix
+params.sigWmax = params.noiseStd;      % the maxium noise level for the forward matrix
+params.sigMmax = params.noiseStd;      % maximum noise level of recurrent matrix
 
 if strcmp(noiseVar, 'various')
     noiseVecW = 10.^(rand(params.dim_out,1)*2-2);
@@ -67,7 +65,7 @@ end
 
 %% Continue simulation with three different noise scenarios
 
-total_iter = 1e4;
+total_iter = 2e4;
 all_Yts = cell(3,1);        % store all the ensemnbles
 PV_corr_coefs = cell(3,1);  % store the population vector correlations 
 param_struct = cell(3,1);
@@ -129,11 +127,11 @@ set(gca,'FontSize',16,'LineWidth',1)
 
 
 % save the figure
-% figPref = ['../figures',filesep,['ring_model_different_noise_N',num2str(params.dim_out), '_',date]];
+% figPref = ['../figures',filesep,['ring_model_different_noise_N',num2str(params.dim_out), '_1_',date]];
 % saveas(gcf,[figPref,'.fig'])
 % print('-depsc',[figPref,'.eps'])
 
 % save the data
-close all
-dataFile = ['../data',filesep,'ring_model_different_noise.mat'];
-save(dataFile)
+% close all
+% dataFile = ['../data',filesep,'ring_model_different_noise_1.mat'];
+% save(dataFile)

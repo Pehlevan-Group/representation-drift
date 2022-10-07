@@ -1,7 +1,6 @@
 % Prepare the figures related to the 2D place cell simulation
 %
 % the default dataset is './data/placeCell_1029_2.mat'
-% dFile = 'pc2D_Batch_Np_400std0.01_l1_0.17_l2_0.01_step1_lr0.05.mat';  % noise only on W
 dFile = '../data_in_paper/noise02_lr005_0829.mat';
 % load(fullfile('../data/pc2D_online/',dFile))
 load(dFile)

@@ -92,16 +92,8 @@ for day=1:length(h)
     set(h(day),'position',[(day-1)/length(h) 0 1/length(h) 1])
 end
 
-% fraction of number of shared neurons
-neuronOL = nan(size(allCat1,1),1);
-days = [1:5,16:20]';
-figure
-plot(days,numberShared/numberShared(dayRef),'o-','MarkerSize',10,'LineWidth',3)
-xlabel('days')
-ylabel('neuron overlap')
-
-
 % population vector correlation coefficients
+days = [1:5,16:20]';
 figure
 errorbar(days,PVcorr(:,1),PVcorr(:,2),'o-','MarkerSize',errSymSize,'MarkerFaceColor',blues(9,:),...
     'MarkerEdgeColor',blues(9,:),'Color',blues(9,:),'LineWidth',lineWd)
@@ -218,8 +210,6 @@ for day = 1:daysep
 
     k=k+1;
 end 
-
-
 
 %% Correlation of drift as a function of centroid distance
 
@@ -432,8 +422,7 @@ ylabel('Day')
 %% simulate the one day shift of centroids
 % we will randomly sample 200 centroid from the experiment centroid
 % positions
-load('../data_in_paper/pc_1dayShift_exper.mat',...
-    'allCentroids')
+load('../data_in_paper/pc_1dayShift_exper.mat','allCentroids')
 
 trackL = 50;
 repeats = 20;
@@ -525,100 +514,24 @@ end
 
 allMeanCorr = nanmean(aveShiftRW,2)';
 
-%% plot
-figure
-hold on
-plot(aveShiftRW,'LineWidth',1.5,'Color',greys(6,:))
-plot(allMeanCorr,'LineWidth',3,'Color',blues(8,:))
-hold off
-box on
-xlabel('Distance (bin)')
-ylabel('$\rho$','Interpreter','latex')
-
-% ************************************************************************
-% plot the experiment and random walk in the same figure
-% ************************************************************************
-figure
-hold on
-fh = shadedErrorBar((1:size(aveShift,1))',aveShift',{@mean,@std});
-box on
-set(fh.edge,'Visible','off')
-fh.mainLine.LineWidth = 4;
-fh.mainLine.Color = blues(10,:);
-fh.patch.FaceColor = blues(7,:);
-
-fh2 = shadedErrorBar((1:size(aveShiftRW,1))',aveShiftRW',{@mean,@std});
-box on
-set(fh2.edge,'Visible','off')
-fh2.mainLine.LineWidth = 3;
-fh2.mainLine.Color = greys(7,:);
-fh2.patch.FaceColor = greys(5,:);
-hold off
-
-legend('Experiment','Random walk')
-set(gca,'XTick',0:2:6,'XTickLabel',{'0','0.2','0.4','0.6'})
-% title(['$\Delta t = ',num2str(deltaTau),'$'],'Interpreter','latex')
-xlabel('Distance (L)')
-ylabel('$\rho$','Interpreter','latex')
-
-% figPref = [sFolder,filesep,'hipp_centroid_shift_exp_rw'];
-% saveas(gcf,[figPref,'.fig'])
-% print('-depsc',[figPref,'.eps'])
-
+%% plot Figure 5K
 
 % load the 1D place cell model to make direct comparision
 modelFile = '../data_in_paper/1D_slice_centroidCorr_0708.mat';
-
 pc1Dmodel = load(modelFile,'aveShift','aveShiftM');
 
-% ********************************************************************************
-% compare model and experiment data together
-% ********************************************************************************
-figure
-hold on
-fh = shadedErrorBar((1:size(aveShift,1))',aveShift',{@mean,@std});
-box on
-set(fh.edge,'Visible','off')
-fh.mainLine.LineWidth = 4;
-fh.mainLine.Color = blues(10,:);
-fh.patch.FaceColor = blues(7,:);
+% distR = 1:0.5:6;
+distR = (1:0.5:6)-0.5;
 
-distR = 0.5:0.5:6;
-selModelData = pc1Dmodel.aveShift(1:12,:);
-fh3 = shadedErrorBar(distR',selModelData',{@mean,@std});
-box on
-set(fh3.edge,'Visible','off')
-fh3.mainLine.LineWidth = 4;
-fh3.mainLine.Color = reds(10,:);
-fh3.patch.FaceColor = reds(7,:);
+selModelData = pc1Dmodel.aveShift(2:12,:);
 
-fh2 = shadedErrorBar((1:size(aveShiftRW,1))',aveShiftRW',{@mean,@std});
-box on
-set(fh2.edge,'Visible','off')
-fh2.mainLine.LineWidth = 3;
-fh2.mainLine.Color = greys(7,:);
-fh2.patch.FaceColor = greys(5,:);
-hold off
-
-lg = legend('Experiment','','Random walk');
-set(gca,'XTick',0:2:6,'XTickLabel',{'0','0.2','0.4','0.6'})
-% title(['$\Delta t = ',num2str(deltaTau),'$'],'Interpreter','latex')
-xlabel('Distance (L)')
-ylabel('$\rho$','Interpreter','latex')
-% 
-% figPref = [sFolder,filesep,'hipp_centroid_shift_exp_rw_model_shaded_EI_',date];
-% saveas(gcf,[figPref,'.fig'])
-% print('-depsc',[figPref,'.eps'])
- 
-% ********************* Figure 5K **********************
-% using error bar
 barFig = figure;
 pos(3)=3.5;  
 pos(4)=2.8;
 set(gcf,'color','w','Units','inches','Position',pos)
 
 hold on
-fh = errorbar((1:size(aveShift,1))',nanmean(aveShift,2),nanstd(aveShift,0,2),'o-',...
+fh = errorbar((1:size(aveShift,1))'-0.5,nanmean(aveShift,2),nanstd(aveShift,0,2),'o-',...
     'MarkerFaceColor',blues(9,:),'MarkerEdgeColor',blues(9,:),'LineWidth',1.5,...
     'Color',blues(9,:),'MarkerSize',6,'CapSize',0);
 
@@ -630,7 +543,7 @@ fh3.mainLine.LineWidth = 1.5;
 fh3.mainLine.Color = reds(10,:);
 fh3.patch.FaceColor = reds(7,:);
 
-fh2 = shadedErrorBar((1:size(aveShiftRW,1))',aveShiftRW',{@mean,@std});
+fh2 = shadedErrorBar((1:size(aveShiftRW,1))'-0.5,aveShiftRW',{@mean,@std});
 box on
 set(fh2.edge,'Visible','off')
 fh2.mainLine.LineWidth = 1.5;
@@ -679,16 +592,16 @@ for i = 1:size(RH_acti,1)
 end
 
 % plot the actigve fraction for individual mouse
-figure
-hold on
-for i = 1:length(LH_acti)
-    plot(actiStruct_LH.days{i}',LH_acti{i},'Color',blues(3+2*i,:))
-    plot(actiStruct_RH.days{i}',RH_acti{i},'Color',greys(3+2*i,:))
-end
-hold off
-box on
-xlabel('days')
-ylabel('fraction of active')
+% figure
+% hold on
+% for i = 1:length(LH_acti)
+%     plot(actiStruct_LH.days{i}',LH_acti{i},'Color',blues(3+2*i,:))
+%     plot(actiStruct_RH.days{i}',RH_acti{i},'Color',greys(3+2*i,:))
+% end
+% hold off
+% box on
+% xlabel('days')
+% ylabel('fraction of active')
 
 
 % Concantenate data very 3 days till day 24
@@ -771,10 +684,8 @@ end
 
 %% Publication-ready figures
 
-sFolder = '/Users/shawnqin/OneDrive - Harvard University/MATLAB/representationDrift/figures';
 figWidth = 3.5;      % width of figure
 figHeight = 2.8;   % height of figure
-
 
 % ****************************************************
 % Fraction of active neurons, 5 day concantenated, Fig 5I
@@ -931,3 +842,55 @@ set(gca,'XTick','','YTick','','LineWidth',0.5,'Visible','off')
 % saveas(fh_sm2,[figPref,'.fig'])
 % print('-depsc',[figPref,'.eps'])
 % 
+
+%% Plot 4H
+% Compare the drift statistics with that of 1D place cell model with E-I
+% model
+
+
+% load the 1D place cell model to make direct comparision
+modelFile = '../data_in_paper/1D_slice_EI_random_corr_25_14-Apr-2022.mat';
+pc1Dmodel = load(modelFile,'aveShift','aveShiftM');
+
+% distR = 1:0.5:6;
+distR = (1:0.5:6)-0.5;
+
+selModelData = pc1Dmodel.aveShift(2:12,:);
+
+barFig = figure;
+pos(3)=3.5;  
+pos(4)=2.8;
+set(gcf,'color','w','Units','inches','Position',pos)
+
+hold on
+fh = errorbar((1:size(aveShift,1))'-0.5,nanmean(aveShift,2),nanstd(aveShift,0,2),'o-',...
+    'MarkerFaceColor',blues(9,:),'MarkerEdgeColor',blues(9,:),'LineWidth',1.5,...
+    'Color',blues(9,:),'MarkerSize',6,'CapSize',0);
+
+
+fh3 = shadedErrorBar(distR',selModelData',{@mean,@std});
+box on
+set(fh3.edge,'Visible','off')
+fh3.mainLine.LineWidth = 1.5;
+fh3.mainLine.Color = reds(10,:);
+fh3.patch.FaceColor = reds(7,:);
+
+fh2 = shadedErrorBar((1:size(aveShiftRW,1))'-0.5,aveShiftRW',{@mean,@std});
+box on
+set(fh2.edge,'Visible','off')
+fh2.mainLine.LineWidth = 1.5;
+fh2.mainLine.Color = greys(7,:);
+fh2.patch.FaceColor = greys(5,:);
+hold off
+
+% fh2 = errorbar((1:size(aveShiftRW,1))',mean(aveShiftRW,2),std(aveShiftRW,0,2),'o-',...
+%     'MarkerFaceColor',greys(9,:),'MarkerEdgeColor',greys(7,:),'LineWidth',2,...
+%     'Color',greys(9,:),'MarkerSize',10,'CapSize',0);
+box on
+hold off
+xlabel('Distance (L)','FontSize',20)
+ylabel('Corr. Coeff','FontSize',20)
+set(gca,'FontSize',16,'LineWidth',1)
+lg = legend('Experiment','Model','Random walk','Location','southwest');
+set(gca,'XTick',0:2:6,'XTickLabel',{'0','0.2','0.4','0.6'})
+

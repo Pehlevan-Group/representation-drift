@@ -157,7 +157,7 @@ set(gca,'FontSize',16,'LineWidth',1)
 
 
 % save the figure
-figPref = ['./figures',filesep,['1D_place_different_noise_PV_corr',date]];
+figPref = ['./figures',filesep,['1D_place_different_noise_PV_corr_exci',date]];
 saveas(gcf,[figPref,'.fig'])
 print('-depsc',[figPref,'.eps'])
 

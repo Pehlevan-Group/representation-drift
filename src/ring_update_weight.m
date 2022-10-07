@@ -8,8 +8,9 @@ end
 
 % update the synaptic weights and the stored population vectors if required
 time_points = round(total_iter/params.record_step);
+start_time = round(time_points/2);
 Xsel = X(:,1:4:end);
-Yt = nan(params.dim_out,size(Xsel,2),time_points);
+Yt = nan(params.dim_out,size(Xsel,2),round(time_points/2)); % only use the second half
 num_samp = size(X,2);
 
     for i = 1:total_iter
@@ -32,10 +33,10 @@ num_samp = size(X,2);
         params.b = (1-params.learnRate)*params.b + params.learnRate*sqrt(params.alpha)*mean(y,2);
         
         % store every param.step steps
-        if mod(i, params.record_step) == 0
+        if mod(i, params.record_step) == 0 && i > round(total_iter/2)
             y0 = zeros(params.dim_out,size(Xsel,2));
             states_fixed = MantHelper.nsmDynBatch(Xsel,y0, params);
-            Yt(:,:,round(i/params.record_step)) = states_fixed.Y;
+            Yt(:,:,round(i/params.record_step)-start_time) = states_fixed.Y;
         end
         
     end
