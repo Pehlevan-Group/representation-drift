@@ -12,7 +12,7 @@ sFolder = '../figures';
 %% load the summarized data
 dFolder = '../data_in_paper';
 dFile1 = 'hippocampus_data_1222.mat';   % without information of active cells
-dFile2 = 'hippocampus_data.mat';   % without information of active cells
+dFile2 = 'hippocampus_data.mat';   % 
 
 
 load(fullfile(dFolder,filesep,dFile1))
@@ -93,13 +93,12 @@ for day=1:length(h)
 end
 
 % population vector correlation coefficients
-days = [1:5,16:20]';
-figure
-errorbar(days,PVcorr(:,1),PVcorr(:,2),'o-','MarkerSize',errSymSize,'MarkerFaceColor',blues(9,:),...
-    'MarkerEdgeColor',blues(9,:),'Color',blues(9,:),'LineWidth',lineWd)
-xlabel('Days','FontSize',labelFontSize)
-ylabel('PV correlation','FontSize',labelFontSize)
-set(gca,'FontSize',axisFont,'LineWidth',axisLw)
+% figure
+% errorbar(days,PVcorr(:,1),PVcorr(:,2),'o-','MarkerSize',errSymSize,'MarkerFaceColor',blues(9,:),...
+%     'MarkerEdgeColor',blues(9,:),'Color',blues(9,:),'LineWidth',lineWd)
+% xlabel('Days','FontSize',labelFontSize)
+% ylabel('PV correlation','FontSize',labelFontSize)
+% set(gca,'FontSize',axisFont,'LineWidth',axisLw)
 
 
 
@@ -519,11 +518,11 @@ allMeanCorr = nanmean(aveShiftRW,2)';
 % load the 1D place cell model to make direct comparision
 modelFile = '../data_in_paper/1D_slice_centroidCorr_0708.mat';
 pc1Dmodel = load(modelFile,'aveShift','aveShiftM');
-
-% distR = 1:0.5:6;
-distR = (1:0.5:6)-0.5;
-
 selModelData = pc1Dmodel.aveShift(2:12,:);
+
+% only plot part over the x-axis
+off_set = 0.5;
+distR = (1:0.5:6)-off_set;
 
 barFig = figure;
 pos(3)=3.5;  
@@ -531,7 +530,7 @@ pos(4)=2.8;
 set(gcf,'color','w','Units','inches','Position',pos)
 
 hold on
-fh = errorbar((1:size(aveShift,1))'-0.5,nanmean(aveShift,2),nanstd(aveShift,0,2),'o-',...
+fh = errorbar((1:size(aveShift,1))'-off_set,nanmean(aveShift,2),nanstd(aveShift,0,2),'o-',...
     'MarkerFaceColor',blues(9,:),'MarkerEdgeColor',blues(9,:),'LineWidth',1.5,...
     'Color',blues(9,:),'MarkerSize',6,'CapSize',0);
 
@@ -543,7 +542,7 @@ fh3.mainLine.LineWidth = 1.5;
 fh3.mainLine.Color = reds(10,:);
 fh3.patch.FaceColor = reds(7,:);
 
-fh2 = shadedErrorBar((1:size(aveShiftRW,1))'-0.5,aveShiftRW',{@mean,@std});
+fh2 = shadedErrorBar((1:size(aveShiftRW,1))'-off_set,aveShiftRW',{@mean,@std});
 box on
 set(fh2.edge,'Visible','off')
 fh2.mainLine.LineWidth = 1.5;
@@ -842,55 +841,3 @@ set(gca,'XTick','','YTick','','LineWidth',0.5,'Visible','off')
 % saveas(fh_sm2,[figPref,'.fig'])
 % print('-depsc',[figPref,'.eps'])
 % 
-
-%% Plot S4H
-% Compare the drift statistics with that of 1D place cell model with E-I
-% model
-
-
-% load the 1D place cell model to make direct comparision
-modelFile = '../data_in_paper/1D_slice_EI_random_corr_25_14-Apr-2022.mat';
-pc1Dmodel = load(modelFile,'aveShift','aveShiftM');
-
-% distR = 1:0.5:6;
-distR = (1:0.5:6)-0.5;
-
-selModelData = pc1Dmodel.aveShift(2:12,:);
-
-barFig = figure;
-pos(3)=3.5;  
-pos(4)=2.8;
-set(gcf,'color','w','Units','inches','Position',pos)
-
-hold on
-fh = errorbar((1:size(aveShift,1))'-0.5,nanmean(aveShift,2),nanstd(aveShift,0,2),'o-',...
-    'MarkerFaceColor',blues(9,:),'MarkerEdgeColor',blues(9,:),'LineWidth',1.5,...
-    'Color',blues(9,:),'MarkerSize',6,'CapSize',0);
-
-
-fh3 = shadedErrorBar(distR',selModelData',{@mean,@std});
-box on
-set(fh3.edge,'Visible','off')
-fh3.mainLine.LineWidth = 1.5;
-fh3.mainLine.Color = reds(10,:);
-fh3.patch.FaceColor = reds(7,:);
-
-fh2 = shadedErrorBar((1:size(aveShiftRW,1))'-0.5,aveShiftRW',{@mean,@std});
-box on
-set(fh2.edge,'Visible','off')
-fh2.mainLine.LineWidth = 1.5;
-fh2.mainLine.Color = greys(7,:);
-fh2.patch.FaceColor = greys(5,:);
-hold off
-
-% fh2 = errorbar((1:size(aveShiftRW,1))',mean(aveShiftRW,2),std(aveShiftRW,0,2),'o-',...
-%     'MarkerFaceColor',greys(9,:),'MarkerEdgeColor',greys(7,:),'LineWidth',2,...
-%     'Color',greys(9,:),'MarkerSize',10,'CapSize',0);
-box on
-hold off
-xlabel('Distance (L)','FontSize',20)
-ylabel('Corr. Coeff','FontSize',20)
-set(gca,'FontSize',16,'LineWidth',1)
-lg = legend('Experiment','Model','Random walk','Location','southwest');
-set(gca,'XTick',0:2:6,'XTickLabel',{'0','0.2','0.4','0.6'})
-
