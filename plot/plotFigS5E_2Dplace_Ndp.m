@@ -88,7 +88,7 @@ ylim([1e-3,1e-1])
 set(gca,'FontSize',axisSize,'LineWidth',axisWd,'YScale','log','XScale','log',...
     'YTick',[0.001,0.01,0.1,1])
 
-prefix = [figPre, '_Ns_D_',date];
-saveas(f_N_D,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, '_Ns_D_',date];
+% saveas(f_N_D,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 

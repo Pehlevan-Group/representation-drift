@@ -103,9 +103,9 @@ xlabel('Days','FontSize',20)
 ylabel('Fraction','FontSize',20)
 set(gca,'FontSize',16,'LineWidth',1)
 
-prefix = 'Tmaze_switch_tuning_Driscoll_fig3_0.15';
-saveas(shitTunFig,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = 'Tmaze_switch_tuning_Driscoll_fig3_0.15';
+% saveas(shitTunFig,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 %  
 
 %%
@@ -124,6 +124,6 @@ xlabel('Days')
 ylabel('Neuron')
 set(gca,'XTick',[1,3,8,11],'XTickLabel',{'1','5','15','21'})
 
-prefix = 'Tmaze_switch_tuning_Driscoll_fig3_heatmap';
-saveas(shitTunFig,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = 'Tmaze_switch_tuning_Driscoll_fig3_heatmap';
+% saveas(shitTunFig,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])

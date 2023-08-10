@@ -164,7 +164,7 @@ oranges = brewermap(11,'Oranges');
 plotColors = {blues;oranges;greys};
 
 f_D_amp= figure;
-set(f_D_amp,'color','w','Units','inches','Position',[0,0,5,2.8])
+set(f_D_amp,'color','w','Units','inches','Position',[0,0,5.5,2.8])
 hold on
 for i = 1:3
     fh = shadedErrorBar(aveAmps{i},allDs{i},{@mean,@std});

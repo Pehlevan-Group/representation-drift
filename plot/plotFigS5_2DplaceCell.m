@@ -182,9 +182,9 @@ title('$t = 1$','Interpreter','latex')
 set(cb,'FontSize',12)
 set(gca,'XTick','','YTick','','LineWidth',0.5)
 % 
-prefix = [figPre, 'sm1'];
-saveas(f_sm1,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'sm1'];
+% saveas(f_sm1,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 f_sm2 = figure;
 set(f_sm2,'color','w','Units','inches','Position',pos)
