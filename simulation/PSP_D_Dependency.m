@@ -17,7 +17,7 @@ totSimul = 2e3;              %  total number of sampling
 % start the parallel pool with 12 workers
 % parpool('local', str2num(getenv('SLURM_CPUS_PER_TASK')));
 
-% when run on pc
+% when run on pc, the number should be modified based on local resource
 parpool('local',8)
 
 %% learning rate depedent, keep eigen spectrum and noise level, tau the same
@@ -61,4 +61,4 @@ end
 
 % save the data for plot
 dataFile = [simType,'_',learnType,'.mat'];
-save(dataFile,'noiseStd','eigens','allDiffConst','learnRate','step','all_ave_rmsd')
+% save(dataFile,'noiseStd','eigens','allDiffConst','learnRate','step','all_ave_rmsd')
