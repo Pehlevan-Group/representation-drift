@@ -1,9 +1,9 @@
-Code for the paper "Coordinated drift of receptive fields during noisy representation learning". See also the priprint https://www.biorxiv.org/content/10.1101/2021.08.30.458264v1.abstract
+Code for the paper "Coordinated drift of receptive fields in Hebbian/anti-Hebbian network models during noisy representation learning" S Qin, S Farashahi, D Lipshutz, AM Sengupta, DB Chklovskii, C Pehlevan Nature Neuroscience 26 (2), 339-349. See also the priprint https://www.biorxiv.org/content/10.1101/2021.08.30.458264v1.abstract
 
 ## Dependence
 Some of the scripts depend on ITE (information theoretical estimators) which can be downloaded from https://bitbucket.org/szzoli/ite/src/master/
 
-To plot figures without running the simulations, download the data from https://www.dropbox.com/sh/hgcxraa6kvv7jm3/AACVKWIomrHdyU46iMiQdQl4a?dl=0 and put the `data` folder in the main directory
+To plot figures without running the simulations which could take upto a few hours for some simulations, download the data from https://www.dropbox.com/sh/hgcxraa6kvv7jm3/AACVKWIomrHdyU46iMiQdQl4a?dl=0 and put the `data` folder in the main directory. You might need to modify the dictory of the plotting scripts.
 
 ## Simulations
 
