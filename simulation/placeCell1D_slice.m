@@ -98,7 +98,7 @@ end
 total_iter = 2e4;
 time_points = round(total_iter/param.step);
 
-[output, param] = place_cell_stochastic_update_snsm(gdInput,total_iter, param);
+[output, param] = place_cell_stochastic_update_snsm(gdInput,total_iter, param, false, true, true);
 
 %% Estimate the diffusion constant
 
@@ -208,10 +208,10 @@ finalAveRho = nanmean(aveRho,2);
 modelShift = [];
 for rp = 1:repeats
     initialTime = randperm(deltaTau,1);
-    for i = initialTime:deltaTau:(size(pkCenterMass,2)-deltaTau)
+    for i = initialTime:deltaTau:(size(output.pkCenterMass,2)-deltaTau)
 
-        bothActiInx = ~isnan(pkCenterMass(:,i+deltaTau)) & ~isnan(pkCenterMass(:,i));
-        ds = pkCenterMass(bothActiInx,i+deltaTau) - pkCenterMass(bothActiInx,i);
+        bothActiInx = ~isnan(output.pkCenterMass(:,i+deltaTau)) & ~isnan(output.pkCenterMass(:,i));
+        ds = output.pkCenterMass(bothActiInx,i+deltaTau) - output.pkCenterMass(bothActiInx,i);
         modelShift = [modelShift;ds];
     end
 end 
@@ -578,7 +578,7 @@ pos(4)=figHeight;%pos(4)*1.5;
 set(shifDist,'Position',pos)
 hold on
 for i = 1:length(tps)
-    temp = pkCenterMass(:,tps(i)+1:end,:) - pkCenterMass(:,1:end-tps(i),:);
+    temp = output.pkCenterMass(:,tps(i)+1:end,:) - output.pkCenterMass(:,1:end-tps(i),:);
     
     [f,xi] = ksdensity(temp(~isnan(temp))); 
 %     histogram(temp(~isnan(temp)),'Normalization','pdf')
@@ -594,12 +594,12 @@ for i = 1:length(tps)
 end
 
 % compared with random position
-randPks = nan(size(pkCenterMass));
-for i = 1:size(pkCenterMass,2)
-    inx = find(~isnan(pkCenterMass(:,i)));
+randPks = nan(size(output.pkCenterMass));
+for i = 1:size(output.pkCenterMass,2)
+    inx = find(~isnan(output.pkCenterMass(:,i)));
     randPks(inx,i) = psRange*rand(length(inx),1);
 end
-temp = pkCenterMass - randPks;
+temp = output.pkCenterMass - randPks;
 diffLagRnd = abs(temp(~isnan(temp)));
 [f,xi] = ksdensity(temp(~isnan(temp))); 
 
@@ -607,11 +607,11 @@ diffLagRnd = abs(temp(~isnan(temp)));
 % randomized shift
 for i=1:length(tps)
     temp = cell(1,1);
-    inx = find(~isnan(pkCenterMass(:,tps(i))));
+    inx = find(~isnan(output.pkCenterMass(:,tps(i))));
     for j = 1:50
-        rps = nan(size(pkCenterMass,1),1);
+        rps = nan(size(output.pkCenterMass,1),1);
         rps(inx) = psRange*rand(length(inx),1);
-        temp{j} = pkCenterMass(:,tps(i)) - rps;
+        temp{j} = output.pkCenterMass(:,tps(i)) - rps;
     end
     rndSf = cat(1,temp{:});
     [randSiftFrac(i,:),~] = histcounts(rndSf(~isnan(rndSf)),edges,'Normalization','probability');
