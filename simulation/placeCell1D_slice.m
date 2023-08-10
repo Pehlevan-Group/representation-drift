@@ -22,7 +22,7 @@ param.sf =  1.42;       % scaling factor between adjacent module
 % parameters for learning 
 noiseVar = 'same';      % using different noise or the same noise level for each synpase
 noiseStd = 0.005;        % 0.001
-learnRate = 0.05;       % default 0.05
+learnRate = 0.02;       % default 0.05
 
 param.W = 0.5*randn(param.Np,param.Ng);   % initialize the forward matrix
 param.M = eye(param.Np);        % lateral connection if using simple nsm
@@ -118,20 +118,6 @@ end
 % linear regression to get the diffusion constant of each neuron
 Ds = PlaceCellhelper.fitLinearDiffusion(msds,param.step,'linear');
 
-% fit a linear regression model
-% tot_noise_var = param.noiseW(:,1).^2 + param.noiseM(:,1).^2;
-% eff_acti_inx = ~isnan(Ds);
-% mdl = fitlm(tot_noise_var(eff_acti_inx),Ds(eff_acti_inx));
-% fit_stat = anova(mdl,'summary');
-% fh = plot(mdl);
-% ah = fh.Parent;
-% fh(1).Marker = 'o';
-% fh(1).Color = 'k';
-% title('1D place cell model')
-% xlabel('$\sigma_W^2 + \sigma_M^2$','Interpreter','latex','FontSize',24)
-% ylabel('$D$','Interpreter','latex','FontSize',24)
-% set(gca,'YScale','linear','XScale','linear','FontSize',24)
-
 
 %% Diffusion constant, active time
 temp = output.pkAmp > param.ampThd;
@@ -141,7 +127,7 @@ actiFrac = sum(temp,2)/size(output.pkAmp,2);
 %% interval of active, silent, shift of RF
 
 % interval length where place fields disappears
-ampThd = 0.1;
+ampThd = 0.1;          % threshold to determine whether active
 pkFlags = output.pkAmp > ampThd;
 silentInter = [];  % store the silent interval
 activeInter = [];
