@@ -85,7 +85,13 @@ for i = 1:total_iter
         if Flag
             states_fixed = PlaceCellhelper.nsmDynBatchMultiScale(X,Y0, param);
         else
-            states_fixed = PlaceCellhelper.nsmDynBatch(X,Y0, param);
+%             states_fixed = PlaceCellhelper.nsmDynBatch(X,Y0, param);
+            Ys = zeros(param.Np,size(X,2));
+            for idx = 1:size(X,2) 
+                states= PlaceCellhelper.nsmDynBatch(X(:,idx),Y0(:,idx), param);
+                Ys(:,idx) = states.Y;
+            end
+            states_fixed.Y = Ys; % this is just for notational consistence
         end
         
         flag = sum(states_fixed.Y > param.ampThd,2) > 3;   % only those neurons that have multiple non-zeros considered
