@@ -336,28 +336,28 @@ for rp = 1:repeats
     end
 end
 
-figure
-hold on
-fh = shadedErrorBar((1:size(aveShift,1))',aveShift',{@mean,@std});
-box on
-set(fh.edge,'Visible','off')
-fh.mainLine.LineWidth = 4;
-fh.mainLine.Color = blues(10,:);
-fh.patch.FaceColor = blues(7,:);
-
-fh2 = shadedErrorBar((1:size(aveShiftM,1))',aveShiftM',{@mean,@std});
-box on
-set(fh2.edge,'Visible','off')
-fh2.mainLine.LineWidth = 3;
-fh2.mainLine.Color = greys(7,:);
-fh2.patch.FaceColor = greys(5,:);
-hold off
-
-legend('Model','Random walk')
-set(gca,'XTick',0:5:10,'XTickLabel',{'0','0.25','0.5'})
-title(['$\Delta t = ',num2str(deltaTau),'$'],'Interpreter','latex')
-xlabel('Distance (L)')
-ylabel('$\rho$','Interpreter','latex')
+% figure
+% hold on
+% fh = shadedErrorBar((1:size(aveShift,1))',aveShift',{@mean,@std});
+% box on
+% set(fh.edge,'Visible','off')
+% fh.mainLine.LineWidth = 4;
+% fh.mainLine.Color = blues(10,:);
+% fh.patch.FaceColor = blues(7,:);
+% 
+% fh2 = shadedErrorBar((1:size(aveShiftM,1))',aveShiftM',{@mean,@std});
+% box on
+% set(fh2.edge,'Visible','off')
+% fh2.mainLine.LineWidth = 3;
+% fh2.mainLine.Color = greys(7,:);
+% fh2.patch.FaceColor = greys(5,:);
+% hold off
+% 
+% legend('Model','Random walk')
+% set(gca,'XTick',0:5:10,'XTickLabel',{'0','0.25','0.5'})
+% title(['$\Delta t = ',num2str(deltaTau),'$'],'Interpreter','latex')
+% xlabel('Distance (L)')
+% ylabel('$\rho$','Interpreter','latex')
 
 
 % figPref = [sFolder,filesep,['1D_model_random_corr_rm',num2str(deltaTau)]];
