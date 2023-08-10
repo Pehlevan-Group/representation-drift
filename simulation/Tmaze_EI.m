@@ -11,22 +11,23 @@ blues = brewermap(11,'Blues');
 rb = brewermap(11,'RdBu');
 set1 = brewermap(9,'Set1');
 
-saveFolder = '../figures';
+saveFolder = './figures';
 %% Generate sample data
 
 param.NE = 200;         % number of excitatory neurons
 param.NI = 20;          % number of inhibitory
 param.Nx = 3;           % input dimension
-param.noise = 3e-4; 
-param.learnRate = 0.03;
+param.noise = 2e-4;  
+param.learnRate = 2e-2;
 param.alpha = 1.5;
-param.lbd1 = 5e-6;      % regularization for the simple nsm, 1e-3
+param.lbd1 = 0;      % regularization for the simple nsm, 1e-3
 param.lbd2 = 1e-3;      % default 1e-3
 param.BatchSize = 1;
 param.gy = 0.05;        % update step for y
 param.gz = 0.05;        % update step for z
 
-param.record_step = 1000;  % record neural activity every 1000 steps
+
+param.record_step = 1000;  % record neural activity every 100 steps
 
 % initialize weight matrices and bias
 param.W = 0.5*randn(param.NE,param.Nx);    % initialize the forward matrix
@@ -34,6 +35,7 @@ param.Wei = 0.05*rand(param.NE,param.NI);  % i to e connection
 param.Wie = param.Wei';                    % e to i connections
 param.M = eye(param.NI);                   % recurrent interaction between inhibiotry neurons
 param.b = zeros(param.NE,1);  % biase
+
 
 % generate input data
 t = 1e3;    % total number of samples previously 1e4
@@ -44,8 +46,10 @@ X1 = [radius*cos(0:sep:pi-sep);radius*sin(0:sep:pi-sep)];
 X = [X1,X1;ones(1,t/2),-ones(1,t/2)];
 Xsel = X(:,4:4:end);  % subsampling to reduce simulation time
 
+
 % plot input similarity matrix
 SMX = X'*X;
+
 
 %% Initial transient stage
 total_iter = 1e4;
@@ -84,8 +88,9 @@ actiPkCM_I = pkCM_I(actiInx_I);
 figE = figure;
 figureSize = [0 0 3.6 2.7];
 set(figE,'Units','inches','Position',figureSize,'PaperPositionMode','auto');
+
 imagesc(Ys(actiInx_E(neurOrder_E),:),[0,0.3])
-colormap(viridis)
+% colormap(viridis)
 colorbar
 xlabel('Position')
 ylabel('Neuron sorted')
@@ -101,7 +106,7 @@ figureSize = [0 0 3.6 2.7];
 set(figI,'Units','inches','Position',figureSize,'PaperPositionMode','auto');
 
 imagesc(Zs(actiInx_I(neurOrder_I),:),[0,0.5])
-colormap(viridis)
+% colormap(viridis)
 colorbar
 xlabel('Position')
 ylabel('Neuron sorted')
@@ -134,7 +139,6 @@ ylabel('E neuron index')
 % ************************************************************
 temp = param.M(actiInx_I(neurOrder_I),:);
 M_order = temp(:,actiInx_I(neurOrder_I));
-
 figure
 imagesc(M_order,[0,0.03])
 % colormap(viridis)
@@ -273,6 +277,8 @@ dAxes = axes('position',[.55  .1  cwidth  cheight]);
 axsh = cell(2,2);
 axsh{1,1} = aAxes; axsh{1,2} = bAxes; 
 axsh{2,1} = cAxes; axsh{2,2} = dAxes; 
+% prepare the data
+allPVs = cell(3,3); % store the smilarity matrix ordered by different neuron index
 
 inxSelPV = [1,100];
 % inxSelPV = [100,250,500];
@@ -285,9 +291,11 @@ for i= 1:2
     YtMerge = cat(1,output.Yt(neuroInxL,1:size(z,2)/2,:),output.Yt(neuroInxR,size(z,2)/2+1:end,:));
     [~,temp]= sort(YtMerge(:,:,inxSelPV(i)),2,'descend');
     [~, newInx] = sort(temp(:,1));
+%     [~, newInx] = sort(mergePeakInx(:,inxSelPV(i)));
     for j = 1:length(inxSelPV)
         imagesc(axsh{i,j},YtMerge(newInx,:,inxSelPV(j)))
         set(axsh{i,j},'YDir','normal','FontSize',20)
+%         colorbar
         axsh{i,j}.CLim = [0,0.3];
         axsh{i,j}.XLim = [0,size(z,2)/2];
         axsh{i,j}.XTick = [1 size(z,2)/2];
@@ -305,6 +313,7 @@ end
 % add titile
 title(axsh{1},'t = 1000', 'FontSize', 16)
 title(axsh{3},'t = 5000', 'FontSize', 16)
+
 
 
 % ======== representation similarity matrix =======
