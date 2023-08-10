@@ -1,7 +1,7 @@
 function [output, param] = Tmaze_EI_update(X,Xsel,total_iter, param, record_flag)
 % runing the population codes, centroid position and noisy weight update and return 
 % the learned representations
-% 
+
     ystart = zeros(param.NE,param.BatchSize);  % inital of the output
     zstart = zeros(param.NI,param.BatchSize);  % inital of the inhibitory neurons
     time_points = round(total_iter/param.record_step);
@@ -9,7 +9,7 @@ function [output, param] = Tmaze_EI_update(X,Xsel,total_iter, param, record_flag
     Zt = nan(param.NI,size(Xsel,2),time_points);
     Num = size(X,2);  % total number of sampling
     
-    miniBatch = 10;
+    miniBatch = 10;  % used only for neural dynamics
     numBatch = ceil(size(Xsel,2)/miniBatch);  % total of minibatch
 
     for i = 1:total_iter
@@ -35,13 +35,7 @@ function [output, param] = Tmaze_EI_update(X,Xsel,total_iter, param, record_flag
         param.b = (1-param.learnRate)*param.b + param.learnRate*sqrt(param.alpha)*mean(y,2);
         
         if record_flag && mod(i, param.record_step) == 0
-%             for j = 1:size(Xsel,2)
-%                 y0 = zeros(param.NE,1);
-%                 z0 = zeros(param.NI,1);
-%                 states_fixed = PlaceCellhelper.nsmDynBatchExciInhi(Xsel(:,j),y0,z0, param);
-%                 Yt(:,j,round(i/param.record_step)) = states_fixed.Y;
-%                 Zt(:,j,round(i/param.record_step)) = states_fixed.Z;
-%             end
+
             for j = 1:numBatch
                 y0 = zeros(param.NE,miniBatch);
                 z0 = zeros(param.NI,miniBatch);
