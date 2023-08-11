@@ -72,7 +72,7 @@ end
 
 
 %% continue updating with noise
-tot_iter = 1e4;
+tot_iter = 2e4;
 num_sel = 200;
 step = 50;       %store every 50 step
 time_points = round(tot_iter/step);
@@ -205,8 +205,8 @@ set(lg,'FontSize',12)
 xlabel('$\Delta t$','Interpreter','latex','FontSize',20)
 ylabel({'Fraction of', 'peak moved'},'FontSize',20)
 set(gca,'LineWidth',1,'FontSize',16)
-ylim([0.2,0.6])
-xlim([0,450])
+ylim([0,0.6])
+xlim([0,200]*step)
 
 %%
 % =====================================================================
@@ -259,8 +259,8 @@ thisBlue = [52,153,204]/256;
 thisRed = [218,28,92]/256;
 thisBlack = [0,0,0];
 
-timeSep = 10;
-times = (1:size(consist,1))*timeSep;
+% timeSep = 10;
+times = (1:size(consist,1))*step;
 shitTunFig = figure; 
 pos(3)=3.1;  %17.4; %8.5;%pos(3)*1.5;
 pos(4)=2.5;%pos(4)*1.5;
@@ -270,7 +270,7 @@ plot(times',lossTun(:,1),'LineWidth',2,'Color',thisRed)
 plot(times',gainTun(:,1),'LineWidth',2,'Color',thisBlue)
 hold off
 box on
-xlim([0,400])
+% xlim([0,50])
 lg = legend('Lost','Gained');
 set(lg,'FontSize',14)
 xlabel('$\Delta t$','Interpreter','latex','FontSize',20)
