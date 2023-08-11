@@ -45,7 +45,7 @@ Wout = zeros(1,params.dim_out); % linear decoder weight vector
 params.W = 0.1*randn(params.dim_out,params.dim_in);
 params.M = eye(params.dim_out); % lateral connection if using simple nsm
 params.lbd1 = 0.0;              % regularization for the simple nsm, 1e-3
-params.lbd2 = 0.02;             % default 1e-3
+params.lbd2 = 0.01;             % default 1e-3
 
 params.alpha = 0;               % should be smaller than 1 if for the ring model
 params.beta = 1;                % 
@@ -222,14 +222,14 @@ end
 % using the initial order as reference point
 
 % orderedPeaks = peakInx(neurOrder,:);
-orderedPeaks = pks(neurOrder,:);
-L = size(Yt,2);
-shift = diff(orderedPeaks')';
-reCode = zeros(size(shift));
-reCode(shift >= L/2) = -1;
-reCode(shift < -L/2) = 1;
-addVals = cumsum(reCode,2)*2*pi;
-newPeaks = orderedPeaks/L*2*pi + [zeros(params.dim_out,1),addVals];
+% orderedPeaks = pks(neurOrder,:);
+% L = size(Yt,2);
+% shift = diff(orderedPeaks')';
+% reCode = zeros(size(shift));
+% reCode(shift >= L/2) = -1;
+% reCode(shift < -L/2) = 1;
+% addVals = cumsum(reCode,2)*2*pi;
+% newPeaks = orderedPeaks/L*2*pi + [zeros(params.dim_out,1),addVals];
 
 %% save the similation
 if save_data_flag
@@ -540,7 +540,7 @@ title(['N = ',num2str(size(newPeaks,1)),',$\delta t = ',num2str(deltaTau),'$'],'
 % *********************************************
 %  Position of centroids of two slected neurons
 % *********************************************
-
+% for better visualization, select two centroids manually
 % sel = randperm(k,2);
 sel = [4,7];
 centroidSel = newPeaks(sel,1:500)'/num_angle*2*pi;
