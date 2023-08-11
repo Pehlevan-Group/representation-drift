@@ -121,7 +121,7 @@ Ds = PlaceCellhelper.fitLinearDiffusion(msds,param.step,'linear');
 
 %% Diffusion constant, active time
 temp = output.pkAmp > param.ampThd;
-actiFrac = sum(temp,2)/size(output.pkAmp,2);
+actiFrac = sum(temp,1)/size(output.pkAmp,1);
 
 
 %% interval of active, silent, shift of RF
@@ -443,13 +443,13 @@ set(gca,'FontSize',axisFont,'LineWidth',axisLineWd)
 % Change of population vectors, measured by Pearson's correlation
 % ***************************************************************
 % fmSel = randperm(size(Yt,2),1); % randomly slect three frames to consider
-pvCorr = zeros(size(Yt,3),size(Yt,2)); 
+pvCorr = zeros(size(output.Yt,3),size(output.Yt,2)); 
 % [~,neuroInx] = sort(peakInx(:,inxSel(1)));
 
-for i = 1:size(Yt,3)
-    for j = 1:size(Yt,2)
-        temp = Yt(:,j,i);
-        C = corrcoef(temp,Yt(:,j,1));
+for i = 1:size(output.Yt,3)
+    for j = 1:size(output.Yt,2)
+        temp = output.Yt(:,j,i);
+        C = corrcoef(temp,output.Yt(:,j,1));
         pvCorr(i,j) = C(1,2);
     end
 end
@@ -481,12 +481,13 @@ set(gca,'FontSize',16,'LineWidth',1)
 % for better viusalization, only use part of the data
 % gray color maps
 % selInx = 1:10:1024;
-selInx = find(~isnan(pks(:,1)));
+start_time = 1;
+selInx = find(~isnan(output.pks(:,start_time)));
 
-% Y1= Yt(selInx,:,1);
-% Y2 = Yt(selInx,:,1000);
-Y1= Yt(:,:,1000);
-Y2 = Yt(:,:,1300);
+Y1= output.Yt(selInx,:,start_time);
+Y2 = output.Yt(selInx,:,start_time + (3000/param.step));
+% Y1= output.Yt(:,:,1000);
+% Y2 = output.Yt(:,:,1300);
 
 SM1 = Y1'*Y1;
 SM2 = Y2'*Y2;
@@ -503,9 +504,9 @@ imagesc(SM1,[0,15]);
 % set(cb,'FontSize',12)
 set(gca,'XTick','','YTick','','LineWidth',0.5,'Visible','off')
 
-prefix = [figPre, 'sm1'];
-saveas(f_sm1,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'sm1'];
+% saveas(f_sm1,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 f_sm2 = figure;
 set(f_sm2,'color','w','Units','inches')
@@ -559,7 +560,7 @@ set(gca,'Visible','off')
 psRange = param.ps;  %total length of the linearized track
 
 % tps = [400,800,1500];
-tps = [200,400,800];
+tps = [200,300,400];
 
 
 quantiles = (1:3)/4*param.ps;
