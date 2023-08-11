@@ -72,7 +72,7 @@ end
 
 
 %% continue updating with noise
-tot_iter = 2e4;
+tot_iter = 1e4;
 num_sel = 200;
 step = 50;       %store every 50 step
 time_points = round(tot_iter/step);
@@ -121,7 +121,9 @@ end
 activeRatio = mean(~isnan(peakPosi),1);
 
 % =========place field order by the begining ======================
+% inxSel = [100, 200];
 inxSel = [100, 200, 400];
+
 figure
 for i = 1:length(inxSel)
     subplot(1,3,i)
@@ -278,6 +280,7 @@ set(gca,'FontSize',16,'LineWidth',1)
 % prefix = 'Tmaze_switch_tuning';
 % saveas(shitTunFig,[sFolder,filesep,prefix,'.fig'])
 % print('-depsc',[saveFolder,filesep,prefix,'.eps'])
-
+%% 
+% Use "plotFig6_Tmaze.m" to plot figures
 %% save data
 

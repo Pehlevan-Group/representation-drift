@@ -41,7 +41,7 @@ param.noise =  noiseStd; % stanard deivation of noise
 param.step = 20;         % store every 20 step
 param.ampThd = 0.1;      % amplitude threshold, depending on the parameters
 
-save_date_flag = true;   % store the data or not
+save_data_flag = false;   % store the data or not
 
 
 param.sigWmax = noiseStd;% the maximum noise std of forward synapses
@@ -278,7 +278,6 @@ for rp = 1:repeats
 end
 
 %% SAVE THE DATA
-
 if save_data_flag
     save_folder = fullfile(pwd,'data', filesep,'revision');
     save_data_name = fullfile(save_folder, ['pc_1D_various_noise_',date,'.mat']);
@@ -374,7 +373,7 @@ end
 inx = 34;  % select one neuron to plot
 temp = output.pkAmp(inx,:);
 temp(isnan(temp)) = 0;
-times = (1:length(temp))*step;   % iterations
+times = (1:length(temp))*param.step;   % iterations
 
 f_pkAmpTraj = figure;
 set(f_pkAmpTraj,'color','w','Units','inches')
