@@ -16,13 +16,13 @@ param.baseLbd = 0.2;    % spacing of smallest grid RF, default 0.28
 param.sf =  1.42;       % scaling factor between adjacent module
 
 % parameters for learning 
-noiseStd = 0.01;        % 0.01 for 2d, 5 grid mode
+noiseStd = 0.02;        % 0.01 for 2d, 5 grid mode
 learnRate = 0.005;       % default 0.05
 
 param.W = 0.5*randn(param.Np,param.Ng);   % initialize the forward matrix
 param.M = eye(param.Np);        % lateral connection if using simple nsm
-param.lbd1 = 0.04;               % 0.15 for 400 place cells and 5 modes
-param.lbd2 = 0.01;              % 0.05 for 400 place cells and 5 modes
+param.lbd1 = 0.02;               % 0.15 for 400 place cells and 5 modes
+param.lbd2 = 0.05;              % 0.05 for 400 place cells and 5 modes
 
 
 param.alpha = 95;  % 85 for regular,95 for 5 grid modes, 150 for weakly input
@@ -266,15 +266,10 @@ for i = 1:tot_iter
     % noisy update weight matrix
     param.W = (1-param.learnRate)*param.W + param.learnRate*y*positions'/BatchSize + ...
         sqrt(param.learnRate)*param.noiseW.*randn(param.Np,param.Ng);  % 9/16/2020
-%         param.M = (1-param.learnRate)*param.M + param.learnRate*y*y'/BatchSize;
-%         param.W = (1-param.learnRate)*param.W + param.learnRate*y*positions'/BatchSize;
     param.M = max(0,(1-param.learnRate)*param.M + param.learnRate*y*y'/BatchSize + ...
         sqrt(param.learnRate)*param.noiseM.*randn(param.Np,param.Np));
-%         param.M = (1-param.learnRate)*param.M + param.learnRate*y*y'/BatchSize + ...
-%             sqrt(param.learnRate)*param.noise*randn(param.Np,param.Np);
     param.b = (1-param.learnRate)*param.b + param.learnRate*sqrt(param.alpha)*mean(y,2);
-%         param.b = (1-param.learnRate)*param.b + param.learnRate*sqrt(param.alpha)*mean(y,2) + ...
-%             sqrt(param.learnRate)*param.noise*randn(param.Np,1);
+
 
     % store and check representations
     Y0 = zeros(param.Np,size(gdInput,2));
@@ -293,16 +288,7 @@ for i = 1:tot_iter
         pkCenterMass(:,:,round(i/step)) = pkCM;
         pkMas(:,round(i/step)) = aveMass;
 
-
-%             allW(round(i/sep),:) = param.W(1,:);
-%             allbias(round(i/sep)) = param.b(1);
     end
-
-%         if mod(i,timeGap) ==0
-%             allW(:,:,round(i/timeGap)) = param.W;
-%             allM(:,:,round(i/timeGap)) = param.M;
-%             allY(:,:,round(i/timeGap)) = states_fixed.Y;
-%         end
 
 end
 
@@ -450,7 +436,7 @@ end
 % linear regression to get the diffusion constant of each neuron
 Ds = PlaceCellhelper.fitLinearDiffusion(msds,step,'linear');
 
-%% Peak amplitdues
+%% Peak amplitudes
 % trajectory of peak
 figure
 plot((1:size(pkAmp,2))*step,pkAmp(epInx,:),'LineWidth',2)
@@ -653,9 +639,9 @@ if strcmp(noiseVar, 'various')
     ylabel('$D$','Interpreter','latex','FontSize',16)
     set(gca,'XTick',10.^(-7:-4))
 
-    prefix = [figPre, 'D_sigmas'];
-    saveas(f_D_sig,[sFolder,filesep,prefix,'.fig'])
-    print('-depsc',[sFolder,filesep,prefix,'.eps'])
+%     prefix = [figPre, 'D_sigmas'];
+%     saveas(f_D_sig,[sFolder,filesep,prefix,'.fig'])
+%     print('-depsc',[sFolder,filesep,prefix,'.eps'])
   
     % make a linear regression and plot the confidence interval and R^2
     sig_range = 10.^(-7:0.1:-3.8)';
@@ -678,9 +664,9 @@ if strcmp(noiseVar, 'various')
     'String', ['R^2 =',R2,'; p-value =',pvalue],'BackgroundColor','none','Color','k',...
     'LineStyle','none','fontsize',10,'HorizontalAlignment','Center');
 
-    prefix = [figPre, 'D_sigmas_linearRegr'];
-    saveas(f_D_sig_linear,[sFolder,filesep,prefix,'.fig'])
-    print('-depsc',[sFolder,filesep,prefix,'.eps'])
+%     prefix = [figPre, 'D_sigmas_linearRegr'];
+%     saveas(f_D_sig_linear,[sFolder,filesep,prefix,'.fig'])
+%     print('-depsc',[sFolder,filesep,prefix,'.eps'])
     
 end
 
@@ -697,12 +683,11 @@ xlabel('Fraction of active time','FontSize',16)
 ylabel('$D$','Interpreter','latex','FontSize',16)
 set(gca,'FontSize',16,'LineWidth',1)
 
-prefix = [figPre, 'D_active_time'];
-saveas(DiffuAmpFig,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'D_active_time'];
+% saveas(DiffuAmpFig,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 % ylim([0,2.5])
-
 
 
 % ************************************************************
@@ -725,10 +710,9 @@ xlabel('X position','FontSize',16)
 ylabel('Y position','FontSize',16)
 set(gca,'LineWidth',1,'FontSize',16)
 
-prefix = [figPre, 'pkPosi'];
-saveas(f_pkPosi,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
-
+% prefix = [figPre, 'pkPosi'];
+% saveas(f_pkPosi,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 % ************************************************************
@@ -751,9 +735,9 @@ xlabel('Time','FontSize',16)
 ylabel('Peak Amplitude','FontSize',16)
 set(gca,'LineWidth',1,'FontSize',16)
 
-prefix = [figPre, 'pkAmp'];
-saveas(f_pkAmpTraj,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'pkAmp'];
+% saveas(f_pkAmpTraj,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 % ************************************************************
 % peak amplitude of all neurons across all time
@@ -788,9 +772,9 @@ ylabel('Active fraction','FontSize',16)
 ylim([0,1])
 set(gca,'LineWidth',1,'FontSize',16)
 
-prefix = [figPre, 'fracActive'];
-saveas(f_acti,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'fracActive'];
+% saveas(f_acti,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 % ************************************************************
@@ -857,9 +841,9 @@ xlabel('Average peak amplitude','FontSize',16)
 ylabel('Faction of active time','FontSize',16)
 set(gca,'FontSize',16,'LineWidth',1)
 
-prefix = [figPre, 'pkAmp_actiTime'];
-saveas(f_ampActiTime,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'pkAmp_actiTime'];
+% saveas(f_ampActiTime,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 % ************************************************************
 % distribution of peak shift
@@ -902,9 +886,9 @@ ylabel('$\langle \Delta r \rangle$','Interpreter','latex','FontSize',16)
 set(gca,'FontSize',16,'LineWidth',1)
 ylim([0,0.4])
 
-prefix = [figPre, 'pkShit_actiTime'];
-saveas(f_pkShift,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'pkShit_actiTime'];
+% saveas(f_pkShift,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 
@@ -945,9 +929,9 @@ xlabel('Time','FontSize',16)
 ylabel('PV correlation','FontSize',16)
 set(gca,'FontSize',16,'LineWidth',1)
 
-prefix = [figPre, 'pvCorrCoef'];
-saveas(f_pvCorr,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'pvCorrCoef'];
+% saveas(f_pvCorr,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 
 % ************************************************************
@@ -975,9 +959,9 @@ cb = colorbar;
 set(cb,'FontSize',12)
 set(gca,'XTick','','YTick','','LineWidth',0.5)
 
-prefix = [figPre, 'sm1'];
-saveas(f_sm1,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'sm1'];
+% saveas(f_sm1,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
 f_sm2 = figure;
 set(f_sm2,'color','w','Units','inches')
@@ -991,200 +975,8 @@ imagesc(SM2,[0,17]);
 cb = colorbar;
 set(cb,'FontSize',12)
 set(gca,'XTick','','YTick','','LineWidth',0.5)
-prefix = [figPre, 'sm2'];
-saveas(f_sm2,[sFolder,filesep,prefix,'.fig'])
-print('-depsc',[sFolder,filesep,prefix,'.eps'])
+% prefix = [figPre, 'sm2'];
+% saveas(f_sm2,[sFolder,filesep,prefix,'.fig'])
+% print('-depsc',[sFolder,filesep,prefix,'.eps'])
 
-
-%% Overlap of place field
-tp = size(Yt,3);  % totoal time point
-aveOverLap = nan(tp,1);
-aveRFsize = nan(tp,1);
-aveNearestDist = nan(size(pkCenterMass,3),1);
-for i = 1:size(Yt,3)
-    Y = Yt(:,:,i);  % response at time point i
-    corrY = Y*Y';
-    corrY_bar = corrY - diag(diag(corrY));
-    aveOverLap(i) = mean(corrY_bar(:));
-    aveRFsize(i) = mean(sum(Y.^2,2));
-    
-    % distance of nearest neighbor RF
-    actCenterMass = pkCenterMass(pkFlags(:,i),:,i);
-    pd = pdist(actCenterMass);
-    euclDistM = squareform(pd);   % distance matrix
-    sortedDist = sort(euclDistM,2,'ascend');
-    aveNearestDist(i) = mean(sortedDist(:,2)); % the frist column are zeros
-end
-
-aveNearestDist = nan(size(pkCenterMass,3),1);
-for i = 1:size(pkCenterMass,3)
-    cmPosi = pkCenterMass(:,:,i);
-    pd = pdist(cmPosi(~isnan(cmPosi(:,1)),:));
-    euclDistM = squareform(pd);   % distance matrix
-    sortedDist = sort(euclDistM,2,'ascend');
-    aveNearestDist(i) = mean(sortedDist(:,2)); % the frist column are zeros  
-end
-
-%% Centroid trajectory
-
-sepSel = 5;
-numPoints = round(size(pkCenterMass,3)/sepSel);
-bluesSpec = flip(brewermap(numPoints,'blues'));
-PuRdSpec = flip(brewermap(numPoints,'PuRd'));
-sepctrumColors = {bluesSpec,PuRdSpec};
-
-neurSel = randperm(param.Np,2);
-
-figure
-hold on
-for i = 1:2
-    temp = squeeze(pkCenterMass(neurSel(i),:,:));
-    for j = 1:numPoints
-        plot(temp(1,sepSel*j),temp(2,sepSel*j),'+','MarkerSize',6,...
-    'MarkerEdgeColor',sepctrumColors{i}(j,:),'Color',sepctrumColors{i}(j,:),...
-    'LineWidth',1.5)
-    end
-end
-hold off
-box on
-xlim([0,32])
-ylim([0,32])
-xlabel('X position')
-ylabel('Y position')
-
-%%
-figure
-imagesc(pkAmp'*pkAmp)
-
-% fraction of cells that are place cells
-figure
-plot((1:size(pkAmp,2))*step,mean(pkAmp > ampThd,1),'LineWidth',2)
-xlabel('$t$','Interpreter','latex','FontSize',24)
-ylabel('fraction of place cell','FontSize',24)
-set(gca,'FontSize',20,'LineWidth',1.5,'YLim',[0,1])
-
-% peak amplitude of single place cell
-pcSel = randperm(param.Np,1); %randomly slect one place cell
-figure
-plot((1:size(pkAmp,2))*step,pkAmp(pcSel,:))
-xlabel('$t$','Interpreter','latex')
-ylabel('Peak amplitude')
-
-% peak position evolve with time
-tps = [1,200,400];  % select several time point to plot
-figure
-for i = 1:length(tps)
-    pkMat = zeros(param.ps,param.ps);
-    for j = 1:size(pks,1)
-        if ~isnan(pks(j,tps(i)))
-            pkMat(pks(j,tps(i))) = 1;
-        end
-    end
-    subplot(1,length(tps),i)
-    imagesc(pkMat)
-    title(['iteration: ',num2str(step*tps(i))],'FontSize',20)
-    xlabel('x position','FontSize',20)
-    ylabel('y position','FontSize',20)
-    set(gca,'FontSize',20,'LineWidth',1)
-end
-
-% calculate the overall peak position movement
-xs = floor(pks/param.ps);
-ys = mod(pks,param.ps);
-dxs = xs - xs(:,1);
-dys = ys - ys(:,1);
-shiftEcul = sqrt(dxs.^2 + dys.^2)/param.ps;  % in unit of m
-z = shiftEcul(~isnan(shiftEcul));
-figure
-histogram(z,30)
-xlabel('peak shift $|\Delta r|$', 'Interpreter','latex','FontSize',24)
-ylabel('count','FontSize',24)
-set(gca,'LineWidth',1,'FontSize',20)
-% change of the weight matrix, W
-% figure
-% for i = 1:size(allW,3)
-%     subplot(1,size(allW,3),i)
-%     imagesc(allW(:,:,i),[-0.02,0.1])
-% end
-% 
-% % change of the weight matrix, M
-% figure
-% for i = 1:size(allM,3)
-%     M = allM(:,:,i) - diag(diag(allM(:,:,i)));
-%     subplot(1,size(allM,3),i)
-%     imagesc(M,[-0.02,0.05])
-% end
-% 
-% figure
-% histogram(M(:))
-% 
-% 
-% figure
-% W = allW(:,:,1);
-% histogram(W(:))
-
-% changes of matrix norm
-% chgW = nan(size(allW,3)-1,1);
-% chgM = nan(size(allM,3)-1,1);
-% for i = 1:size(allW,3)-1
-%     chgW(i) = norm(allW(:,:,i+1) - allW(:,:,1))/norm(allW(:,:,1));
-%     chgM(i) = norm(allM(:,:,i+1) - allM(:,:,1))/norm(allM(:,:,1));
-% end
-
-
-% relative change of W
-figure
-plot((1:size(allW,3)-1)'*timeGap,chgW,'LineWidth',2)
-xlabel('iteration','FontSize',20)
-ylabel('$$\frac{||W_t - W_0||_F^2}{||W_0||_F^2}$$','Interpreter','latex','FontSize',20)
-set(gca,'FontSize',20,'LineWidth',1,'YLim',[0,0.4])
-
-% relative change of M
-figure
-plot((1:size(allM,3)-1)'*timeGap,chgM,'LineWidth',2)
-xlabel('iteration','FontSize',20)
-ylabel('$$\frac{||M_t - M_0||_F^2}{||M_0||_F^2}$$','Interpreter','latex','FontSize',20)
-set(gca,'FontSize',20,'LineWidth',1,'YLim',[0,0.7])
-
-ws1 = squeeze(allW(10,33,:));
-ws2 = squeeze(allW(39,87,:));
-
-figure
-plot(ws1)
-hold on
-plot(ws2)
-hold off
-
-figure
-subplot(1,2,1)
-imagesc(allW(:,:,1))
-colorbar
-subplot(1,2,2)
-imagesc(allW(:,:,40))
-colorbar
-
-figure
-imagesc(param.W)
-
-% in term of individual palce cells
-figure
-plSel = randperm(param.Np,15);
-pwhdl = tight_subplot(3,5);
-for i = 1:15
-    imagesc(pwhdl(i),reshape(param.W(plSel(i),:),24,25))
-    pwhdl(i).XAxis.Visible = 'off';
-    pwhdl(i).YAxis.Visible = 'off'; 
-end
-
-
-ms1 = squeeze(allM(10,33,:));
-ms2 = squeeze(allM(39,87,:));
-
-figure
-plot(ms1)
-hold on
-plot(ms2)
-hold off
-
-figure
 scatter(ms1,ms2)
